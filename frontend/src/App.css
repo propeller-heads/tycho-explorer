@@ -1,7 +1,7 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
@@ -12,10 +12,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #FF00E5);
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #00FFC6);
 }
 
 @keyframes logo-spin {
@@ -33,10 +33,121 @@
   }
 }
 
+/* Space theme additions */
+.cosmic-button {
+  background: linear-gradient(90deg, #FF00E5, #3B185F);
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.cosmic-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+}
+
+.cosmic-button:hover::before {
+  animation: cosmic-shimmer 1.5s infinite;
+}
+
+@keyframes cosmic-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.space-gradient-text {
+  background: linear-gradient(to right, #00FFC6, #FF00E5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .card {
+  @apply space-card;
   padding: 2em;
 }
 
 .read-the-docs {
   color: #888;
+}
+
+/* Create floating planets in the background */
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(4px);
+}
+
+.planet-1 {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, #3B185F 30%, transparent 70%);
+  top: 15%;
+  right: 10%;
+  animation: space-float 30s infinite ease-in-out;
+}
+
+.planet-2 {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #0E4C92 20%, transparent 80%);
+  bottom: 15%;
+  left: 10%;
+  animation: space-float 25s infinite ease-in-out reverse;
+}
+
+.planet-3 {
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, #FF00E5 10%, transparent 70%);
+  bottom: 30%;
+  right: 30%;
+  animation: space-float 20s infinite ease-in-out;
+}
+
+/* Star field */
+.star-field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Generate some random stars */
+.star-1 { --star-size: 1px; --star-opacity: 0.7; --twinkle-duration: 3s; --twinkle-delay: 0s; top: 10%; left: 20%; }
+.star-2 { --star-size: 2px; --star-opacity: 0.9; --twinkle-duration: 5s; --twinkle-delay: 1s; top: 25%; left: 85%; }
+.star-3 { --star-size: 1px; --star-opacity: 0.8; --twinkle-duration: 4s; --twinkle-delay: 2s; top: 60%; left: 35%; }
+.star-4 { --star-size: 2px; --star-opacity: 0.7; --twinkle-duration: 6s; --twinkle-delay: 3s; top: 80%; left: 70%; }
+.star-5 { --star-size: 1px; --star-opacity: 0.9; --twinkle-duration: 3s; --twinkle-delay: 0.5s; top: 40%; left: 25%; }
+.star-6 { --star-size: 1px; --star-opacity: 0.8; --twinkle-duration: 5s; --twinkle-delay: 2.5s; top: 15%; left: 60%; }
+.star-7 { --star-size: 3px; --star-opacity: 0.6; --twinkle-duration: 7s; --twinkle-delay: 1s; top: 75%; left: 15%; }
+.star-8 { --star-size: 1px; --star-opacity: 0.7; --twinkle-duration: 4s; --twinkle-delay: 3.5s; top: 35%; left: 80%; }
+.star-9 { --star-size: 1px; --star-opacity: 0.8; --twinkle-duration: 6s; --twinkle-delay: 1.5s; top: 90%; left: 40%; }
+.star-10 { --star-size: 2px; --star-opacity: 0.9; --twinkle-duration: 5s; --twinkle-delay: 2s; top: 5%; left: 45%; }
+
+/* Network graph enhancements */
+.space-node {
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.space-edge {
+  filter: drop-shadow(0 0 3px currentColor);
 }
