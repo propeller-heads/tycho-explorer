@@ -59,6 +59,7 @@ fn register_exchanges(
     builder
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn start_simulation_processor(
     simulation_state: SimulationState,
     tx: mpsc::Sender<BlockUpdate>,

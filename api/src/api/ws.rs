@@ -1,48 +1,12 @@
-use std::collections::HashMap;
-
 use axum::{
     extract::{State, WebSocketUpgrade},
     response::IntoResponse,
 };
 use futures_util::{SinkExt, StreamExt};
-use serde::Serialize;
 use tokio::sync::broadcast;
 use tracing::{error, info};
-use tycho_simulation::{protocol::models::BlockUpdate, protocol::models::ProtocolComponent};
 
 use crate::simulation::state::SimulationState;
-
-// Define your custom update struct
-#[derive(Serialize, Clone)]
-struct ClientUpdate {
-    block_number: u64,
-    new_pairs: HashMap<String, ProtocolComponent>,
-    spot_prices: HashMap<String, f64>,
-    tvl_updates: HashMap<String, f64>,
-}
-
-impl From<BlockUpdate> for ClientUpdate {
-    fn from(update: BlockUpdate) -> Self {
-        // Extract spot prices from states
-        let spot_prices = HashMap::new();
-        // for (address, state) in &update.states {
-        //     if let Some(price) = state.spot_price() {
-        //         spot_prices.insert(address.clone(), price);
-        //     }
-        // }
-        let mut tvl_updates = HashMap::new();
-        for address in update.states.keys() {
-            tvl_updates.insert(address.clone(), 0 as f64);
-        }
-
-        ClientUpdate {
-            block_number: update.block_number,
-            new_pairs: update.new_pairs,
-            spot_prices,
-            tvl_updates,
-        }
-    }
-}
 
 pub async fn ws_handler(
     State(state): State<SimulationState>,
@@ -62,8 +26,7 @@ async fn handle_socket(websocket: axum::extract::ws::WebSocket, state: Simulatio
 
     // Send current state immediately when a client connects
     let latest_block = state.get_full_state().await;
-    let client_update = ClientUpdate::from(latest_block);
-    if let Ok(msg) = serde_json::to_string(&client_update) {
+    if let Ok(msg) = serde_json::to_string(&latest_block) {
         if let Err(e) = sender.send(axum::extract::ws::Message::Text(msg)).await {
             error!("Error sending initial state: {}", e);
             return;
@@ -86,11 +49,8 @@ async fn handle_socket(websocket: axum::extract::ws::WebSocket, state: Simulatio
                 }
             };
 
-            // Convert to client update format
-            let client_update = ClientUpdate::from(update);
-
             // Serialize the update to send to the client
-            let msg = match serde_json::to_string(&client_update) {
+            let msg = match serde_json::to_string(&update) {
                 Ok(msg) => msg,
                 Err(e) => {
                     error!("Error serializing update: {}", e);

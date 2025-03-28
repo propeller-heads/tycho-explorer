@@ -9,9 +9,6 @@ use thiserror::Error;
 // Define Axum-specific error types
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("Internal server error")]
-    InternalError,
-
     #[error("Simulation error: {0}")]
     SimulationError(String),
 
@@ -26,7 +23,6 @@ pub enum ApiError {
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            ApiError::InternalError => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             ApiError::SimulationError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
             ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
