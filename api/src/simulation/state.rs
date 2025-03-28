@@ -1,11 +1,8 @@
 use std::{collections::HashMap, sync::Arc};
-use tokio::sync::{RwLock, broadcast};
-use tycho_simulation::{
-    models::Token,
-    protocol::{
-        models::{BlockUpdate, ProtocolComponent},
-        state::ProtocolSim,
-    },
+use tokio::sync::{broadcast, RwLock};
+use tycho_simulation::protocol::{
+    models::{BlockUpdate, ProtocolComponent},
+    state::ProtocolSim,
 };
 
 /// Represents the current state of the simulation
@@ -13,7 +10,6 @@ use tycho_simulation::{
 pub struct SimulationState {
     states: Arc<RwLock<HashMap<String, Box<dyn ProtocolSim>>>>,
     components: Arc<RwLock<HashMap<String, ProtocolComponent>>>,
-    tokens: Arc<RwLock<HashMap<String, Token>>>,
     current_block: u64,
     // A broadcast channel to notify listeners of new updates
     updates: broadcast::Sender<BlockUpdate>,
@@ -27,7 +23,6 @@ impl SimulationState {
         SimulationState {
             states: Arc::new(RwLock::new(HashMap::new())),
             components: Arc::new(RwLock::new(HashMap::new())),
-            tokens: Arc::new(RwLock::new(HashMap::new())),
             current_block: 0,
             updates: tx,
         }

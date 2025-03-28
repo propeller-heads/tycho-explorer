@@ -18,6 +18,7 @@ struct ClientUpdate {
     block_number: u64,
     new_pairs: HashMap<String, ProtocolComponent>,
     spot_prices: HashMap<String, f64>,
+    tvl_updates: HashMap<String, f64>,
 }
 
 impl From<BlockUpdate> for ClientUpdate {
@@ -29,11 +30,16 @@ impl From<BlockUpdate> for ClientUpdate {
         //         spot_prices.insert(address.clone(), price);
         //     }
         // }
+        let mut tvl_updates = HashMap::new();
+        for (address, _) in &update.states {
+            tvl_updates.insert(address.clone(), 0 as f64);
+        }
 
         ClientUpdate {
             block_number: update.block_number,
             new_pairs: update.new_pairs,
             spot_prices,
+            tvl_updates,
         }
     }
 }
