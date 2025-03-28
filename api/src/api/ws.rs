@@ -31,7 +31,7 @@ impl From<BlockUpdate> for ClientUpdate {
         //     }
         // }
         let mut tvl_updates = HashMap::new();
-        for (address, _) in &update.states {
+        for address in update.states.keys() {
             tvl_updates.insert(address.clone(), 0 as f64);
         }
 

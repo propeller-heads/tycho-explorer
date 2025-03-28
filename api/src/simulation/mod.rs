@@ -7,7 +7,7 @@ use tycho_simulation::{
     evm::{
         engine_db::tycho_db::PreCachedDB,
         protocol::{
-            filters::{balancer_pool_filter, curve_pool_filter, uniswap_v4_pool_with_hook_filter},
+            filters::{balancer_pool_filter, uniswap_v4_pool_with_hook_filter},
             uniswap_v2::state::UniswapV2State,
             uniswap_v3::state::UniswapV3State,
             uniswap_v4::state::UniswapV4State,
@@ -38,11 +38,6 @@ fn register_exchanges(
                     tvl_filter.clone(),
                     Some(balancer_pool_filter),
                 )
-                .exchange::<EVMPoolState<PreCachedDB>>(
-                    "vm:curve",
-                    tvl_filter.clone(),
-                    Some(curve_pool_filter),
-                )
                 .exchange::<UniswapV4State>(
                     "uniswap_v4",
                     tvl_filter.clone(),
@@ -71,6 +66,7 @@ pub fn start_simulation_processor(
     tycho_url: &str,
     tycho_api_key: &str,
     tvl_threshold: f64,
+    tvl_buffer: f64,
     chain: Chain,
 ) -> JoinHandle<anyhow::Result<()>> {
     let tycho_url = tycho_url.to_string();
@@ -90,7 +86,8 @@ pub fn start_simulation_processor(
             .await;
             info!("Loaded {} tokens", all_tokens.len());
 
-            let tvl_filter = ComponentFilter::with_tvl_range(tvl_threshold, tvl_threshold);
+            let tvl_filter =
+                ComponentFilter::with_tvl_range(tvl_threshold - tvl_buffer, tvl_threshold);
             let mut protocol_stream = register_exchanges(
                 ProtocolStreamBuilder::new(&tycho_url, chain),
                 &chain,

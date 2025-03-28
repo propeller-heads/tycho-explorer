@@ -1,11 +1,12 @@
 [package]
 name = "tycho-api"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-# Tycho simulation dependencies
+# Simulation dependencies
 tycho-simulation = { git = "https://github.com/propeller-heads/tycho-simulation", rev = "79346a1" }
+num-bigint = "0.4"
 
 # API and WebSocket server
 axum = { version = "0.7", features = ["ws"] }
@@ -26,9 +27,6 @@ clap = { version = "4.5", features = ["derive"] }
 dotenv = "0.15"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
-# Terminal UI related
-ratatui = "0.26"
 
 # Error handling
 anyhow = "1.0"

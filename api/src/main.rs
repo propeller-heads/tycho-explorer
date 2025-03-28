@@ -17,15 +17,15 @@ struct Cli {
     /// The tvl threshold to filter the graph by
     #[arg(short, long, default_value_t = 1000.0)]
     tvl_threshold: f64,
+    /// The tvl buffer before removing a pool
+    #[arg(short, long, default_value_t = 10.0)]
+    tvl_buffer: f64,
     /// The target blockchain
     #[clap(long, default_value = "ethereum")]
     pub chain: String,
     /// API server port
     #[clap(long, default_value = "3000")]
     pub port: u16,
-    /// Whether to also run the terminal UI
-    #[clap(long, default_value_t = false)]
-    pub terminal_ui: bool,
 }
 
 #[tokio::main]
