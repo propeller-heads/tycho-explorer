@@ -31,14 +31,14 @@ async fn health_check() -> Json<serde_json::Value> {
 struct SimulationRequest {
     sell_token: String,
     pools: Vec<String>,
-    amount: String,
+    amount: f64,
 }
 
 #[derive(Debug, Serialize)]
 struct SimulationResponse {
     success: bool,
-    input_amount: String,
-    output_amount: String,
+    input_amount: f64,
+    output_amount: f64,
     gas_estimate: BigUint,
 }
 
@@ -48,14 +48,12 @@ async fn simulate_transaction(
     Json(request): Json<SimulationRequest>,
 ) -> Result<Json<SimulationResponse>, ApiError> {
     // Parse amount
-    let input_amount = request
-        .amount
-        .parse::<BigUint>()
-        .map_err(|_| ApiError::BadRequest("Invalid amount format".to_string()))?;
+    let input_amount = request.amount;
 
-    let mut current_amount = input_amount;
+    let mut current_amount = None;
     let mut total_gas = BigUint::from(0u64);
     let mut next_sell_token = request.sell_token;
+    let mut decimals = 0;
 
     for pool_address in request.pools.iter() {
         let (component, pool_state) = state.get_pool_state(pool_address).await;
@@ -81,14 +79,20 @@ async fn simulate_transaction(
                         )));
                     }
                 }
+                if current_amount.is_none() {
+                    current_amount = Some(BigUint::from(
+                        (input_amount * 10f64.powi(sell_token.decimals as i32)) as u64,
+                    ));
+                }
                 let result = pool
-                    .get_amount_out(current_amount, &sell_token, &buy_token)
+                    .get_amount_out(current_amount.unwrap(), &sell_token, &buy_token)
                     .map_err(|e| ApiError::SimulationError(format!("Simulation error: {}", e)))?;
 
                 // Assuming result is a tuple of (amount_out, gas)
-                current_amount = result.amount;
+                current_amount = Some(result.amount);
                 total_gas += result.gas;
                 next_sell_token = buy_token.address.to_string();
+                decimals = buy_token.decimals;
             }
             None => {
                 return Err(ApiError::NotFound(format!(
@@ -99,10 +103,17 @@ async fn simulate_transaction(
         }
     }
 
+    let amount_out: f64 = current_amount
+        .ok_or_else(|| ApiError::SimulationError("No output amount calculated".to_string()))?
+        .to_string()
+        .parse::<f64>()
+        .unwrap_or(0.0)
+        / 10f64.powi(decimals as i32);
+
     Ok(Json(SimulationResponse {
         success: true,
         input_amount: request.amount,
-        output_amount: current_amount.to_string(),
+        output_amount: amount_out,
         gas_estimate: total_gas,
     }))
 }
