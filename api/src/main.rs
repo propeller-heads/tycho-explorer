@@ -1,4 +1,5 @@
 mod api;
+mod errors;
 mod simulation;
 mod utils;
 

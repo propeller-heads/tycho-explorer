@@ -44,8 +44,13 @@ impl SimulationState {
     }
 
     /// Method to get pool state for simulation
-    pub async fn get_pool_state(&self, address: &str) -> Option<Box<dyn ProtocolSim>> {
-        self.states.read().await.get(address).cloned()
+    pub async fn get_pool_state(
+        &self,
+        address: &str,
+    ) -> (Option<ProtocolComponent>, Option<Box<dyn ProtocolSim>>) {
+        let pool_state = self.states.read().await.get(address).cloned();
+        let component = self.components.read().await.get(address).cloned();
+        (component, pool_state)
     }
 
     pub async fn get_full_state(&self) -> BlockUpdate {

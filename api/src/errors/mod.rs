@@ -1,6 +1,12 @@
-use actix_web::{HttpResponse, ResponseError};
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json,
+};
+use serde_json::json;
 use thiserror::Error;
 
+// Define Axum-specific error types
 #[derive(Error, Debug)]
 pub enum ApiError {
     #[error("Internal server error")]
@@ -16,15 +22,21 @@ pub enum ApiError {
     BadRequest(String),
 }
 
-impl ResponseError for ApiError {
-    fn error_response(&self) -> HttpResponse {
-        match self {
-            ApiError::InternalError => {
-                HttpResponse::InternalServerError().json(format!("{}", self))
-            }
-            ApiError::SimulationError(msg) => HttpResponse::InternalServerError().json(msg),
-            ApiError::NotFound(msg) => HttpResponse::NotFound().json(msg),
-            ApiError::BadRequest(msg) => HttpResponse::BadRequest().json(msg),
-        }
+// Implement IntoResponse for Axum
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let (status, error_message) = match self {
+            ApiError::InternalError => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
+            ApiError::SimulationError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+        };
+
+        let body = Json(json!({
+            "success": false,
+            "error": error_message
+        }));
+
+        (status, body).into_response()
     }
 }
