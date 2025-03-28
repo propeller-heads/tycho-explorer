@@ -18,7 +18,7 @@ struct Cli {
     #[arg(short, long, default_value_t = 1000.0)]
     tvl_threshold: f64,
     /// The tvl buffer before removing a pool
-    #[arg(short, long, default_value_t = 10.0)]
+    #[arg(short = 'b', long, default_value_t = 10.0)]
     tvl_buffer: f64,
     /// The target blockchain
     #[clap(long, default_value = "ethereum")]
@@ -61,6 +61,7 @@ async fn main() -> anyhow::Result<()> {
         &tycho_url,
         &tycho_api_key,
         cli.tvl_threshold,
+        cli.tvl_buffer,
         chain,
     );
 
