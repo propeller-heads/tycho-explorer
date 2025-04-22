@@ -1,14 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { cn, formatPoolId } from '@/lib/utils';
 import { Pool } from './types';
 import SwapSimulator from './SwapSimulator';
 import MetricsCards from './poolList/MetricsCards';
 import PoolTable from './poolList/PoolTable';
 import TablePagination from './poolList/TablePagination';
-import {
-  formatPoolId
-} from './poolList/utils';
 import {
   Tooltip,
   TooltipContent,
