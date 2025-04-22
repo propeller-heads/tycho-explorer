@@ -4,7 +4,7 @@ chmod +x start.sh
 
 ./start.sh --parallel
 
-# Logic organization
+# Logic organization for src/components/dexscan
 
 1. Root Component Structure:
 - DexScanContent (root) wraps DexScanContentMain with PoolDataProvider
