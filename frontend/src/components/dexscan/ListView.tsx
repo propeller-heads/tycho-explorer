@@ -29,7 +29,8 @@ const COLUMNS = [
   { id: 'protocol_system', name: 'Protocol', type: 'string' },
   { id: 'static_attributes.fee', name: 'Fee Rate', type: 'fee' },
   { id: 'spotPrice', name: 'Spot Price', type: 'number' },
-  { id: 'created_at', name: 'Created At', type: 'date' }
+  { id: 'created_at', name: 'Created At', type: 'date' },
+  { id: 'updatedAt', name: 'Updated At', type: 'date' }
 ];
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect, shouldScrollToHighlighted }: PoolListViewProps) => {
@@ -97,6 +98,9 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect, shouldScr
       } else if (sortConfig.column === 'created_at') {
         valueA = new Date(a.created_at).getTime();
         valueB = new Date(b.created_at).getTime();
+      } else if (sortConfig.column === 'updatedAt') {
+        valueA = new Date(a.updatedAt).getTime();
+        valueB = new Date(b.updatedAt).getTime();
       } else {
         valueA = a[sortConfig.column as keyof Pool];
         valueB = b[sortConfig.column as keyof Pool];

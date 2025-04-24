@@ -177,6 +177,8 @@ const PoolTable: React.FC<PoolTableProps> = ({
                           displayValue = pool.protocol_system;
                         } else if (column.id === 'created_at') {
                           displayValue = new Date(pool.created_at).toLocaleString();
+                        } else if (column.id === 'updatedAt') {
+                          displayValue = new Date(pool.updatedAt).toLocaleString();
                         } else if (column.id === 'spotPrice') {
                           displayValue = pool.spotPrice.toLocaleString(undefined, { 
                             minimumFractionDigits: 2,

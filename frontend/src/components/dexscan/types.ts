@@ -16,4 +16,5 @@ export interface WebSocketPool {
 
 export interface Pool extends WebSocketPool {
   spotPrice: number;
+  updatedAt: string;
 }

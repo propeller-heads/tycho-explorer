@@ -124,7 +124,8 @@ const convertWebSocketPool = (
 ): Pool => {
   return {
     ...pool,
-    spotPrice: spotPrices[pool.id] || 0 // Use spot price from map if available
+    spotPrice: spotPrices[pool.id] || 0, // Use spot price from map if available
+    updatedAt: new Date().toISOString().slice(0, 19)
   } as unknown as Pool;
 };
 
