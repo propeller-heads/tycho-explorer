@@ -17,10 +17,3 @@ export interface WebSocketPool {
 export interface Pool extends WebSocketPool {
   spotPrice: number;
 }
-
-export interface PoolInfo {
-  address: string;
-  tvl: number;
-  protocol: string;
-  lastTradeTimestamp: string;
-} 
