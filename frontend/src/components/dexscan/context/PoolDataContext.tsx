@@ -6,7 +6,6 @@ interface WebSocketMessage {
   new_pairs?: Record<string, WebSocketPool>;
   spot_prices?: Record<string, number>;
   block_number?: number;
-  chain?: string;
 }
 
 interface PoolDataContextValue {
