@@ -172,17 +172,6 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect, shouldScr
     }
   }, [highlightedPoolId, pools]);
   
-  // Handle pagination separately
-  useEffect(() => {
-    if (highlightedPoolId && processedPools.length) {
-      const poolIndex = processedPools.findIndex(pool => pool.id === highlightedPoolId);
-      if (poolIndex >= 0) {
-        const targetPage = Math.floor(poolIndex / POOLS_PER_PAGE) + 1;
-        setCurrentPage(targetPage);
-      }
-    }
-  }, [highlightedPoolId, processedPools]);
-  
   // Handle scrolling in a separate effect
   useEffect(() => {
     if (highlightedPoolId && shouldScrollToHighlighted) {
