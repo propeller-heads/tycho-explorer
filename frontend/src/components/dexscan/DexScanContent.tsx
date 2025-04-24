@@ -20,7 +20,7 @@ const DexScanContentMain = () => {
   const [shouldScrollToPool, setShouldScrollToPool] = useState(scrollToPoolParam);
   
   const [activeTab, setActiveTab] = useState<'graph' | 'pools'>(
-    tabParam === 'pools' ? 'pools' : 'graph'
+    tabParam === 'graph' ? 'graph' : 'pools'
   );
   
   // Add state for WebSocket panel collapse
@@ -73,14 +73,14 @@ const DexScanContentMain = () => {
   useEffect(() => {
     const newScrollToPool = searchParams.get('scrollToPool') === 'true';
     
-    if (tabParam === 'pools' && activeTab !== 'pools') {
-      setActiveTab('pools');
-      // Only set scrollToPool if we're switching to pools tab and parameter is present
-      setShouldScrollToPool(newScrollToPool);
-    } else if (tabParam !== 'pools' && activeTab !== 'graph') {
+    if (tabParam === 'graph' && activeTab !== 'graph') {
       setActiveTab('graph');
       // Reset scroll flag when switching to graph
       setShouldScrollToPool(false);
+    } else if (tabParam === 'pools' && activeTab !== 'pools') {
+      setActiveTab('pools');
+      // Only set scrollToPool if we're switching to pools tab and parameter is present
+      setShouldScrollToPool(newScrollToPool);
     }
     
     // If we're already on the pools tab and scrollToPool was just added to URL
@@ -117,7 +117,7 @@ const DexScanContentMain = () => {
         poolListContainerRef.current.style.display = 'block';
       }
     }
-  }, []);
+  }, [activeTab]);
 
   // Toggle WebSocket config panel
   const toggleWsConfig = () => {
