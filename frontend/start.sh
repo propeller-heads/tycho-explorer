@@ -23,7 +23,7 @@ TYCHO_DIR=${USER_TYCHO_DIR:-$DEFAULT_TYCHO_DIR}
 echo -e "${BLUE}=== Checking if Tycho API repo exists at ${TYCHO_DIR} ===${NC}"
 if [ ! -d "$TYCHO_DIR" ]; then
     echo -e "${GREEN}Cloning Tycho API repository to ${TYCHO_DIR}...${NC}"
-    git clone https://github.com/carloszanella/tycho-api.git "$TYCHO_DIR"
+    git clone git@github.com:carloszanella/tycho-api.git "$TYCHO_DIR"
 else
     echo -e "${GREEN}Tycho API repository already exists at ${TYCHO_DIR}. Pulling latest changes...${NC}"
     (cd "$TYCHO_DIR" && git pull)
