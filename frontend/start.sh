@@ -2,7 +2,7 @@
 
 echo "npm install..."
 
-npm install
+npm install --legacy-peer-deps
 
 # Colors for output
 GREEN='\033[0;32m'
