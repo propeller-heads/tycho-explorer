@@ -16,6 +16,14 @@ export const ViewSelector = ({ activeTab, setActiveTab }: ViewSelectorProps) => 
       >
         List View
       </Button>
+      
+      <Button 
+        variant={activeTab === 'graph' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => setActiveTab('graph')}
+      >
+        Graph View
+      </Button>
     </div>
   );
 };

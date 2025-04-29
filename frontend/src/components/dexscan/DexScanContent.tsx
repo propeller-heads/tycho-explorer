@@ -7,6 +7,9 @@ import { WebSocketConfig } from './WebSocketConfig';
 import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
 import { Button } from '@/components/ui/button';
 import { Globe, PlugZap, ChevronDown, ChevronUp, X } from 'lucide-react';
+import GraphViewContent from './graph/GraphViewContent';
+import TestGraph from './graph/TestGraph';
+
 
 // Main content component using context
 const DexScanContentMain = () => {
@@ -14,29 +17,29 @@ const DexScanContentMain = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get('tab');
-  
+
   // Get scrollToPool parameter from URL
   const scrollToPoolParam = searchParams.get('scrollToPool') === 'true';
   const [shouldScrollToPool, setShouldScrollToPool] = useState(scrollToPoolParam);
-  
+
   const [activeTab, setActiveTab] = useState<'graph' | 'pools'>(
     tabParam === 'graph' ? 'graph' : 'pools'
   );
-  
+
   // Add state for WebSocket panel collapse
   const [wsConfigExpanded, setWsConfigExpanded] = useState(false);
   const wsConfigRef = useRef<HTMLDivElement>(null);
   const wsButtonRef = useRef<HTMLButtonElement>(null);
-  
+
   // Refs for view containers
   const graphContainerRef = useRef<HTMLDivElement>(null);
   const poolListContainerRef = useRef<HTMLDivElement>(null);
-  
-  const { 
+
+  const {
     websocketUrl,
-    isConnected, 
-    pools, 
-    highlightedPoolId, 
+    isConnected,
+    pools,
+    highlightedPoolId,
     connectToWebSocket,
     highlightPool,
     isReconnecting,
@@ -45,11 +48,12 @@ const DexScanContentMain = () => {
     blockNumber,
     selectedChain
   } = usePoolData();
-  
+
   // Update the URL when the tab changes
   const handleTabChange = (tab: 'graph' | 'pools') => {
+    console.log("tab: ", tab);
     setActiveTab(tab);
-    
+
     // Remove the scrollToPool parameter when changing tabs manually
     // (we only want to scroll when coming from a "View pool" click)
     if (searchParams.get('scrollToPool')) {
@@ -58,7 +62,7 @@ const DexScanContentMain = () => {
     } else {
       navigate(`/?tab=${tab}`);
     }
-    
+
     // Smoothly transition between views
     if (tab === 'graph' && graphContainerRef.current && poolListContainerRef.current) {
       poolListContainerRef.current.style.display = 'none';
@@ -68,11 +72,11 @@ const DexScanContentMain = () => {
       poolListContainerRef.current.style.display = 'block';
     }
   };
-  
+
   // Keep tab state in sync with URL and handle scroll parameter
   useEffect(() => {
     const newScrollToPool = searchParams.get('scrollToPool') === 'true';
-    
+
     if (tabParam === 'graph' && activeTab !== 'graph') {
       setActiveTab('graph');
       // Reset scroll flag when switching to graph
@@ -82,13 +86,13 @@ const DexScanContentMain = () => {
       // Only set scrollToPool if we're switching to pools tab and parameter is present
       setShouldScrollToPool(newScrollToPool);
     }
-    
+
     // If we're already on the pools tab and scrollToPool was just added to URL
     if (activeTab === 'pools' && newScrollToPool && !shouldScrollToPool) {
       setShouldScrollToPool(true);
     }
   }, [tabParam, searchParams, activeTab, shouldScrollToPool]);
-  
+
   // Reset scroll flag after it's been used
   useEffect(() => {
     if (shouldScrollToPool) {
@@ -101,11 +105,11 @@ const DexScanContentMain = () => {
           navigate(`/?${searchParams.toString()}`, { replace: true });
         }
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [shouldScrollToPool, searchParams, navigate]);
-  
+
   // Initialize view visibility based on active tab
   useEffect(() => {
     if (graphContainerRef.current && poolListContainerRef.current) {
@@ -123,54 +127,52 @@ const DexScanContentMain = () => {
   const toggleWsConfig = () => {
     setWsConfigExpanded(prev => !prev);
   };
-  
+
   // Close WebSocket config panel
   const closeWsConfig = () => {
     setWsConfigExpanded(false);
   };
-  
+
   // Handle click outside to close panel
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         wsConfigExpanded &&
-        wsConfigRef.current && 
+        wsConfigRef.current &&
         !wsConfigRef.current.contains(event.target as Node) &&
-        wsButtonRef.current && 
+        wsButtonRef.current &&
         !wsButtonRef.current.contains(event.target as Node)
       ) {
         setWsConfigExpanded(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [wsConfigExpanded]);
 
-  console.log('DexScanContent pools from context:', Object.keys(pools).length, pools);
-  
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex justify-between items-center relative mb-6 md:mb-0">
         <DexScanHeader />
       </div>
-      
+
       <div className="flex flex-col gap-4 mx-12">
         <div className="flex justify-between items-center">
-          <ViewSelector 
+          <ViewSelector
             activeTab={activeTab}
             setActiveTab={handleTabChange}
           />
-          
+
           {/* WebSocket Connection Indicator and Toggle */}
           <div className="relative z-10">
             <div className="flex flex-col items-end">
-              <Button 
+              <Button
                 ref={wsButtonRef}
-                variant="ghost" 
-                size="sm" 
+                variant="ghost"
+                size="sm"
                 className={`flex items-center ${isConnected ? 'text-green-500' : isReconnecting ? 'text-amber-500' : 'text-red-500'} text-xs md:text-sm`}
                 onClick={toggleWsConfig}
               >
@@ -194,10 +196,10 @@ const DexScanContentMain = () => {
                   <ChevronDown className="h-4 w-4 ml-1 xs:ml-2" />
                 )}
               </Button>
-              
+
               {/* Collapsible WebSocket Config */}
               {wsConfigExpanded && (
-                <div 
+                <div
                   ref={wsConfigRef}
                   className="mt-2 w-72 md:w-80 shadow-lg absolute top-10 right-0 z-20"
                 >
@@ -218,9 +220,9 @@ const DexScanContentMain = () => {
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
-                    
+
                     <div className="p-3">
-                      <WebSocketConfig 
+                      <WebSocketConfig
                         onConnect={connectToWebSocket}
                         defaultUrl={websocketUrl}
                         isConnected={isConnected}
@@ -235,13 +237,23 @@ const DexScanContentMain = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Render both views but control visibility with CSS */}
-        <div ref={graphContainerRef} style={{ display: activeTab === 'graph' ? 'block' : 'none' }}>
+        <div ref={graphContainerRef} style={
+          {
+            display: activeTab === 'graph' ? 'block' : 'none',
+            height: "100%",  // Increase from 500px
+            width: "100%",
+            position: "relative",
+            overflow: "hidden"  // Prevent scrollbars
+          }
+        }>
+          <GraphViewContent />
+          {/* <TestGraph /> */}
         </div>
-        
+
         <div ref={poolListContainerRef} style={{ display: activeTab === 'pools' ? 'block' : 'none' }}>
-          <ListView 
+          <ListView
             pools={Object.values(pools)}
             highlightedPoolId={highlightedPoolId}
             onPoolSelect={highlightPool}
