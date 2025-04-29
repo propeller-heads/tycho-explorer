@@ -17,11 +17,6 @@ export const callSimulationAPI = async (
   amount: number
 ): Promise<SimulationResponse | null> => {
   try {
-    console.log('Calling simulation API with:', {
-      sell_token: tokenInAddress,
-      pools: [poolId],
-      amount: amount
-    });
 
     const response = await fetch('http://localhost:3000/api/simulate',
       {
@@ -44,7 +39,6 @@ export const callSimulationAPI = async (
     }
 
     const data = await response.json();
-    console.log("Simulation API response:", data);
     return data;
   } catch (error) {
     console.error("Error calling simulation API:", error);
@@ -78,7 +72,7 @@ export const getLimits = async (
       pool_address
     };
     
-    console.log('Calling get_limits API with:', req);
+    console.log('Calling get_limits API with request:', req);
 
     const response = await fetch('http://localhost:3000/api/limits',
       {
@@ -91,11 +85,12 @@ export const getLimits = async (
     );
 
     if (!response.ok) {
+      console.error(`get_limits API call failed with status: ${response.status}`);
       throw new Error(`API call failed with status: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Get limits API response:", data);
+    console.log('get_limits API response:', data);
     return data;
   } catch (error) {
     console.error("Error calling get_limits API:", error);

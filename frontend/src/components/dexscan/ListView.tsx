@@ -18,7 +18,6 @@ interface PoolListViewProps {
   className?: string;
   highlightedPoolId?: string | null;
   onPoolSelect?: (poolId: string | null) => void;
-  shouldScrollToHighlighted?: boolean;
 }
 
 const POOLS_PER_PAGE = 10;
@@ -33,8 +32,8 @@ const COLUMNS = [
   { id: 'updatedAt', name: 'Updated At', type: 'date' }
 ];
 
-const ListView = ({ pools, className, highlightedPoolId, onPoolSelect, shouldScrollToHighlighted }: PoolListViewProps) => {
-  console.log("ListView is rendered with", pools.length, "pools", pools);
+const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
+  console.log("ListView is rendered with", pools.length, "pools", new Date().toISOString());
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
@@ -137,6 +136,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect, shouldScr
 
   // Sort & filter the pools before pagination
   const processedPools = useMemo(() => {
+    console.log("Processing pools in useMemo", new Date().toISOString());
     const filtered = filterPools(pools);
     return sortPools(filtered);
   }, [pools, filterPools, sortPools]);
@@ -171,24 +171,12 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect, shouldScr
       }
     }
   }, [highlightedPoolId, pools]);
-  
-  // Handle scrolling in a separate effect
-  useEffect(() => {
-    if (highlightedPoolId && shouldScrollToHighlighted) {
-      setTimeout(() => {
-        const highlightedElement = document.getElementById(`pool-row-${highlightedPoolId}`);
-        if (highlightedElement) {
-          highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 100);
-    }
-  }, [highlightedPoolId, shouldScrollToHighlighted]);
 
   const totalPages = Math.ceil(processedPools.length / POOLS_PER_PAGE);
   const startIndex = (currentPage - 1) * POOLS_PER_PAGE;
   const paginatedPools = processedPools.slice(startIndex, startIndex + POOLS_PER_PAGE);
   
-  console.log('Paginated pools for table:', paginatedPools.length, 'pools (page', currentPage, 'of', totalPages, ')');
+  // console.log('Paginated pools for table:', paginatedPools.length, 'pools (page', currentPage, 'of', totalPages, ')');
 
   const renderTokens = (pool: Pool) => {
     return pool.tokens.map(token => token.symbol).join(' / ');

@@ -37,7 +37,6 @@ const PoolTable: React.FC<PoolTableProps> = ({
   onFilter,
   filters = { tokens: '', protocol_system: '' }
 }) => {
-  console.log('PoolTable received pools:', paginatedPools?.length || 0, 'pools', paginatedPools);
   // Create ref for table container to scroll to highlighted row
   const tableRef = useRef<HTMLDivElement>(null);
 

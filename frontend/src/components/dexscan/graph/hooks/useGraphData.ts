@@ -6,6 +6,7 @@ export function useGraphData() {
   const { pools } = usePoolData();
   
   return useMemo(() => {
+    console.log("useGraphData running memoization", new Date().toISOString());
     const tokenMap = new Map();
     const poolEdges = [];
     
@@ -34,12 +35,6 @@ export function useGraphData() {
     });
 
     const tokenNodes = Array.from(tokenMap.values());
-
-    console.log("Transformed data:", {
-      nodes: tokenNodes,
-      edges: poolEdges,
-      poolsCount: Object.keys(pools).length
-    });
     
     return {
       tokenNodes,

@@ -8,8 +8,6 @@ import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
 import { Button } from '@/components/ui/button';
 import { Globe, PlugZap, ChevronDown, ChevronUp, X } from 'lucide-react';
 import GraphViewContent from './graph/GraphViewContent';
-import TestGraph from './graph/TestGraph';
-
 
 // Main content component using context
 const DexScanContentMain = () => {
@@ -17,10 +15,6 @@ const DexScanContentMain = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const tabParam = searchParams.get('tab');
-
-  // Get scrollToPool parameter from URL
-  const scrollToPoolParam = searchParams.get('scrollToPool') === 'true';
-  const [shouldScrollToPool, setShouldScrollToPool] = useState(scrollToPoolParam);
 
   const [activeTab, setActiveTab] = useState<'graph' | 'pools'>(
     tabParam === 'graph' ? 'graph' : 'pools'
@@ -38,7 +32,7 @@ const DexScanContentMain = () => {
   const {
     websocketUrl,
     isConnected,
-    pools,
+    poolsArray,
     highlightedPoolId,
     connectToWebSocket,
     highlightPool,
@@ -51,67 +45,38 @@ const DexScanContentMain = () => {
 
   // Update the URL when the tab changes
   const handleTabChange = (tab: 'graph' | 'pools') => {
-    console.log("tab: ", tab);
+    console.log("Changing tab to:", tab, new Date().toISOString());
+    
+    // Don't update state if we're already on this tab
+    if (activeTab === tab) {
+      console.log("Already on tab:", tab, "- skipping state update");
+      return;
+    }
+    
     setActiveTab(tab);
-
-    // Remove the scrollToPool parameter when changing tabs manually
-    // (we only want to scroll when coming from a "View pool" click)
-    if (searchParams.get('scrollToPool')) {
-      searchParams.delete('scrollToPool');
-      navigate(`/?${searchParams.toString()}`);
-    } else {
-      navigate(`/?tab=${tab}`);
-    }
-
-    // Smoothly transition between views
-    if (tab === 'graph' && graphContainerRef.current && poolListContainerRef.current) {
-      poolListContainerRef.current.style.display = 'none';
-      graphContainerRef.current.style.display = 'block';
-    } else if (tab === 'pools' && graphContainerRef.current && poolListContainerRef.current) {
-      graphContainerRef.current.style.display = 'none';
-      poolListContainerRef.current.style.display = 'block';
-    }
+    // DOM visibility is now handled only in the useEffect to avoid duplicate work
   };
 
   // Keep tab state in sync with URL and handle scroll parameter
   useEffect(() => {
+    console.log("URL tab sync effect running", tabParam, activeTab, new Date().toISOString());
     const newScrollToPool = searchParams.get('scrollToPool') === 'true';
 
+    // Only update the tab state if the URL parameter doesn't match the current state
     if (tabParam === 'graph' && activeTab !== 'graph') {
+      console.log("URL changing tab to graph");
       setActiveTab('graph');
-      // Reset scroll flag when switching to graph
-      setShouldScrollToPool(false);
     } else if (tabParam === 'pools' && activeTab !== 'pools') {
+      console.log("URL changing tab to pools");
       setActiveTab('pools');
       // Only set scrollToPool if we're switching to pools tab and parameter is present
-      setShouldScrollToPool(newScrollToPool);
     }
 
-    // If we're already on the pools tab and scrollToPool was just added to URL
-    if (activeTab === 'pools' && newScrollToPool && !shouldScrollToPool) {
-      setShouldScrollToPool(true);
-    }
-  }, [tabParam, searchParams, activeTab, shouldScrollToPool]);
-
-  // Reset scroll flag after it's been used
-  useEffect(() => {
-    if (shouldScrollToPool) {
-      // Reset the flag after a short delay to ensure the scrolling has time to happen
-      const timer = setTimeout(() => {
-        setShouldScrollToPool(false);
-        // Remove the parameter from URL if it's still there
-        if (searchParams.get('scrollToPool')) {
-          searchParams.delete('scrollToPool');
-          navigate(`/?${searchParams.toString()}`, { replace: true });
-        }
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [shouldScrollToPool, searchParams, navigate]);
+  }, [tabParam, searchParams]);
 
   // Initialize view visibility based on active tab
   useEffect(() => {
+    console.log("View visibility effect running for tab:", activeTab, new Date().toISOString());
     if (graphContainerRef.current && poolListContainerRef.current) {
       if (activeTab === 'graph') {
         poolListContainerRef.current.style.display = 'none';
@@ -254,10 +219,9 @@ const DexScanContentMain = () => {
 
         <div ref={poolListContainerRef} style={{ display: activeTab === 'pools' ? 'block' : 'none' }}>
           <ListView
-            pools={Object.values(pools)}
+            pools={poolsArray}
             highlightedPoolId={highlightedPoolId}
             onPoolSelect={highlightPool}
-            shouldScrollToHighlighted={shouldScrollToPool}
           />
         </div>
       </div>

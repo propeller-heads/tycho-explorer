@@ -36,7 +36,7 @@ const networkOptions = {
     minVelocity: 0.75 // System considered stable once nodes move slower than this
   },
   layout: {
-    improvedLayout: true // Enable improved layout for better initial positions
+    improvedLayout: false
   }
 };
 
@@ -52,11 +52,6 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolCo
   
   useEffect(() => {
     if (!containerRef.current) return;
-
-    console.log("Container dimensions:", {
-      width: containerRef.current.clientWidth,
-      height: containerRef.current.clientHeight
-    });
     
     // Create datasets
     const nodes = new DataSet(tokenNodes);
@@ -72,27 +67,27 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolCo
       networkOptions
     );
     
-    // Stabilize the network first
-    network.once('stabilizationIterationsDone', () => {
-      // Find important nodes (like WETH) and fix their position
-      tokenNodes.forEach(node => {
-        if (node.label === 'WETH' || node.label === 'ETH' || node.label === 'USDC' || node.label === 'USDT') {
-          // Fix position of key nodes after initial stabilization
-          network.body.data.nodes.update({
-            id: node.id,
-            fixed: { x: true, y: true }
-          });
-        }
-      });
+    // // Stabilize the network first
+    // network.once('stabilizationIterationsDone', () => {
+    //   // Find important nodes (like WETH) and fix their position
+    //   tokenNodes.forEach(node => {
+    //     if (node.label === 'WETH' || node.label === 'ETH' || node.label === 'USDC' || node.label === 'USDT') {
+    //       // Fix position of key nodes after initial stabilization
+    //       network.body.data.nodes.update({
+    //         id: node.id,
+    //         fixed: { x: true, y: true }
+    //       });
+    //     }
+    //   });
       
-      // Fine-tune physics once the network is stable
-      network.setOptions({
-        physics: {
-          stabilization: false, // Disable further stabilization
-          minVelocity: 0.5 // Lower velocity threshold for stability
-        }
-      });
-    });
+    //   // Fine-tune physics once the network is stable
+    //   network.setOptions({
+    //     physics: {
+    //       stabilization: false, // Disable further stabilization
+    //       minVelocity: 0.5 // Lower velocity threshold for stability
+    //     }
+    //   });
+    // });
     
     return () => { network.destroy(); };
   }, [tokenNodes, poolEdges, protocolColorMap]);

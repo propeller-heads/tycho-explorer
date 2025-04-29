@@ -27,7 +27,6 @@ const TestGraph = () => {
         { nodes, edges },
         {}
       );
-      console.log("Network created successfully:", network);
     } catch (error) {
       console.error("Error creating network:", error);
     }

@@ -10,6 +10,7 @@ interface WebSocketMessage {
 
 interface PoolDataContextValue {
   pools: Record<string, Pool>;
+  poolsArray: Pool[]; // Add memoized array to avoid Object.values() in consuming components
   isConnected: boolean;
   isUsingMockData: boolean;
   highlightedPoolId: string | null;
@@ -198,7 +199,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       );
     });
 
-    console.log('Loading mock data with', Object.keys(mockData).length, 'pools');
+    // console.log('Loading mock data with', Object.keys(mockData).length, 'pools');
     
     dispatch({ 
       type: 'RESET_TO_MOCK_DATA', 
@@ -209,7 +210,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   // Update the reconnection function to update UI state
   const attemptReconnect = useCallback(() => {
     if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-      console.log('Max reconnection attempts reached. Using mock data.');
+      // console.log('Max reconnection attempts reached. Using mock data.');
       setIsReconnecting(false);
       setReconnectAttempt(0);
       dispatch({ 
@@ -224,7 +225,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
 
     if (state.websocketUrl) {
       const currentAttempt = reconnectAttemptsRef.current + 1;
-      console.log(`Attempting to reconnect (${currentAttempt}/${MAX_RECONNECT_ATTEMPTS})...`);
+      // console.log(`Attempting to reconnect (${currentAttempt}/${MAX_RECONNECT_ATTEMPTS})...`);
       setIsReconnecting(true);
       setReconnectAttempt(currentAttempt);
       connectToWebSocket(state.websocketUrl);
@@ -265,7 +266,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_WEBSOCKET_URL', payload: url });
 
       ws.onopen = () => {
-        console.log('WebSocket connected to:', url);
+        // console.log('WebSocket connected to:', url);
         setIsReconnecting(false);
         setReconnectAttempt(0);
         
@@ -289,7 +290,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         try {
           const data: WebSocketMessage = JSON.parse(event.data);
           
-          console.log('WebSocket message received:', data);
+          // console.log('WebSocket message received:', data);
 
           // Update block number if provided
           if (data.block_number) {
@@ -346,7 +347,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       };
 
       ws.onclose = () => {
-        console.log('WebSocket disconnected');
+        // console.log('WebSocket disconnected');
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: false, isUsingMockData: true } 
@@ -380,7 +381,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     
     if (hasPoolUpdates && !updateScheduled) {
       setUpdateScheduled(true);
-      console.log('Scheduling update with pending pools:', Object.keys(state.pendingUpdates.pools).length);
+      // console.log('Scheduling update with pending pools:', Object.keys(state.pendingUpdates.pools).length);
       
       // Use requestAnimationFrame to batch updates
       requestAnimationFrame(() => {
@@ -389,7 +390,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
             ...state.pools,
             ...state.pendingUpdates.pools
           };
-          console.log('Applying pool updates, new pool count:', Object.keys(updatedPools).length);
+          // console.log('Applying pool updates, new pool count:', Object.keys(updatedPools).length);
           dispatch({
             type: 'SET_POOLS',
             payload: updatedPools
@@ -424,7 +425,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SET_BLOCK_NUMBER', payload: state.blockNumber + 1 });
         
         // Include chain info in mock data processing
-        console.log(`Mock block update for chain: ${state.selectedChain}`);
+        // console.log(`Mock block update for chain: ${state.selectedChain}`);
       }, 5000);
     }
     
@@ -460,25 +461,42 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
   }, []);
 
+  // Add performance logging
+  useEffect(() => {
+    console.log("PoolDataContext pools changed, count:", Object.keys(state.pools).length, new Date().toISOString());
+  }, [state.pools]);
+
+  useEffect(() => {
+    console.log("PoolDataContext blockNumber changed:", state.blockNumber, new Date().toISOString());
+  }, [state.blockNumber]);
+
+  // Object.values is expensive for large objects - memoize pools array 
+  const poolsArray = useMemo(() => Object.values(state.pools), [state.pools]);
+
   // Memoize the context value to prevent unnecessary re-renders
-  const value = useMemo(() => ({
-    pools: state.pools,
-    isConnected: state.isConnected,
-    isUsingMockData: state.isUsingMockData,
-    highlightedPoolId: state.highlightedPoolId,
-    websocketUrl: state.websocketUrl,
-    blockNumber: state.blockNumber,
-    selectedChain: state.selectedChain,
-    connectToWebSocket,
-    disconnectWebSocket,
-    highlightPool,
-    isReconnecting,
-    reconnectAttempt,
-    maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
-    setSelectedChain,
-    availableChains: AVAILABLE_CHAINS
-  }), [
-    state.pools, 
+  const value = useMemo(() => {
+    console.log("Creating new PoolDataContext value", new Date().toISOString());
+    return {
+      pools: state.pools,
+      poolsArray,
+      isConnected: state.isConnected,
+      isUsingMockData: state.isUsingMockData,
+      highlightedPoolId: state.highlightedPoolId,
+      websocketUrl: state.websocketUrl,
+      blockNumber: state.blockNumber,
+      selectedChain: state.selectedChain,
+      connectToWebSocket,
+      disconnectWebSocket,
+      highlightPool,
+      isReconnecting,
+      reconnectAttempt,
+      maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
+      setSelectedChain,
+      availableChains: AVAILABLE_CHAINS
+    };
+  }, [
+    state.pools,
+    poolsArray,
     state.isConnected, 
     state.isUsingMockData,
     state.highlightedPoolId,
