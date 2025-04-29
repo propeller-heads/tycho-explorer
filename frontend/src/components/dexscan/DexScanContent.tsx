@@ -57,10 +57,8 @@ const DexScanContentMain = () => {
     // DOM visibility is now handled only in the useEffect to avoid duplicate work
   };
 
-  // Keep tab state in sync with URL and handle scroll parameter
   useEffect(() => {
     console.log("URL tab sync effect running", tabParam, activeTab, new Date().toISOString());
-    const newScrollToPool = searchParams.get('scrollToPool') === 'true';
 
     // Only update the tab state if the URL parameter doesn't match the current state
     if (tabParam === 'graph' && activeTab !== 'graph') {
@@ -69,7 +67,6 @@ const DexScanContentMain = () => {
     } else if (tabParam === 'pools' && activeTab !== 'pools') {
       console.log("URL changing tab to pools");
       setActiveTab('pools');
-      // Only set scrollToPool if we're switching to pools tab and parameter is present
     }
 
   }, [tabParam, searchParams]);

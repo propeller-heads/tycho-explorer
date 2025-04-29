@@ -40,21 +40,6 @@ const PoolTable: React.FC<PoolTableProps> = ({
   // Create ref for table container to scroll to highlighted row
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // Only scroll to highlighted pool when it's coming from outside (not user selection)
-  useEffect(() => {
-    if (highlightedPoolId && !selectedPoolId) {
-      setTimeout(() => {
-        const highlightedRow = document.getElementById(`pool-row-${highlightedPoolId}`);
-        if (highlightedRow && tableRef.current) {
-          highlightedRow.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }
-      }, 100);
-    }
-  }, [highlightedPoolId, selectedPoolId, paginatedPools]);
-
   return (
     <div className="w-full space-y-2">
       <div className="flex space-x-4">
