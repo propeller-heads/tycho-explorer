@@ -204,14 +204,13 @@ const DexScanContentMain = () => {
         <div ref={graphContainerRef} style={
           {
             display: activeTab === 'graph' ? 'block' : 'none',
-            height: "100%",  // Increase from 500px
+            height: "800px",
             width: "100%",
             position: "relative",
             overflow: "hidden"  // Prevent scrollbars
           }
         }>
           <GraphViewContent />
-          {/* <TestGraph /> */}
         </div>
 
         <div ref={poolListContainerRef} style={{ display: activeTab === 'pools' ? 'block' : 'none' }}>

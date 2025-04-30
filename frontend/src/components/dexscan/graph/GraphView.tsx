@@ -49,50 +49,60 @@ interface GraphViewProps {
 
 const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolColorMap }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const networkRef = useRef<Network | null>(null);
   
   useEffect(() => {
     if (!containerRef.current) return;
     
-    // Create datasets
-    const nodes = new DataSet(tokenNodes);
-    const edges = new DataSet(poolEdges.map(edge => ({
-      ...edge,
-      color: protocolColorMap[edge.protocol]?.color || '#aaaaaa'
-    })));
+    // Clean up previous network instance if it exists
+    if (networkRef.current) {
+      networkRef.current.destroy();
+      networkRef.current = null;
+    }
     
-    // Initialize network
-    const network = new Network(
-      containerRef.current,
-      { nodes, edges },
-      networkOptions
-    );
-    
-    // // Stabilize the network first
-    // network.once('stabilizationIterationsDone', () => {
-    //   // Find important nodes (like WETH) and fix their position
-    //   tokenNodes.forEach(node => {
-    //     if (node.label === 'WETH' || node.label === 'ETH' || node.label === 'USDC' || node.label === 'USDT') {
-    //       // Fix position of key nodes after initial stabilization
-    //       network.body.data.nodes.update({
-    //         id: node.id,
-    //         fixed: { x: true, y: true }
-    //       });
-    //     }
-    //   });
+    // Only create network if we have data to display
+    if (tokenNodes.length > 0 && poolEdges.length > 0) {
+      // Create datasets
+      const nodes = new DataSet(tokenNodes);
+      const edges = new DataSet(poolEdges.map(edge => ({
+        ...edge,
+        color: protocolColorMap[edge.protocol]?.color || '#aaaaaa'
+      })));
       
-    //   // Fine-tune physics once the network is stable
-    //   network.setOptions({
-    //     physics: {
-    //       stabilization: false, // Disable further stabilization
-    //       minVelocity: 0.5 // Lower velocity threshold for stability
-    //     }
-    //   });
-    // });
+      // Initialize network
+      const network = new Network(
+        containerRef.current,
+        { nodes, edges },
+        networkOptions
+      );
+      
+      // Store network reference
+      networkRef.current = network;
+      
+      // Optional: Fix positions of key tokens after stabilization
+      network.once('stabilizationIterationsDone', () => {
+        // Find important nodes (like WETH) and fix their position
+        tokenNodes.forEach(node => {
+          if (node.label === 'WETH' || node.label === 'ETH' || node.label === 'USDC' || node.label === 'USDT') {
+            // Fix position of key nodes after initial stabilization
+            network.body.data.nodes.update({
+              id: node.id,
+              fixed: { x: true, y: true }
+            });
+          }
+        });
+      });
+    }
     
-    return () => { network.destroy(); };
+    return () => { 
+      if (networkRef.current) {
+        networkRef.current.destroy();
+        networkRef.current = null;
+      }
+    };
   }, [tokenNodes, poolEdges, protocolColorMap]);
   
-  return <div ref={containerRef} style={{ height: "1000px", width: "100%", border: "1px solid white" }} />;
+  return <div ref={containerRef} style={{ height: "700px", width: "100%", border: "1px solid transparent" }} />;
 };
 
 export default GraphView;
