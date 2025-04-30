@@ -36,29 +36,48 @@ const PoolGraphView: React.FC = () => {
       selectedTokens.includes(node.id)
     );
     
-    // 2. First collect all possible edges between selected tokens
+    // 2. Filter to pools between selected tokens
     const possibleEdges = poolEdges.filter(edge => 
       selectedTokens.includes(edge.from) && selectedTokens.includes(edge.to)
     );
     
-    // 3. Classify edges based on protocol selection
-    const processedEdges = possibleEdges.map(edge => {
-      // Clone the edge to avoid modifying the original
-      const newEdge = { ...edge };
-      
-      // Set edge color based on protocol selection
-      if (selectedProtocols.length > 0 && selectedProtocols.includes(edge.protocol)) {
-        // Case: Edge belongs to a selected protocol - light blue
-        newEdge.color = '#64B5F6'; // Light blue
-        newEdge.width = 3;
-      } else {
-        // Case: Edge connects selected tokens but protocol is not selected - light gray
-        newEdge.color = '#D3D3D3'; // Light gray
-        newEdge.width = 2;
+    // 3. Group pools by token pairs and select one edge per pair
+    const finalEdges = [];
+    const tokenPairsMap = new Map();
+    
+    // Group edges by token pairs
+    possibleEdges.forEach(edge => {
+      const tokenPair = [edge.from, edge.to].sort().join('-');
+      if (!tokenPairsMap.has(tokenPair)) {
+        tokenPairsMap.set(tokenPair, []);
+      }
+      tokenPairsMap.get(tokenPair).push(edge);
+    });
+    
+    // Process each token pair
+    tokenPairsMap.forEach((edges, tokenPair) => {
+      // Case 1: If any selected protocol has an edge for this pair, show it in blue
+      if (selectedProtocols.length > 0) {
+        const selectedProtocolEdge = edges.find(edge => selectedProtocols.includes(edge.protocol));
+        if (selectedProtocolEdge) {
+          finalEdges.push({
+            ...selectedProtocolEdge,
+            color: '#64B5F6', // Blue
+            width: 3
+          });
+          return; // Skip to next token pair
+        }
       }
       
-      return newEdge;
+      // Case 2: No protocols selected OR no edge belongs to selected protocols, show any edge in gray
+      finalEdges.push({
+        ...edges[0], // Just take the first edge
+        color: '#D3D3D3', // Gray
+        width: 2
+      });
     });
+    
+    const processedEdges = finalEdges;
     
     return {
       nodes: filteredNodes,
