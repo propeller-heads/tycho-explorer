@@ -124,7 +124,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   onChange={(e) => setTokenSearchQuery(e.target.value)}
                 />
               </div>
-              <ScrollArea className="max-h-60">
+              <ScrollArea className="max-h-[240px] overflow-y-auto">
                 {filteredTokens.length > 0 ? (
                   filteredTokens.map(token => (
                     <div 
@@ -199,7 +199,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-full p-0">
-              <ScrollArea className="max-h-60">
+              <ScrollArea className="max-h-[240px] overflow-y-auto">
                 {sortedProtocols.map(protocol => (
                   <div 
                     key={protocol} 
