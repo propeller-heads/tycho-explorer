@@ -204,7 +204,7 @@ const DexScanContentMain = () => {
         <div ref={graphContainerRef} style={
           {
             display: activeTab === 'graph' ? 'block' : 'none',
-            height: "800px",
+            height: "calc(100vh - 150px)", // Dynamic height based on viewport
             width: "100%",
             position: "relative",
             overflow: "hidden"  // Prevent scrollbars

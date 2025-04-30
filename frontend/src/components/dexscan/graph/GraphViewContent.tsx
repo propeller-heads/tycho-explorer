@@ -112,7 +112,7 @@ const PoolGraphView: React.FC = () => {
   }, [filteredData, selectedTokens, selectedProtocols, shouldRender]);
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ height: "100%" }}>
       <GraphControls 
         tokenList={tokenNodes}
         protocols={uniqueProtocols}
@@ -137,7 +137,7 @@ const PoolGraphView: React.FC = () => {
           />
         </>
       ) : (
-        <div className="flex items-center justify-center h-[600px] border rounded-md bg-muted/20">
+        <div className="flex items-center justify-center h-full border rounded-md bg-muted/20" style={{ minHeight: "600px" }}>
           <p className="text-muted-foreground text-center">
             Select tokens and/or protocols, then click "Render Graph" to visualize connections
           </p>
