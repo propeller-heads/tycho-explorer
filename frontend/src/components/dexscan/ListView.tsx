@@ -188,8 +188,22 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   };
 
   const renderFee = (pool: Pool) => {
+    // Special case for Uniswap V4 pools
+    if (pool.protocol_system === 'uniswap_v4' && pool.static_attributes['key_lp_fee']) {
+      const feeHex = pool.static_attributes['key_lp_fee'];
+      const feeValue = parseInt(feeHex, 16) / 10000;
+      return `${feeValue}%`;
+    }
+    
+    // Regular case for other protocols
     const feeHex = pool.static_attributes.fee;
     const feeValue = parseInt(feeHex, 16) / 10000;
+    
+    if (isNaN(feeValue)) {
+      console.log('Invalid fee value:', pool.id, 'Fee hex value:', feeHex, 'static_attributes: ', pool.static_attributes);
+      return 'NaN%';
+    }
+    
     return `${feeValue}%`;
   };
 
