@@ -21,7 +21,7 @@ interface PoolTableProps {
   sortConfig?: { column: string; direction: 'asc' | 'desc' };
   onSort?: (column: string) => void;
   onFilter?: (key: string, value: string) => void;
-  filters?: { tokens: string; protocol_system: string };
+  filters?: { tokens: string; protocol_system: string; poolId: string };
 }
 
 const PoolTable: React.FC<PoolTableProps> = ({ 
@@ -35,7 +35,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
   sortConfig = { column: 'id', direction: 'asc' },
   onSort,
   onFilter,
-  filters = { tokens: '', protocol_system: '' }
+  filters = { tokens: '', protocol_system: '', poolId: '' }
 }) => {
   // Create ref for table container to scroll to highlighted row
   const tableRef = useRef<HTMLDivElement>(null);
@@ -43,6 +43,15 @@ const PoolTable: React.FC<PoolTableProps> = ({
   return (
     <div className="w-full space-y-2">
       <div className="flex space-x-4">
+        <div className="relative flex-1">
+          <Input
+            placeholder="Filter by pool ID/address..."
+            value={filters.poolId}
+            onChange={(e) => onFilter && onFilter('poolId', e.target.value)}
+            className="pl-8"
+          />
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        </div>
         <div className="relative flex-1">
           <Input
             placeholder="Filter by tokens..."

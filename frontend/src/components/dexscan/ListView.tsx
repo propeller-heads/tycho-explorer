@@ -43,7 +43,8 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   });
   const [filters, setFilters] = useState({
     tokens: '',
-    protocol_system: ''
+    protocol_system: '',
+    poolId: ''
   });
 
   const uniqueProtocols = useMemo(() =>
@@ -130,7 +131,11 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
       const protocolMatch = !filters.protocol_system || 
         pool.protocol_system.toLowerCase().includes(filters.protocol_system.toLowerCase());
       
-      return tokenMatch && protocolMatch;
+      // Filter by pool ID/address
+      const poolIdMatch = !filters.poolId || 
+        pool.id.toLowerCase().includes(filters.poolId.toLowerCase());
+      
+      return tokenMatch && protocolMatch && poolIdMatch;
     });
   }, [filters]);
 
