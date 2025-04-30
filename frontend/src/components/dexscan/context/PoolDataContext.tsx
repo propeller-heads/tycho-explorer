@@ -290,7 +290,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         try {
           const data: WebSocketMessage = JSON.parse(event.data);
           
-          // console.log('WebSocket message received:', data);
+          console.log('WebSocket message received:', data);
 
           // Update block number if provided
           if (data.block_number) {
