@@ -123,8 +123,20 @@ const convertWebSocketPool = (
   pool: WebSocketPool, 
   spotPrices: Record<string, number>
 ): Pool => {
-  return {
+  // Create a modified copy of the pool with potentially updated token symbols
+  const modifiedPool = {
     ...pool,
+    tokens: pool.tokens.map(token => {
+      // If token symbol is all zeros (like "0x0000..."), replace it with "ETH"
+      if (token.symbol && /^0x0+$/.test(token.symbol)) {
+        return { ...token, symbol: "ETH" };
+      }
+      return token;
+    })
+  };
+
+  return {
+    ...modifiedPool,
     spotPrice: spotPrices[pool.id] || 0, // Use spot price from map if available
     updatedAt: new Date().toISOString().slice(0, 19)
   } as unknown as Pool;
