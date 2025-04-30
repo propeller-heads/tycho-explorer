@@ -2,7 +2,6 @@
 import React, { useState, useMemo } from 'react';
 import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
-import { protocolColorMap } from './protocolColors';
 import { GraphControls } from './GraphControls';
 
 const PoolGraphView: React.FC = () => {
@@ -28,44 +27,42 @@ const PoolGraphView: React.FC = () => {
       return { nodes: [], edges: [] };
     }
     
-    if (selectedTokens.length === 0 && selectedProtocols.length === 0) {
+    if (selectedTokens.length === 0) {
       return { nodes: [], edges: [] };
     }
     
-    let filteredEdges = [...poolEdges];
-    let relevantNodeIds = new Set<string>();
+    // 1. Only include nodes that are explicitly selected in the token menu
+    const filteredNodes = tokenNodes.filter(node => 
+      selectedTokens.includes(node.id)
+    );
     
-    // Filter by protocols if any are selected
-    if (selectedProtocols.length > 0) {
-      filteredEdges = filteredEdges.filter(edge => 
-        selectedProtocols.includes(edge.protocol)
-      );
-    }
+    // 2. First collect all possible edges between selected tokens
+    const possibleEdges = poolEdges.filter(edge => 
+      selectedTokens.includes(edge.from) && selectedTokens.includes(edge.to)
+    );
     
-    // Filter by tokens if any are selected
-    if (selectedTokens.length > 0) {
-      filteredEdges = filteredEdges.filter(edge => 
-        selectedTokens.includes(edge.from) || selectedTokens.includes(edge.to)
-      );
+    // 3. Classify edges based on protocol selection
+    const processedEdges = possibleEdges.map(edge => {
+      // Clone the edge to avoid modifying the original
+      const newEdge = { ...edge };
       
-      // Add selected tokens to the relevant nodes
-      selectedTokens.forEach(tokenId => {
-        relevantNodeIds.add(tokenId);
-      });
-    }
-    
-    // Collect all relevant node IDs from remaining edges
-    filteredEdges.forEach(edge => {
-      relevantNodeIds.add(edge.from);
-      relevantNodeIds.add(edge.to);
+      // Set edge color based on protocol selection
+      if (selectedProtocols.length > 0 && selectedProtocols.includes(edge.protocol)) {
+        // Case: Edge belongs to a selected protocol - light blue
+        newEdge.color = '#64B5F6'; // Light blue
+        newEdge.width = 3;
+      } else {
+        // Case: Edge connects selected tokens but protocol is not selected - light gray
+        newEdge.color = '#D3D3D3'; // Light gray
+        newEdge.width = 2;
+      }
+      
+      return newEdge;
     });
-    
-    // Filter nodes to only those that are used in edges
-    const filteredNodes = tokenNodes.filter(node => relevantNodeIds.has(node.id));
     
     return {
       nodes: filteredNodes,
-      edges: filteredEdges
+      edges: processedEdges
     };
   }, [tokenNodes, poolEdges, selectedTokens, selectedProtocols, shouldRender]);
   
@@ -118,7 +115,6 @@ const PoolGraphView: React.FC = () => {
           <GraphView
             tokenNodes={filteredData.nodes}
             poolEdges={filteredData.edges}
-            protocolColorMap={protocolColorMap}
           />
         </>
       ) : (

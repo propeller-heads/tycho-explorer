@@ -6,7 +6,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Search, ChevronsUpDown, X } from 'lucide-react';
-import { protocolColorMap } from './protocolColors';
 import { cn } from '@/lib/utils';
 
 interface GraphControlsProps {
@@ -98,6 +97,9 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               {selectedTokens.length} selected
             </span>
           </div>
+          <div className="text-xs text-muted-foreground mb-1">
+            Only selected tokens will appear on the graph
+          </div>
           <Popover open={tokenSearchOpen} onOpenChange={setTokenSearchOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -182,6 +184,9 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               {selectedProtocols.length} selected
             </span>
           </div>
+          <div className="text-xs text-muted-foreground mb-1">
+            Selected protocol connections will appear in blue
+          </div>
           <Popover open={protocolSearchOpen} onOpenChange={setProtocolSearchOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -212,12 +217,8 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                     />
                     <label 
                       htmlFor={`protocol-${protocol}`}
-                      className="ml-2 text-sm cursor-pointer flex items-center flex-grow"
+                      className="ml-2 text-sm cursor-pointer flex-grow"
                     >
-                      <div 
-                        className="w-3 h-3 rounded-full mr-2" 
-                        style={{ backgroundColor: protocolColorMap[protocol]?.color || '#aaaaaa' }}
-                      />
                       {protocol}
                     </label>
                   </div>
@@ -277,10 +278,6 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           ))}
           {selectedProtocols.map(protocol => (
             <Badge key={`protocol-${protocol}`} variant="outline" className="flex items-center gap-1">
-              <div 
-                className="w-2 h-2 rounded-full mr-1" 
-                style={{ backgroundColor: protocolColorMap[protocol]?.color || '#aaaaaa' }}
-              />
               {protocol}
               <X 
                 className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 

@@ -43,11 +43,10 @@ const networkOptions = {
 // Props interface
 interface GraphViewProps {
   tokenNodes: Array<{id: string; label: string}>;
-  poolEdges: Array<{id: string; from: string; to: string; protocol: string; width?: number}>;
-  protocolColorMap: Record<string, {color: string}>;
+  poolEdges: Array<{id: string; from: string; to: string; protocol: string; width?: number; color?: string}>;
 }
 
-const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolColorMap }) => {
+const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<Network | null>(null);
   
@@ -64,10 +63,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolCo
     if (tokenNodes.length > 0 && poolEdges.length > 0) {
       // Create datasets
       const nodes = new DataSet(tokenNodes);
-      const edges = new DataSet(poolEdges.map(edge => ({
-        ...edge,
-        color: protocolColorMap[edge.protocol]?.color || '#aaaaaa'
-      })));
+      const edges = new DataSet(poolEdges);
       
       // Initialize network
       const network = new Network(
@@ -78,20 +74,6 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolCo
       
       // Store network reference
       networkRef.current = network;
-      
-      // Optional: Fix positions of key tokens after stabilization
-      network.once('stabilizationIterationsDone', () => {
-        // Find important nodes (like WETH) and fix their position
-        tokenNodes.forEach(node => {
-          if (node.label === 'WETH' || node.label === 'ETH' || node.label === 'USDC' || node.label === 'USDT') {
-            // Fix position of key nodes after initial stabilization
-            network.body.data.nodes.update({
-              id: node.id,
-              fixed: { x: true, y: true }
-            });
-          }
-        });
-      });
     }
     
     return () => { 
@@ -100,7 +82,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, protocolCo
         networkRef.current = null;
       }
     };
-  }, [tokenNodes, poolEdges, protocolColorMap]);
+  }, [tokenNodes, poolEdges]);
   
   return <div ref={containerRef} style={{ height: "700px", width: "100%", border: "1px solid transparent" }} />;
 };
