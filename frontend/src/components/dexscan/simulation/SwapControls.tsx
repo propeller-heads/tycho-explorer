@@ -76,6 +76,7 @@ export const SwapControls = ({
         );
         
         if (limitsResult) {
+          console.log('limitResult: ', limitsResult);
           setLimits(limitsResult);
         }
       } catch (error) {
@@ -109,7 +110,7 @@ export const SwapControls = ({
   const updateAmountFromSlider = (position: number, currentLimits: LimitsResponse | null = limits) => {
     if (!currentLimits) return;
     
-    const max = parseFloat(currentLimits.max_amount);
+    const max = parseFloat(currentLimits.max_output);
     if (isNaN(max)) return;
     
     if (position === 0) {
@@ -174,7 +175,7 @@ export const SwapControls = ({
       
       // Update slider value based on input if we have limits
       if (limits) {
-        const max = parseFloat(limits.max_amount);
+        const max = parseFloat(limits.max_output);
         
         if (numValue <= 0) {
           // If input is 0 or negative, set slider to 0
@@ -204,6 +205,7 @@ export const SwapControls = ({
       );
 
       if (result && result.success) {
+        console.log('simulation result: ', result);
         setApiSimulationResult(result);
       }
     } catch (error) {
@@ -269,7 +271,7 @@ export const SwapControls = ({
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Min: 0</span>
-              <span>Max: {parseFloat(limits.max_amount).toFixed(6)}</span>
+              <span>Max: {parseFloat(limits.max_output).toFixed(6)}</span>
             </div>
           </div>
         ) : (

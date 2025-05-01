@@ -48,8 +48,8 @@ export const callSimulationAPI = async (
 
 // Interface for limits response
 export interface LimitsResponse {
-  min_amount: string;
-  max_amount: string;
+  max_input: string;
+  max_output: string;
 }
 
 // Interface for limits request
@@ -66,13 +66,14 @@ export const getLimits = async (
   pool_address: string
 ): Promise<LimitsResponse | null> => {
   try {
+    // Flip tokens to get reliable max_output
     const req: LimitsRequest = {
-      sell_token,
-      buy_token,
+      sell_token: buy_token,  // Flipped
+      buy_token: sell_token,  // Flipped
       pool_address
     };
     
-    console.log('Calling get_limits API with request:', req);
+    console.log('Calling get_limits API with flipped tokens for reliable max_output:', req);
 
     const response = await fetch('http://localhost:3000/api/limits',
       {
