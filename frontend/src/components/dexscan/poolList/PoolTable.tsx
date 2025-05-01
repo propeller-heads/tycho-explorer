@@ -169,9 +169,9 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         } else if (column.id === 'protocol_system') {
                           displayValue = pool.protocol_system;
                         } else if (column.id === 'created_at') {
-                          displayValue = new Date(pool.created_at).toLocaleString();
+                          displayValue = new Date(pool.created_at).toLocaleString() + ' UTC';
                         } else if (column.id === 'updatedAt') {
-                          displayValue = new Date(pool.updatedAt).toLocaleString();
+                          displayValue = new Date(pool.updatedAt).toLocaleString() + ' UTC';
                         } else if (column.id === 'spotPrice') {
                           displayValue = pool.spotPrice.toLocaleString(undefined, { 
                             minimumFractionDigits: 2,
