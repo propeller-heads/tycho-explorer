@@ -90,8 +90,23 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
         valueA = a.protocol_system;
         valueB = b.protocol_system;
       } else if (sortConfig.column === 'static_attributes.fee') {
-        valueA = a.static_attributes?.fee || 0;
-        valueB = b.static_attributes?.fee || 0;
+        // Convert fee from hex to numeric value for sorting
+        const getFeeValue = (pool: Pool): number => {
+          // Special case for Uniswap V4 pools
+          if (pool.protocol_system === 'uniswap_v4' && pool.static_attributes['key_lp_fee']) {
+            const feeHex = pool.static_attributes['key_lp_fee'];
+            return parseInt(feeHex, 16) / 10000;
+          }
+          
+          // Regular case for other protocols
+          const feeHex = pool.static_attributes?.fee;
+          if (!feeHex) return 0;
+          const feeValue = parseInt(feeHex, 16) / 10000;
+          return isNaN(feeValue) ? 0 : feeValue;
+        };
+        
+        valueA = getFeeValue(a);
+        valueB = getFeeValue(b);
       } else if (sortConfig.column === 'spotPrice') {
         valueA = a.spotPrice || 0;
         valueB = b.spotPrice || 0;
@@ -107,13 +122,20 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
       }
       
       // Compare values
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
+      if (sortConfig.column === 'static_attributes.fee' || sortConfig.column === 'spotPrice') {
+        // Ensure numerical comparison for fee and spot price
+        const numA = typeof valueA === 'number' ? valueA : 0;
+        const numB = typeof valueB === 'number' ? valueB : 0;
+        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
+      } else if (sortConfig.column === 'created_at' || sortConfig.column === 'updatedAt') {
+        // Already converted to timestamps above
+        return sortConfig.direction === 'asc' ? valueA - valueB : valueB - valueA;
+      } else if (typeof valueA === 'string' && typeof valueB === 'string') {
+        // Lexicographical comparison for strings
         const result = valueA.localeCompare(valueB);
         return sortConfig.direction === 'asc' ? result : -result;
       } else {
-        const numA = Number(valueA) || 0;
-        const numB = Number(valueB) || 0;
-        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
+          throw new Error('ERR_BUG');
       }
     });
   }, [sortConfig]);
