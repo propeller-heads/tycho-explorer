@@ -41,7 +41,6 @@ export const callSimulationAPI = async (
     const data = await response.json();
     return data;
   } catch (error) {
-    alert(`Error calling simulation API: ${error}`);
     console.error("Error calling simulation API:", error);
     return null;
   }
@@ -95,7 +94,6 @@ export const getLimits = async (
     console.log('get_limits API response:', data);
     return data;
   } catch (error) {
-    alert(`Error calling get_limits API: ${error}`);
     console.error("Error calling get_limits API:", error);
     return null;
   }

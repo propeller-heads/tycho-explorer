@@ -175,7 +175,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         } else if (column.id === 'spotPrice') {
                           displayValue = pool.spotPrice.toLocaleString(undefined, { 
                             minimumFractionDigits: 2,
-                            maximumFractionDigits: 6
+                            maximumFractionDigits: 18
                           });
                         } else {
                           displayValue = value?.toString() || 'ERR';
