@@ -132,10 +132,13 @@ export const SwapControls = ({
   };
 
   const handleFlip = () => {
-    // Swap the selected indices
-    const tempIndex = selectedSourceIndex;
-    setSelectedSourceIndex(selectedTargetIndex);
-    setSelectedTargetIndex(tempIndex);
+    // Only swap if the tokens are different
+    if (selectedSourceIndex !== selectedTargetIndex) {
+      // Swap the selected indices
+      const tempIndex = selectedSourceIndex;
+      setSelectedSourceIndex(selectedTargetIndex);
+      setSelectedTargetIndex(tempIndex);
+    }
   };
 
   // Calculate slider position from amount (inverse of calculateAmountFromSliderPosition)
@@ -238,7 +241,11 @@ export const SwapControls = ({
             </SelectTrigger>
             <SelectContent>
               {tokens.map((token, index) => (
-                <SelectItem key={token.address || index} value={index.toString()}>
+                <SelectItem 
+                  key={token.address || index} 
+                  value={index.toString()}
+                  disabled={index === selectedTargetIndex}
+                >
                   {token.symbol}
                 </SelectItem>
               ))}
@@ -317,7 +324,11 @@ export const SwapControls = ({
             </SelectTrigger>
             <SelectContent>
               {tokens.map((token, index) => (
-                <SelectItem key={token.address || index} value={index.toString()}>
+                <SelectItem 
+                  key={token.address || index} 
+                  value={index.toString()}
+                  disabled={index === selectedSourceIndex}
+                >
                   {token.symbol}
                 </SelectItem>
               ))}

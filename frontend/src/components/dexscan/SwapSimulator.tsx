@@ -14,8 +14,19 @@ interface SwapSimulatorProps {
 
 const SwapSimulator = ({ poolId, protocol, tokens }: SwapSimulatorProps) => {
   const [amount, setAmount] = useState(1);
+  // Default to first token as source
   const [selectedSourceIndex, setSelectedSourceIndex] = useState(0);
-  const [selectedTargetIndex, setSelectedTargetIndex] = useState(tokens.length > 1 ? 1 : 0);
+  // Default to second token as target if available, otherwise use first non-source token
+  const [selectedTargetIndex, setSelectedTargetIndex] = useState(() => {
+    if (tokens.length > 1) {
+      return 1; // Use second token if available
+    } else if (tokens.length > 0) {
+      // If only one token type is available, we might need additional logic
+      // For now, we'll use the same token but this will be disabled in UI
+      return 0;
+    }
+    return 0; // Default fallback
+  });
   const [simulationResult, setSimulationResult] = useState<{
     amount: string;
     fee: string;
