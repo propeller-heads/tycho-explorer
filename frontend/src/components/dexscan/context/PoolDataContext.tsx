@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react';
 import { Pool, WebSocketPool } from '../types';
-import { mockPools } from '@/data/mockPools';
 
 interface WebSocketMessage {
   new_pairs?: Record<string, WebSocketPool>;
@@ -32,17 +31,16 @@ type PoolDataAction =
   | { type: 'SET_POOLS', payload: Record<string, Pool> }
   | { type: 'UPDATE_POOLS', payload: Record<string, Pool> }
   | { type: 'SET_HIGHLIGHTED_POOL', payload: string | null }
-  | { type: 'SET_CONNECTION_STATE', payload: { isConnected: boolean, isUsingMockData: boolean } }
+  | { type: 'SET_CONNECTION_STATE', payload: { isConnected: boolean } }
   | { type: 'SET_WEBSOCKET_URL', payload: string }
   | { type: 'SET_BLOCK_NUMBER', payload: number }
   | { type: 'SET_SELECTED_CHAIN', payload: string }
-  | { type: 'RESET_TO_MOCK_DATA', payload: { pools: Record<string, Pool> } };
+  | { type: 'RESET_STATE' };
 
 // Define the state interface
 interface PoolDataState {
   pools: Record<string, Pool>;
   isConnected: boolean;
-  isUsingMockData: boolean;
   highlightedPoolId: string | null;
   websocketUrl: string;
   blockNumber: number;
@@ -83,8 +81,7 @@ function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolData
     case 'SET_CONNECTION_STATE':
       return {
         ...state,
-        isConnected: action.payload.isConnected,
-        isUsingMockData: action.payload.isUsingMockData
+        isConnected: action.payload.isConnected
       };
     case 'SET_WEBSOCKET_URL':
       return {
@@ -101,12 +98,11 @@ function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolData
         ...state,
         selectedChain: action.payload
       };
-    case 'RESET_TO_MOCK_DATA':
+    case 'RESET_STATE':
       return {
         ...state,
-        pools: action.payload.pools,
+        pools: {},
         isConnected: false,
-        isUsingMockData: true,
         pendingUpdates: {
           pools: {}
         }
@@ -160,7 +156,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(poolDataReducer, {
     pools: {},
     isConnected: false,
-    isUsingMockData: true,
     highlightedPoolId: null,
     websocketUrl: savedWebSocketUrl,
     blockNumber: 0,
@@ -192,52 +187,27 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       setSocket(null);
       dispatch({ 
         type: 'SET_CONNECTION_STATE', 
-        payload: { isConnected: false, isUsingMockData: true } 
+        payload: { isConnected: false } 
       });
       
-      // When disconnected, load mock data
-      loadMockData();
+      // Reset state when disconnected
+      dispatch({ type: 'RESET_STATE' });
     }
   }, [socket]);
   
-  const loadMockData = useCallback(() => {
-    const mockData: Record<string, Pool> = {};
-    
-    // Create spot prices map for mock data
-    const mockSpotPrices: Record<string, number> = {};
-    mockPools.forEach(pool => {
-      mockSpotPrices[pool.id] = parseFloat(pool.spot_price || '0');
-    });
-
-    // Convert pools with spot prices
-    mockPools.forEach(pool => {
-      mockData[pool.id] = convertWebSocketPool(
-        pool as unknown as WebSocketPool, 
-        mockSpotPrices
-      );
-    });
-
-    // console.log('Loading mock data with', Object.keys(mockData).length, 'pools');
-    
-    dispatch({ 
-      type: 'RESET_TO_MOCK_DATA', 
-      payload: { pools: mockData } 
-    });
-  }, []);
   
   // Update the reconnection function to update UI state
   const attemptReconnect = useCallback(() => {
     if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-      // console.log('Max reconnection attempts reached. Using mock data.');
       setIsReconnecting(false);
       setReconnectAttempt(0);
       dispatch({ 
         type: 'SET_CONNECTION_STATE', 
-        payload: { isConnected: false, isUsingMockData: true } 
+        payload: { isConnected: false } 
       });
       
-      // Load mock data when max reconnection attempts reached
-      loadMockData();
+      // Reset state when max reconnection attempts reached
+      dispatch({ type: 'RESET_STATE' });
       return;
     }
 
@@ -249,7 +219,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       connectToWebSocket(state.websocketUrl);
       reconnectAttemptsRef.current = currentAttempt;
     }
-  }, [state.websocketUrl, loadMockData]);
+  }, [state.websocketUrl]);
   
   // Update the connection function to reset reconnection state
   const connectToWebSocket = useCallback((url: string, chain?: string) => {
@@ -291,7 +261,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         // Set connection state but don't clear existing pool data
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
-          payload: { isConnected: true, isUsingMockData: false } 
+          payload: { isConnected: true } 
         });
         
         // Reset reconnection attempts on successful connection
@@ -348,11 +318,11 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         console.error('WebSocket error:', error);
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
-          payload: { isConnected: false, isUsingMockData: true } 
+          payload: { isConnected: false } 
         });
         
-        // Load mock data on error
-        loadMockData();
+        // Reset state on error
+        dispatch({ type: 'RESET_STATE' });
         
         // Schedule reconnection attempt on error
         reconnectTimeoutRef.current = setTimeout(attemptReconnect, RECONNECT_INTERVAL);
@@ -362,11 +332,11 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         // console.log('WebSocket disconnected');
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
-          payload: { isConnected: false, isUsingMockData: true } 
+          payload: { isConnected: false } 
         });
         
-        // Load mock data on close
-        loadMockData();
+        // Reset state on close
+        dispatch({ type: 'RESET_STATE' });
         
         setSocket(null);
         // Schedule reconnection attempt on close
@@ -376,16 +346,16 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       console.error('Error connecting to WebSocket:', error);
       dispatch({ 
         type: 'SET_CONNECTION_STATE', 
-        payload: { isConnected: false, isUsingMockData: true } 
+        payload: { isConnected: false } 
       });
       
-      // Load mock data on connection error
-      loadMockData();
+      // Reset state on connection error
+      dispatch({ type: 'RESET_STATE' });
       
       // Schedule reconnection attempt on connection error
       reconnectTimeoutRef.current = setTimeout(attemptReconnect, RECONNECT_INTERVAL);
     }
-  }, [disconnectWebSocket, attemptReconnect, loadMockData]);
+  }, [disconnectWebSocket, attemptReconnect]);
   
   // Apply pending updates to the state at a controlled frequency
   useEffect(() => {
@@ -414,39 +384,31 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.pendingUpdates, state.pools, updateScheduled]);
 
-  // Load mock data on initial load or when switching to mock data mode
+  // Set a realistic block number on initial load if needed
   useEffect(() => {
-    // Only load mock data if we're using mock data and pools are empty or disconnected
-    if (state.isUsingMockData && (Object.keys(state.pools).length === 0 || !state.isConnected)) {
-      loadMockData();
-      
-      if (state.blockNumber === 0) {
-        // Start with a realistic block number
-        dispatch({ type: 'SET_BLOCK_NUMBER', payload: 17500000 });
-      }
+    if (state.blockNumber === 0 && !state.isConnected) {
+      // Start with a realistic block number
+      dispatch({ type: 'SET_BLOCK_NUMBER', payload: 17500000 });
     }
-  }, [state.isUsingMockData, state.pools, loadMockData, state.blockNumber, state.isConnected]);
+  }, [state.blockNumber, state.isConnected]);
 
-  // Add an effect to simulate block updates when using mock data
+  // Add an effect to simulate block updates when not connected
   useEffect(() => {
-    let mockBlockTimer: NodeJS.Timeout | null = null;
+    let blockTimer: NodeJS.Timeout | null = null;
     
-    if (state.isUsingMockData && state.blockNumber > 0) {
-      // Increment block number every 5 seconds
-      mockBlockTimer = setInterval(() => {
+    if (!state.isConnected && state.blockNumber > 0) {
+      // Increment block number every 5 seconds when not connected
+      blockTimer = setInterval(() => {
         dispatch({ type: 'SET_BLOCK_NUMBER', payload: state.blockNumber + 1 });
-        
-        // Include chain info in mock data processing
-        // console.log(`Mock block update for chain: ${state.selectedChain}`);
       }, 5000);
     }
     
     return () => {
-      if (mockBlockTimer) {
-        clearInterval(mockBlockTimer);
+      if (blockTimer) {
+        clearInterval(blockTimer);
       }
     };
-  }, [state.isUsingMockData, state.blockNumber, state.selectedChain]);
+  }, [state.isConnected, state.blockNumber]);
 
   // Add an effect to attempt connection on initial load
   useEffect(() => {
@@ -492,7 +454,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       pools: state.pools,
       poolsArray,
       isConnected: state.isConnected,
-      isUsingMockData: state.isUsingMockData,
+      isUsingMockData: false,
       highlightedPoolId: state.highlightedPoolId,
       websocketUrl: state.websocketUrl,
       blockNumber: state.blockNumber,
@@ -510,7 +472,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     state.pools,
     poolsArray,
     state.isConnected, 
-    state.isUsingMockData,
     state.highlightedPoolId,
     state.websocketUrl,
     state.blockNumber,
