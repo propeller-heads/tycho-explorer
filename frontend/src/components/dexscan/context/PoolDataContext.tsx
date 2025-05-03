@@ -170,6 +170,12 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     }
   });
   
+  // Create a ref to always access the latest state
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [updateScheduled, setUpdateScheduled] = useState(false);
   const reconnectAttemptsRef = useRef(0);
@@ -282,16 +288,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         setIsReconnecting(false);
         setReconnectAttempt(0);
         
-        // Clear all mock data when websocket is connected
+        // Set connection state but don't clear existing pool data
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: true, isUsingMockData: false } 
-        });
-        
-        // Clear out mock data by setting empty data objects
-        dispatch({
-          type: 'SET_POOLS',
-          payload: {}
         });
         
         // Reset reconnection attempts on successful connection
@@ -325,11 +325,11 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
           // Update existing pools with new spot prices
           if (spotPrices && Object.keys(spotPrices).length > 0) {
             Object.entries(spotPrices).forEach(([id, price]) => {
-              // Skip pools we've already processed from new_pairs
-              if (!poolUpdates[id] && state.pools[id]) {
+              if (!poolUpdates[id] && stateRef.current.pools[id]) {
                 poolUpdates[id] = {
-                  ...state.pools[id],
-                  spotPrice: price
+                  ...stateRef.current.pools[id],
+                  spotPrice: price,
+                  updatedAt: new Date().toISOString().slice(0, 19)
                 };
               }
             });
