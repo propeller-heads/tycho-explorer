@@ -22,18 +22,12 @@ interface SwapControlsProps {
   poolId: string;
 }
 
-// Helper function to format fee from hex
-const formatPoolFee = (feeHex: string): string => {
-  if (!feeHex) return '0%';
-  try {
-    // Convert hex to decimal and divide by 10000 for percentage
-    const feeValue = parseInt(feeHex, 16) / 10000;
-    return `${feeValue}%`;
-  } catch (error) {
-    console.error("Error formatting fee:", error);
-    return '0%';
-  }
-};
+// Import the fee parsing function from ListView
+import { parsePoolFee, parseFeeHexValue } from '../ListView';
+
+// Using the shared utility functions from ListView
+// parsePoolFee - parses pool fee based on protocol type
+// parseFeeHexValue - directly parses hex fee values
 
 export const SwapControls = ({
   amount,
@@ -57,8 +51,9 @@ export const SwapControls = ({
 
   // Get the pool fee from pool state when poolId changes
   useEffect(() => {
-    if (poolId && pools[poolId] && pools[poolId].static_attributes?.fee) {
-      setPoolFee(formatPoolFee(pools[poolId].static_attributes.fee));
+    if (poolId && pools[poolId]) {
+      const poolFeeValue = parsePoolFee(pools[poolId]);
+      setPoolFee(`${poolFeeValue}%`);
     }
   }, [poolId, pools]);
 

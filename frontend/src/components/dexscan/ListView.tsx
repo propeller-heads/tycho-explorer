@@ -33,8 +33,6 @@ const COLUMNS = [
 ];
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
-  console.log("ListView is rendered with", pools.length, "pools", new Date().toISOString());
-
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [sortConfig, setSortConfig] = useState<{column: string, direction: 'asc' | 'desc'}>({
@@ -90,23 +88,9 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
         valueA = a.protocol_system;
         valueB = b.protocol_system;
       } else if (sortConfig.column === 'static_attributes.fee') {
-        // Convert fee from hex to numeric value for sorting
-        const getFeeValue = (pool: Pool): number => {
-          // Special case for Uniswap V4 pools
-          if (pool.protocol_system === 'uniswap_v4' && pool.static_attributes['key_lp_fee']) {
-            const feeHex = pool.static_attributes['key_lp_fee'];
-            return parseInt(feeHex, 16) / 10000;
-          }
-          
-          // Regular case for other protocols
-          const feeHex = pool.static_attributes?.fee;
-          if (!feeHex) return 0;
-          const feeValue = parseInt(feeHex, 16) / 10000;
-          return isNaN(feeValue) ? 0 : feeValue;
-        };
-        
-        valueA = getFeeValue(a);
-        valueB = getFeeValue(b);
+        // Use the shared parsePoolFee function for consistent fee calculation
+        valueA = parsePoolFee(a);
+        valueB = parsePoolFee(b);
       } else if (sortConfig.column === 'spotPrice') {
         valueA = a.spotPrice || 0;
         valueB = b.spotPrice || 0;
@@ -210,19 +194,11 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   };
 
   const renderFee = (pool: Pool) => {
-    // Special case for Uniswap V4 pools
-    if (pool.protocol_system === 'uniswap_v4' && pool.static_attributes['key_lp_fee']) {
-      const feeHex = pool.static_attributes['key_lp_fee'];
-      const feeValue = parseInt(feeHex, 16) / 10000;
-      return `${feeValue}%`;
-    }
     
-    // Regular case for other protocols
-    const feeHex = pool.static_attributes.fee;
-    const feeValue = parseInt(feeHex, 16) / 10000;
+    const feeValue = parsePoolFee(pool);
     
     if (isNaN(feeValue)) {
-      console.log('Invalid fee value:', pool.id, 'Fee hex value:', feeHex, 'static_attributes: ', pool.static_attributes);
+      console.log('Invalid fee value:', pool.id, 'static_attributes: ', pool.static_attributes);
       return 'NaN%';
     }
     
@@ -385,6 +361,39 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
       )}
     </div>
   );
+};
+
+// Extract fee parsing logic into a reusable function that handles different protocols
+export const parsePoolFee = (pool: Pool): number => {
+  // Special case for Uniswap V4 pools
+  if (pool.protocol_system === 'uniswap_v4' && pool.static_attributes['key_lp_fee']) {
+    return parseFeeHexValue(pool, pool.static_attributes['key_lp_fee']);
+  }
+  
+  // Regular case for other protocols
+  return parseFeeHexValue(pool, pool.static_attributes?.fee);
+};
+
+// Helper to parse hex fee value to percentage
+export const parseFeeHexValue = (pool: Pool, feeHex: string): number => {
+  if (!feeHex) return 0;
+  
+  // Convert hex to decimal
+  const feeDecimal = parseInt(feeHex, 16);
+  
+  // Handle protocol-specific fee formats
+  if (pool.protocol_system === 'uniswap_v2') {
+    // For uniswap_v2, fee is in basis points, so divide by 100
+    return isNaN(feeDecimal) ? 0 : feeDecimal / 100;
+  } else if (pool.protocol_system === 'vm:balancer_v2') {
+    // For balancer_v2, fee is in 1e18 format, convert to percentage
+    return isNaN(feeDecimal) ? 0 : (feeDecimal / 1e18) * 100;
+  }
+  
+  // For other protocols (uniswap_v3 and uniswap_v4)
+  // pools have fees in unit of basis point scaled by 100x
+  const feeValue = feeDecimal / 10000;
+  return isNaN(feeValue) ? 0 : feeValue;
 };
 
 export default ListView;
