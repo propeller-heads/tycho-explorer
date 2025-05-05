@@ -331,27 +331,79 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         </div>
       </div>
 
-      {/* Selection Pills */}
+      {/* Selection Summary */}
       {(selectedTokens.length > 0 || selectedProtocols.length > 0) && (
-        <div className="flex flex-wrap gap-2 mt-1">
-          {selectedTokenLabels.map((label, index) => (
-            <Badge key={`token-${selectedTokens[index]}`} variant="outline" className="flex items-center gap-1">
-              {label}
-              <X 
-                className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 
-                onClick={() => removeToken(selectedTokens[index])}
-              />
-            </Badge>
-          ))}
-          {selectedProtocols.map(protocol => (
-            <Badge key={`protocol-${protocol}`} variant="outline" className="flex items-center gap-1">
-              {protocol}
-              <X 
-                className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 
-                onClick={() => removeProtocol(protocol)}
-              />
-            </Badge>
-          ))}
+        <div className="flex flex-col gap-2 mt-1">
+          {/* Organized Selection Groups */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Tokens Selection Group */}
+            {selectedTokens.length > 0 && (
+              <div className="border rounded-md p-2">
+                <div className="text-xs font-medium mb-1.5 flex justify-between items-center">
+                  <span>Selected Tokens ({selectedTokens.length})</span>
+                  {selectedTokens.length > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="xs" 
+                      className="h-5 text-xs" 
+                      onClick={() => onSelectTokens([])}
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedTokenLabels.map((label, index) => (
+                    <Badge 
+                      key={`token-${selectedTokens[index]}`} 
+                      variant="secondary" 
+                      className="flex items-center gap-1 bg-opacity-50"
+                    >
+                      {label}
+                      <X 
+                        className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 
+                        onClick={() => removeToken(selectedTokens[index])}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Protocols Selection Group */}
+            {selectedProtocols.length > 0 && (
+              <div className="border rounded-md p-2">
+                <div className="text-xs font-medium mb-1.5 flex justify-between items-center">
+                  <span>Selected Protocols ({selectedProtocols.length})</span>
+                  {selectedProtocols.length > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="xs" 
+                      className="h-5 text-xs" 
+                      onClick={() => onSelectProtocols([])}
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedProtocols.map(protocol => (
+                    <Badge 
+                      key={`protocol-${protocol}`} 
+                      variant="outline" 
+                      className="flex items-center gap-1"
+                    >
+                      {protocol}
+                      <X 
+                        className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 
+                        onClick={() => removeProtocol(protocol)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
