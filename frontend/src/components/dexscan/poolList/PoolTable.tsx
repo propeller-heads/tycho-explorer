@@ -4,7 +4,7 @@ import {
   TableHead, TableCell 
 } from '@/components/ui/table';
 import { ExternalLink, ChevronUp, ChevronDown, Search } from 'lucide-react';
-import { cn, formatPoolId } from '@/lib/utils';
+import { cn, formatPoolId, getExternalLink } from '@/lib/utils';
 import { Pool } from '../types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -129,21 +129,25 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         
                         // Custom formatting for different column types
                         if (column.id === 'id') {
+                          const linkUrl = getExternalLink(pool);
+                          
                           displayValue = (
                             <TooltipProvider delayDuration={150}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="font-mono text-xs flex items-center">
                                     <span className="cursor-help">{formatPoolId(pool.id)}</span>
-                                    <a
-                                      href={`https://etherscan.io/address/${pool.id}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="ml-1 text-blue-500 hover:text-blue-700 inline-flex items-center"
-                                      onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
-                                    >
-                                      <ExternalLink className="h-3 w-3" />
-                                    </a>
+                                    {linkUrl && (
+                                      <a
+                                        href={linkUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-1 text-blue-500 hover:text-blue-700 inline-flex items-center"
+                                        onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
+                                      >
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                    )}
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="top">

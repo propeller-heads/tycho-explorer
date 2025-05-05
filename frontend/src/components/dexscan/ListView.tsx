@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn, formatPoolId } from '@/lib/utils';
+import { cn, formatPoolId, getExternalLink } from '@/lib/utils';
 import { Pool } from './types';
 import SwapSimulator from './SwapSimulator';
 import MetricsCards from './poolList/MetricsCards';
@@ -288,19 +288,22 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <a
-                        href={`https://etherscan.io/address/${selectedPool.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                          className="h-4 w-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                          <polyline points="15 3 21 3 21 9"></polyline>
-                          <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                      </a>
+                      {/* Protocol-specific link */}
+                      {getExternalLink(selectedPool) && (
+                        <a
+                          href={getExternalLink(selectedPool)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            className="h-4 w-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                          </svg>
+                        </a>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Protocol: <span className="font-medium">{selectedPool.protocol_system}</span>
