@@ -215,7 +215,14 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
 
       <Card className="flex-grow">
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">List View</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            List View 
+            {processedPools.length !== pools.length && (
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                ({processedPools.length} pools)
+              </span>
+            )}
+          </h2>
           <div className="space-y-4">
 
             {/* Filter Results */}
