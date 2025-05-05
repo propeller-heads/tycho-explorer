@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,6 +18,92 @@ interface GraphControlsProps {
   onRender: () => void;
   onReset: () => void;
 }
+
+// Custom virtualized list component for tokens
+const VirtualizedTokenList: React.FC<{
+  tokens: Array<{id: string, label: string}>;
+  selectedTokens: string[];
+  toggleToken: (id: string) => void;
+}> = ({ tokens, selectedTokens, toggleToken }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
+  const itemHeight = 34; // height of each item in pixels
+  
+  useEffect(() => {
+    const updateVisibleRange = () => {
+      if (!containerRef.current) return;
+      
+      const containerHeight = containerRef.current.clientHeight;
+      const scrollTop = containerRef.current.scrollTop;
+      
+      // Add buffer to prevent flickering during fast scrolling
+      const buffer = 10;
+      const start = Math.max(0, Math.floor(scrollTop / itemHeight) - buffer);
+      const visibleItems = Math.ceil(containerHeight / itemHeight) + 2 * buffer;
+      const end = Math.min(tokens.length, start + visibleItems);
+      
+      setVisibleRange({ start, end });
+    };
+    
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', updateVisibleRange);
+      // Initial update
+      updateVisibleRange();
+      
+      return () => {
+        container.removeEventListener('scroll', updateVisibleRange);
+      };
+    }
+  }, [tokens.length, itemHeight]);
+  
+  if (tokens.length === 0) {
+    return (
+      <div className="p-4 text-sm text-muted-foreground text-center">
+        No tokens found
+      </div>
+    );
+  }
+  
+  // Calculate total height to ensure scrollbar represents the full list
+  const totalHeight = tokens.length * itemHeight;
+  
+  // Only render the visible items
+  const visibleItems = tokens.slice(visibleRange.start, visibleRange.end);
+  
+  return (
+    <div 
+      ref={containerRef} 
+      style={{ height: '240px', overflowY: 'auto' }}
+      className="relative w-full"
+    >
+      <div style={{ height: totalHeight, position: 'relative' }}>
+        {visibleItems.map((token, index) => {
+          const actualIndex = visibleRange.start + index;
+          return (
+            <div 
+              key={token.id}
+              className="flex items-center px-3 py-2 hover:bg-muted absolute w-full"
+              style={{ top: (actualIndex * itemHeight) + 'px', height: itemHeight + 'px' }}
+            >
+              <Checkbox 
+                id={`token-${token.id}`}
+                checked={selectedTokens.includes(token.id)}
+                onCheckedChange={() => toggleToken(token.id)}
+              />
+              <label 
+                htmlFor={`token-${token.id}`}
+                className="ml-2 text-sm cursor-pointer flex-grow"
+              >
+                {token.label}
+              </label>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export const GraphControls: React.FC<GraphControlsProps> = ({
   tokenList,
@@ -127,30 +213,11 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                 />
               </div>
               <ScrollArea className="max-h-[240px] overflow-y-auto">
-                {filteredTokens.length > 0 ? (
-                  filteredTokens.map(token => (
-                    <div 
-                      key={token.id} 
-                      className="flex items-center px-3 py-2 hover:bg-muted"
-                    >
-                      <Checkbox 
-                        id={`token-${token.id}`}
-                        checked={selectedTokens.includes(token.id)}
-                        onCheckedChange={() => toggleToken(token.id)}
-                      />
-                      <label 
-                        htmlFor={`token-${token.id}`}
-                        className="ml-2 text-sm cursor-pointer flex-grow"
-                      >
-                        {token.label}
-                      </label>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-4 text-sm text-muted-foreground text-center">
-                    No tokens found
-                  </div>
-                )}
+                <VirtualizedTokenList 
+                  tokens={filteredTokens} 
+                  selectedTokens={selectedTokens} 
+                  toggleToken={toggleToken} 
+                />
               </ScrollArea>
               <div className="flex justify-between items-center p-2 border-t">
                 <span className="text-xs text-muted-foreground pl-2">
