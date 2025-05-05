@@ -32,7 +32,7 @@ fi
 # Function to run Tycho API
 run_tycho() {
     echo -e "${BLUE}=== Starting Tycho API ===${NC}"
-    cd "$TYCHO_DIR" && cargo run -- --tvl-threshold 1 --chain ethereum
+    cd "$TYCHO_DIR" && cargo run -- --tvl-threshold 0.001 --chain ethereum
 }
 
 # Function to run Swift Price Oracle
