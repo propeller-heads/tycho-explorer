@@ -333,7 +333,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (state.blockNumber === 0 && !state.isConnected) {
       // Start with a realistic block number
-      dispatch({ type: 'SET_BLOCK_NUMBER', payload: 17500000 });
+      dispatch({ type: 'SET_BLOCK_NUMBER', payload: -1 });
     }
   }, [state.blockNumber, state.isConnected]);
 
@@ -354,18 +354,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       }
     };
   }, [state.isConnected, state.blockNumber]);
-
-  // Add an effect to attempt connection on initial load
-  useEffect(() => {
-    if (state.websocketUrl && !socket) {
-      connectToWebSocket(state.websocketUrl);
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      disconnectWebSocket();
-    };
-  }, []);
 
   const highlightPool = useCallback((poolId: string | null) => {
     dispatch({ type: 'SET_HIGHLIGHTED_POOL', payload: poolId });
