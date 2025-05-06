@@ -19,7 +19,6 @@ interface PoolDataContextValue {
   highlightPool: (poolId: string | null) => void;
   blockNumber: number;
   selectedChain: string;
-  setSelectedChain: (chain: string) => void;
   availableChains: string[];
 }
 
@@ -211,9 +210,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       setSocket(ws);
       dispatch({ type: 'SET_WEBSOCKET_URL', payload: url });
 
-      ws.onopen = () => {
-        // console.log('WebSocket connected to:', url);
-        
+      ws.onopen = () => {        
         // Set connection state but don't clear existing pool data
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
@@ -224,8 +221,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       ws.onmessage = (event) => {
         try {
           const data: WebSocketMessage = JSON.parse(event.data);
-          
-          console.log('WebSocket message received:', data);
 
           // Update block number if provided
           if (data.block_number) {
@@ -279,7 +274,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       };
 
       ws.onclose = () => {
-        // console.log('WebSocket disconnected');
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: false } 
@@ -304,20 +298,20 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   
   // Apply pending updates to the state at a controlled frequency
   useEffect(() => {
-    const hasPoolUpdates = Object.keys(state.pendingUpdates.pools).length > 0;
+    const hasPoolUpdates = Object.keys(stateRef.current.pendingUpdates.pools).length > 0;
+
+    console.log("pool updates from ws: ", stateRef.current.pendingUpdates.pools);
     
     if (hasPoolUpdates && !updateScheduled) {
       setUpdateScheduled(true);
-      // console.log('Scheduling update with pending pools:', Object.keys(state.pendingUpdates.pools).length);
-      
+
       // Use requestAnimationFrame to batch updates
       requestAnimationFrame(() => {
         if (hasPoolUpdates) {
           const updatedPools = {
-            ...state.pools,
-            ...state.pendingUpdates.pools
+            ...stateRef.current.pools,
+            ...stateRef.current.pendingUpdates.pools
           };
-          // console.log('Applying pool updates, new pool count:', Object.keys(updatedPools).length);
           dispatch({
             type: 'SET_POOLS',
             payload: updatedPools
@@ -329,50 +323,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.pendingUpdates, state.pools, updateScheduled]);
 
-  // Set a realistic block number on initial load if needed
-  useEffect(() => {
-    if (state.blockNumber === 0 && !state.isConnected) {
-      // Start with a realistic block number
-      dispatch({ type: 'SET_BLOCK_NUMBER', payload: -1 });
-    }
-  }, [state.blockNumber, state.isConnected]);
-
-  // Add an effect to simulate block updates when not connected
-  useEffect(() => {
-    let blockTimer: NodeJS.Timeout | null = null;
-    
-    if (!state.isConnected && state.blockNumber > 0) {
-      // Increment block number every 5 seconds when not connected
-      blockTimer = setInterval(() => {
-        dispatch({ type: 'SET_BLOCK_NUMBER', payload: state.blockNumber + 1 });
-      }, 5000);
-    }
-    
-    return () => {
-      if (blockTimer) {
-        clearInterval(blockTimer);
-      }
-    };
-  }, [state.isConnected, state.blockNumber]);
-
   const highlightPool = useCallback((poolId: string | null) => {
     dispatch({ type: 'SET_HIGHLIGHTED_POOL', payload: poolId });
   }, []);
-
-  // Function to set the selected chain
-  const setSelectedChain = useCallback((chain: string) => {
-    localStorage.setItem('selected_chain', chain);
-    dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
-  }, []);
-
-  // Add performance logging
-  useEffect(() => {
-    console.log("PoolDataContext pools changed, count:", Object.keys(state.pools).length, new Date().toISOString());
-  }, [state.pools]);
-
-  useEffect(() => {
-    console.log("PoolDataContext blockNumber changed:", state.blockNumber, new Date().toISOString());
-  }, [state.blockNumber]);
 
   // Object.values is expensive for large objects - memoize pools array 
   const poolsArray = useMemo(() => Object.values(state.pools), [state.pools]);
@@ -392,7 +345,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       connectToWebSocket,
       disconnectWebSocket,
       highlightPool,
-      setSelectedChain,
       availableChains: AVAILABLE_CHAINS
     };
   }, [
@@ -406,7 +358,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     connectToWebSocket,
     disconnectWebSocket,
     highlightPool,
-    setSelectedChain
   ]);
 
   return (

@@ -36,9 +36,6 @@ const DexScanContentMain = () => {
     highlightedPoolId,
     connectToWebSocket,
     highlightPool,
-    isReconnecting,
-    reconnectAttempt,
-    maxReconnectAttempts,
     blockNumber,
     selectedChain
   } = usePoolData();
@@ -135,7 +132,7 @@ const DexScanContentMain = () => {
                 ref={wsButtonRef}
                 variant="ghost"
                 size="sm"
-                className={`flex items-center ${isConnected ? 'text-green-500' : isReconnecting ? 'text-amber-500' : 'text-red-500'} text-xs md:text-sm`}
+                className={`flex items-center ${isConnected ? 'text-green-500' : 'text-red-500'} text-xs md:text-sm`}
                 onClick={toggleWsConfig}
               >
                 {isConnected ? (
@@ -144,7 +141,7 @@ const DexScanContentMain = () => {
                   <Globe className="h-4 w-4 mr-1.5" />
                 )}
                 <span className="hidden xs:inline">
-                  {isConnected ? 'Connected' : isReconnecting ? 'Reconnecting...' : 'Disconnected'}
+                  {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
                 {/* Display current chain and block number when connected */}
                 {isConnected && blockNumber > 0 && (
@@ -188,9 +185,6 @@ const DexScanContentMain = () => {
                         onConnect={connectToWebSocket}
                         defaultUrl={websocketUrl}
                         isConnected={isConnected}
-                        isReconnecting={isReconnecting}
-                        reconnectAttempt={reconnectAttempt}
-                        maxReconnectAttempts={maxReconnectAttempts}
                       />
                     </div>
                   </div>

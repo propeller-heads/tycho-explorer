@@ -33,7 +33,6 @@ export const WebSocketConfig = ({
     websocketUrl: contextUrl, 
     isConnected: contextIsConnected,
     selectedChain: contextSelectedChain,
-    setSelectedChain: contextSetSelectedChain,
     availableChains
   } = usePoolData();
   
@@ -67,7 +66,6 @@ export const WebSocketConfig = ({
 
   const handleChainChange = (value: string) => {
     setSelectedChain(value);
-    contextSetSelectedChain(value);
   };
   
   return (
