@@ -17,9 +17,6 @@ interface PoolDataContextValue {
   connectToWebSocket: (url: string, chain?: string) => void;
   disconnectWebSocket: () => void;
   highlightPool: (poolId: string | null) => void;
-  isReconnecting: boolean;
-  reconnectAttempt: number;
-  maxReconnectAttempts: number;
   blockNumber: number;
   selectedChain: string;
   setSelectedChain: (chain: string) => void;
@@ -144,9 +141,7 @@ const AVAILABLE_CHAINS = ['Ethereum', 'Base', 'Unichain'];
 // Default chain
 const DEFAULT_CHAIN = 'Ethereum';
 
-// Add a constant for reconnection attempts
-const MAX_RECONNECT_ATTEMPTS = 5;
-const RECONNECT_INTERVAL = 2000; // 2 seconds
+// No reconnection logic
 
 export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   // Initialize state and variables
@@ -173,12 +168,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [updateScheduled, setUpdateScheduled] = useState(false);
-  const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Add state for reconnection UI indicators
-  const [isReconnecting, setIsReconnecting] = useState(false);
-  const [reconnectAttempt, setReconnectAttempt] = useState(0);
+  // Reconnection has been removed
   
   // Define disconnectWebSocket first to avoid the reference error
   const disconnectWebSocket = useCallback(() => {
@@ -196,30 +187,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   }, [socket]);
   
   
-  // Update the reconnection function to update UI state
-  const attemptReconnect = useCallback(() => {
-    if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
-      setIsReconnecting(false);
-      setReconnectAttempt(0);
-      dispatch({ 
-        type: 'SET_CONNECTION_STATE', 
-        payload: { isConnected: false } 
-      });
-      
-      // Reset state when max reconnection attempts reached
-      dispatch({ type: 'RESET_STATE' });
-      return;
-    }
-
-    if (state.websocketUrl) {
-      const currentAttempt = reconnectAttemptsRef.current + 1;
-      // console.log(`Attempting to reconnect (${currentAttempt}/${MAX_RECONNECT_ATTEMPTS})...`);
-      setIsReconnecting(true);
-      setReconnectAttempt(currentAttempt);
-      connectToWebSocket(state.websocketUrl);
-      reconnectAttemptsRef.current = currentAttempt;
-    }
-  }, [state.websocketUrl]);
+  // Removed auto-reconnection function
   
   // Update the connection function to reset reconnection state
   const connectToWebSocket = useCallback((url: string, chain?: string) => {
@@ -229,17 +197,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
     }
     
-    // Clear any pending reconnect attempts
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    
-    // Reset reconnect attempts when manually connecting
-    if (reconnectAttemptsRef.current > 0) {
-      reconnectAttemptsRef.current = 0;
-      setReconnectAttempt(0);
-    }
+    // Manual reconnection is handled directly
     
     // Close existing connection if any
     disconnectWebSocket();
@@ -255,17 +213,12 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
 
       ws.onopen = () => {
         // console.log('WebSocket connected to:', url);
-        setIsReconnecting(false);
-        setReconnectAttempt(0);
         
         // Set connection state but don't clear existing pool data
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: true } 
         });
-        
-        // Reset reconnection attempts on successful connection
-        reconnectAttemptsRef.current = 0;
       };
 
       ws.onmessage = (event) => {
@@ -323,9 +276,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         
         // Reset state on error
         dispatch({ type: 'RESET_STATE' });
-        
-        // Schedule reconnection attempt on error
-        reconnectTimeoutRef.current = setTimeout(attemptReconnect, RECONNECT_INTERVAL);
       };
 
       ws.onclose = () => {
@@ -339,8 +289,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'RESET_STATE' });
         
         setSocket(null);
-        // Schedule reconnection attempt on close
-        reconnectTimeoutRef.current = setTimeout(attemptReconnect, RECONNECT_INTERVAL);
       };
     } catch (error) {
       console.error('Error connecting to WebSocket:', error);
@@ -351,11 +299,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       
       // Reset state on connection error
       dispatch({ type: 'RESET_STATE' });
-      
-      // Schedule reconnection attempt on connection error
-      reconnectTimeoutRef.current = setTimeout(attemptReconnect, RECONNECT_INTERVAL);
     }
-  }, [disconnectWebSocket, attemptReconnect]);
+  }, [disconnectWebSocket]);
   
   // Apply pending updates to the state at a controlled frequency
   useEffect(() => {
@@ -412,15 +357,12 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
 
   // Add an effect to attempt connection on initial load
   useEffect(() => {
-    if (state.websocketUrl && !socket && !reconnectTimeoutRef.current) {
+    if (state.websocketUrl && !socket) {
       connectToWebSocket(state.websocketUrl);
     }
     
     // Cleanup on unmount
     return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
       disconnectWebSocket();
     };
   }, []);
@@ -462,9 +404,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       connectToWebSocket,
       disconnectWebSocket,
       highlightPool,
-      isReconnecting,
-      reconnectAttempt,
-      maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
       setSelectedChain,
       availableChains: AVAILABLE_CHAINS
     };
@@ -479,8 +418,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     connectToWebSocket,
     disconnectWebSocket,
     highlightPool,
-    isReconnecting,
-    reconnectAttempt,
     setSelectedChain
   ]);
 
