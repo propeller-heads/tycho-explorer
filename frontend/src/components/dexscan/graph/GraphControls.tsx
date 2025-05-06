@@ -105,6 +105,10 @@ const VirtualizedTokenList: React.FC<{
   );
 };
 
+// Local storage keys
+const LS_SELECTED_TOKENS_KEY = 'graphView_selectedTokens';
+const LS_SELECTED_PROTOCOLS_KEY = 'graphView_selectedProtocols';
+
 export const GraphControls: React.FC<GraphControlsProps> = ({
   tokenList,
   protocols,
@@ -118,6 +122,59 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   const [tokenSearchOpen, setTokenSearchOpen] = useState(false);
   const [protocolSearchOpen, setProtocolSearchOpen] = useState(false);
   const [tokenSearchQuery, setTokenSearchQuery] = useState('');
+  const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
+  
+  // Load selections from localStorage when token list is available
+  useEffect(() => {
+    // Only run when tokenList and protocols are populated
+    if (tokenList.length === 0 || protocols.length === 0) {
+      return;
+    }
+    
+    // Only load from localStorage once
+    if (hasLoadedFromStorage) {
+      return;
+    }
+    
+    try {
+      const storedTokens = localStorage.getItem(LS_SELECTED_TOKENS_KEY);
+      const storedProtocols = localStorage.getItem(LS_SELECTED_PROTOCOLS_KEY);
+      
+      let hasLoaded = false;
+      
+      if (storedTokens) {
+        const parsedTokens = JSON.parse(storedTokens);
+        // Filter to only tokens that still exist in current token list
+        const validTokens = parsedTokens.filter(id => 
+          tokenList.some(token => token.id === id)
+        );
+        if (validTokens.length > 0) {
+          onSelectTokens(validTokens);
+          hasLoaded = true;
+        }
+      }
+      
+      if (storedProtocols) {
+        const parsedProtocols = JSON.parse(storedProtocols);
+        // Filter to only protocols that still exist
+        const validProtocols = parsedProtocols.filter(p => protocols.includes(p));
+        if (validProtocols.length > 0) {
+          onSelectProtocols(validProtocols);
+          hasLoaded = true;
+        }
+      }
+      
+      // Mark as loaded to prevent further loading attempts
+      if (hasLoaded) {
+        setHasLoadedFromStorage(true);
+      }
+    } catch (e) {
+      console.error('Failed to load selections from localStorage', e);
+      // Mark as loaded to prevent further loading attempts even if it failed
+      setHasLoadedFromStorage(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenList, protocols, hasLoadedFromStorage]);
   
   const sortedTokens = React.useMemo(() => 
     [...tokenList].sort((a, b) => a.label.localeCompare(b.label)),
@@ -143,6 +200,12 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
       ? selectedTokens.filter(id => id !== tokenId)
       : [...selectedTokens, tokenId];
     
+    try {
+      localStorage.setItem(LS_SELECTED_TOKENS_KEY, JSON.stringify(newSelectedTokens));
+    } catch (e) {
+      console.error('Failed to save tokens to localStorage', e);
+    }
+    
     onSelectTokens(newSelectedTokens);
   };
 
@@ -152,17 +215,35 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
       ? selectedProtocols.filter(p => p !== protocol)
       : [...selectedProtocols, protocol];
     
+    try {
+      localStorage.setItem(LS_SELECTED_PROTOCOLS_KEY, JSON.stringify(newSelectedProtocols));
+    } catch (e) {
+      console.error('Failed to save protocols to localStorage', e);
+    }
+    
     onSelectProtocols(newSelectedProtocols);
   };
 
   // Helper to remove a token
   const removeToken = (tokenId: string) => {
-    onSelectTokens(selectedTokens.filter(id => id !== tokenId));
+    const newSelection = selectedTokens.filter(id => id !== tokenId);
+    try {
+      localStorage.setItem(LS_SELECTED_TOKENS_KEY, JSON.stringify(newSelection));
+    } catch (e) {
+      console.error('Failed to save tokens to localStorage', e);
+    }
+    onSelectTokens(newSelection);
   };
 
   // Helper to remove a protocol
   const removeProtocol = (protocol: string) => {
-    onSelectProtocols(selectedProtocols.filter(p => p !== protocol));
+    const newSelection = selectedProtocols.filter(p => p !== protocol);
+    try {
+      localStorage.setItem(LS_SELECTED_PROTOCOLS_KEY, JSON.stringify(newSelection));
+    } catch (e) {
+      console.error('Failed to save protocols to localStorage', e);
+    }
+    onSelectProtocols(newSelection);
   };
 
   // Get the labels for selected tokens
@@ -227,7 +308,14 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onSelectTokens([])}
+                    onClick={() => {
+                      try {
+                        localStorage.removeItem(LS_SELECTED_TOKENS_KEY);
+                      } catch (e) {
+                        console.error('Failed to clear tokens from localStorage', e);
+                      }
+                      onSelectTokens([]);
+                    }}
                   >
                     Clear
                   </Button>
@@ -299,7 +387,14 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onSelectProtocols([])}
+                    onClick={() => {
+                      try {
+                        localStorage.removeItem(LS_SELECTED_PROTOCOLS_KEY);
+                      } catch (e) {
+                        console.error('Failed to clear protocols from localStorage', e);
+                      }
+                      onSelectProtocols([]);
+                    }}
                   >
                     Clear
                   </Button>
@@ -325,7 +420,22 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           >
             Render Graph
           </Button>
-          <Button onClick={onReset} variant="outline" size="sm">
+          <Button 
+            onClick={() => {
+              // Clear localStorage before resetting
+              try {
+                localStorage.removeItem(LS_SELECTED_TOKENS_KEY);
+                localStorage.removeItem(LS_SELECTED_PROTOCOLS_KEY);
+              } catch (e) {
+                console.error('Failed to clear selections from localStorage', e);
+              }
+              // Reset the flag to allow loading from localStorage again if needed
+              setHasLoadedFromStorage(false);
+              onReset();
+            }} 
+            variant="outline" 
+            size="sm"
+          >
             Reset
           </Button>
         </div>
@@ -346,7 +456,14 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                       variant="ghost" 
                       size="xs" 
                       className="h-5 text-xs" 
-                      onClick={() => onSelectTokens([])}
+                      onClick={() => {
+                        try {
+                          localStorage.removeItem(LS_SELECTED_TOKENS_KEY);
+                        } catch (e) {
+                          console.error('Failed to clear tokens from localStorage', e);
+                        }
+                        onSelectTokens([]);
+                      }}
                     >
                       Clear All
                     </Button>
@@ -380,7 +497,14 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                       variant="ghost" 
                       size="xs" 
                       className="h-5 text-xs" 
-                      onClick={() => onSelectProtocols([])}
+                      onClick={() => {
+                        try {
+                          localStorage.removeItem(LS_SELECTED_PROTOCOLS_KEY);
+                        } catch (e) {
+                          console.error('Failed to clear protocols from localStorage', e);
+                        }
+                        onSelectProtocols([]);
+                      }}
                     >
                       Clear All
                     </Button>
