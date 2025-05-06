@@ -1,12 +1,37 @@
 // src/components/dexscan/hooks/useGraphData.ts
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
+
+// Compare objects by JSON stringifying them (deep equality)
+const deepEqual = (a: any, b: any) => {
+  if (a === b) return true;
+  return JSON.stringify(a) === JSON.stringify(b);
+};
 
 export function useGraphData() {
   const { pools } = usePoolData();
+  const prevPoolsRef = useRef<any>(null);
+  const prevResultRef = useRef<{tokenNodes: any[], poolEdges: any[]} | null>(null);
+  const runCountRef = useRef(0);
   
   return useMemo(() => {
-    console.log("useGraphData running memoization", new Date().toISOString());
+    runCountRef.current++;
+    console.log("DEBUG: useGraphData running memoization", `#${runCountRef.current}`, new Date().toISOString());
+    
+    // Deep compare the pools to see if they've actually changed structurally
+    const poolsEqual = deepEqual(pools, prevPoolsRef.current);
+    console.log("DEBUG: Pools structurally equal to previous?", poolsEqual);
+    
+    // If pools haven't changed, return the previous result to maintain reference equality
+    if (poolsEqual && prevResultRef.current) {
+      console.log("DEBUG: Pools unchanged, returning previous result");
+      return prevResultRef.current;
+    }
+    
+    // Save the current pools for future comparison
+    prevPoolsRef.current = pools;
+    
+    console.log("DEBUG: Generating new graph data");
     const tokenMap = new Map();
     const poolEdges = [];
     
@@ -36,9 +61,14 @@ export function useGraphData() {
 
     const tokenNodes = Array.from(tokenMap.values());
     
-    return {
+    const result = {
       tokenNodes,
       poolEdges
     };
+    
+    // Save the result for future comparison
+    prevResultRef.current = result;
+    
+    return result;
   }, [pools]);
 }

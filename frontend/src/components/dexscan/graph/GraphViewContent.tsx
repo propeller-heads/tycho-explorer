@@ -1,10 +1,13 @@
 // src/components/dexscan/graph/GraphViewContent.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
 
 const PoolGraphView: React.FC = () => {
+  const renderCountRef = useRef(0);
+  console.log(`DEBUG: GraphViewContent render #${++renderCountRef.current}`);
+  
   const { tokenNodes, poolEdges } = useGraphData();
   
   // State for filtering with multi-select
@@ -12,8 +15,12 @@ const PoolGraphView: React.FC = () => {
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
   const [shouldRender, setShouldRender] = useState(false);
   
+  // Store reference to previous filtered data to maintain stability
+  const prevFilteredDataRef = useRef<{nodes: any[], edges: any[]}>({nodes: [], edges: []});
+  
   // Extract unique protocols from pool edges
   const uniqueProtocols = useMemo(() => {
+    console.log('DEBUG: Recalculating uniqueProtocols');
     const protocols = new Set<string>();
     poolEdges.forEach(edge => {
       protocols.add(edge.protocol);
@@ -23,6 +30,8 @@ const PoolGraphView: React.FC = () => {
   
   // Filter nodes and edges based on selections
   const filteredData = useMemo(() => {
+    console.log('DEBUG: Recalculating filteredData');
+    
     if (!shouldRender) {
       return { nodes: [], edges: [] };
     }
@@ -77,12 +86,28 @@ const PoolGraphView: React.FC = () => {
       });
     });
     
-    const processedEdges = finalEdges;
-    
-    return {
+    const result = {
       nodes: filteredNodes,
-      edges: processedEdges
+      edges: finalEdges
     };
+    
+    // Check structural equality with previous result
+    const nodesEqual = result.nodes.length === prevFilteredDataRef.current.nodes.length &&
+      new Set(result.nodes.map(n => n.id)).size === new Set(prevFilteredDataRef.current.nodes.map(n => n.id)).size;
+    
+    const edgesEqual = result.edges.length === prevFilteredDataRef.current.edges.length &&
+      new Set(result.edges.map(e => e.id)).size === new Set(prevFilteredDataRef.current.edges.map(e => e.id)).size;
+    
+    // Only update reference if structure changed
+    if (!nodesEqual || !edgesEqual) {
+      console.log('DEBUG: filtered data structure changed');
+      prevFilteredDataRef.current = result;
+    } else {
+      console.log('DEBUG: returning same filtered data structure');
+      return prevFilteredDataRef.current;
+    }
+    
+    return result;
   }, [tokenNodes, poolEdges, selectedTokens, selectedProtocols, shouldRender]);
   
   // Handle reset
