@@ -167,6 +167,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [updateScheduled, setUpdateScheduled] = useState(false);
+  const [autoConnected, setAutoConnected] = useState(false);
   
   // Reconnection has been removed
   
@@ -182,6 +183,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       
       // Reset state when disconnected
       dispatch({ type: 'RESET_STATE' });
+      
+      // Reset auto-connection state to allow manual reconnection
+      setAutoConnected(false);
     }
   }, [socket]);
   
@@ -208,6 +212,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       // Create new WebSocket connection
       const ws = new WebSocket(url);
       setSocket(ws);
+      setAutoConnected(true); // Mark as auto-connected
       dispatch({ type: 'SET_WEBSOCKET_URL', payload: url });
 
       ws.onopen = () => {        
@@ -271,6 +276,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         
         // Reset state on error
         dispatch({ type: 'RESET_STATE' });
+        
+        // Reset auto-connection state
+        setAutoConnected(false);
       };
 
       ws.onclose = () => {
@@ -281,6 +289,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         
         // Reset state on close
         dispatch({ type: 'RESET_STATE' });
+        
+        // Reset auto-connection state
+        setAutoConnected(false);
         
         setSocket(null);
       };
@@ -293,6 +304,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       
       // Reset state on connection error
       dispatch({ type: 'RESET_STATE' });
+      
+      // Reset auto-connection state
+      setAutoConnected(false);
     }
   }, [disconnectWebSocket]);
   
@@ -322,6 +336,16 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       });
     }
   }, [state.pendingUpdates, state.pools, updateScheduled]);
+
+  // Auto-connect to WebSocket on page load
+  useEffect(() => {
+    // Only connect once to avoid infinite connection attempts
+    if (!autoConnected && !state.isConnected) {
+      console.log('Auto-connecting to WebSocket:', state.websocketUrl);
+      connectToWebSocket(state.websocketUrl);
+      setAutoConnected(true);
+    }
+  }, [autoConnected, connectToWebSocket, state.isConnected, state.websocketUrl]);
 
   const highlightPool = useCallback((poolId: string | null) => {
     dispatch({ type: 'SET_HIGHLIGHTED_POOL', payload: poolId });
