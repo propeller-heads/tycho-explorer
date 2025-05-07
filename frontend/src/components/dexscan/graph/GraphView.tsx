@@ -60,17 +60,14 @@ class GraphManager {
   private network: Network | null = null;
   private nodesDataset: DataSet<any> | null = null;
   private edgesDataset: DataSet<any> | null = null;
-  private positions: Record<string, {x: number, y: number}> = {};
   private initialized = false;
   private container: HTMLElement | null = null;
-  private onStabilized: (() => void) | null = null;
   private popupDiv: HTMLElement | null = null;
   private activeTimeout: NodeJS.Timeout | null = null;
   
   initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[], callback?: () => void) {
     console.log('DEBUG: GraphManager.initialize', initialNodes.length, initialEdges.length);
     this.container = container;
-    this.onStabilized = callback || null;
     
     // Create datasets
     this.nodesDataset = new DataSet(initialNodes);
@@ -125,14 +122,7 @@ class GraphManager {
     this.network.on('dragStart', () => {
       this.hidePopup();
     });
-    
-    // Save positions when stabilized
-    this.network.once('stabilized', () => {
-      console.log('DEBUG: Network stabilized, saving positions');
-      this.savePositions();
-      this.disablePhysics();
-      if (this.onStabilized) this.onStabilized();
-    });
+
     
     this.initialized = true;
   }
@@ -244,75 +234,9 @@ class GraphManager {
   }
   
   updateData(nodes: any[], edges: any[], structureChanged: boolean) {
-    console.log('DEBUG: GraphManager.updateData', nodes.length, edges.length, 'structure changed:', structureChanged);
-    
-    if (!this.initialized || !this.nodesDataset || !this.edgesDataset) {
-      console.error('DEBUG: Cannot update, graph not initialized');
-      return;
-    }
-    
-    if (structureChanged) {
-      console.log('DEBUG: Structure changed, enabling physics and recreating datasets');
-      this.enablePhysics();
-      
-      // Clear and update datasets
-      this.nodesDataset.clear();
-      this.nodesDataset.add(nodes);
-      
-      this.edgesDataset.clear();
-      this.edgesDataset.add(edges);
-      
-      // Network will stabilize again with new structure
-      if (this.network) {
-        this.network.once('stabilized', () => {
-          console.log('DEBUG: Network re-stabilized after structure change');
-          this.savePositions();
-          this.disablePhysics();
-        });
-      }
-    } else {
-      console.log('DEBUG: Structure unchanged, updating properties without physics');
-      
       // Keep physics disabled, just update properties
       this.nodesDataset.update(nodes);
       this.edgesDataset.update(edges);
-      
-      // Apply saved positions
-      this.restorePositions();
-    }
-  }
-  
-  savePositions() {
-    if (!this.network) return;
-    console.log('DEBUG: Saving node positions');
-    this.positions = this.network.getPositions();
-  }
-  
-  restorePositions() {
-    if (!this.network || !this.nodesDataset) return;
-    console.log('DEBUG: Restoring node positions');
-    
-    // Get current node IDs
-    const nodeIds = this.nodesDataset.getIds();
-    
-    // Only restore positions for nodes that exist
-    nodeIds.forEach(id => {
-      if (this.positions[id] && this.network) {
-        this.network.moveNode(id, this.positions[id].x, this.positions[id].y);
-      }
-    });
-  }
-  
-  enablePhysics() {
-    if (!this.network) return;
-    console.log('DEBUG: Enabling physics');
-    this.network.setOptions({ physics: { ...networkOptions.physics, enabled: true } });
-  }
-  
-  disablePhysics() {
-    if (!this.network) return;
-    console.log('DEBUG: Disabling physics');
-    this.network.setOptions({ physics: { enabled: false } });
   }
   
   destroy() {
