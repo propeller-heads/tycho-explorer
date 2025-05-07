@@ -1,5 +1,5 @@
 // src/components/dexscan/graph/GraphViewContent.tsx
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
@@ -24,10 +24,17 @@ const PoolGraphView: React.FC = () => {
   // State for filtering with multi-select
   const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
-  const [shouldRender, setShouldRender] = useState(false);
+  const [renderCounter, setRenderCounter] = useState(0);
   
   // Store reference to previous filtered data to maintain stability
   const prevFilteredDataRef = useRef<{nodes: any[], edges: any[]}>({nodes: [], edges: []});
+  
+  // Add useEffect for auto-rendering on selection changes
+  useEffect(() => {
+    if (selectedTokens.length > 0 || selectedProtocols.length > 0) {
+      setRenderCounter(prev => prev + 1);
+    }
+  }, [selectedTokens, selectedProtocols]);
   
   // Extract unique protocols from pool edges
   const uniqueProtocols = useMemo(() => {
@@ -41,9 +48,13 @@ const PoolGraphView: React.FC = () => {
   
   // Filter nodes and edges based on selections
   const filteredData = useMemo(() => {
-    console.log('DEBUG: Recalculating filteredData');
+    console.log('DEBUG: Recalculating filteredData', { 
+      renderCounter,
+      selectedTokens,
+      selectedProtocols 
+    });
     
-    if (!shouldRender) {
+    if (renderCounter === 0) {
       return { nodes: [], edges: [] };
     }
     
@@ -60,8 +71,10 @@ const PoolGraphView: React.FC = () => {
     const possibleEdges = poolEdges.filter(edge => 
       selectedTokens.includes(edge.from) && selectedTokens.includes(edge.to)
     );
-    
-    // 3. Group pools by token pairs and select one edge per pair
+
+    console.log("possibleEdges count:", possibleEdges.length);
+
+    // 3. Group pools by token pairs
     const finalEdges = [];
     const tokenPairsMap = new Map();
     
@@ -74,26 +87,45 @@ const PoolGraphView: React.FC = () => {
       tokenPairsMap.get(tokenPair).push(edge);
     });
     
+    console.log("tokenPairsMap size:", tokenPairsMap.size);
+    console.log("tokenPairsMap :", tokenPairsMap);
+
+ 
     // Process each token pair
     tokenPairsMap.forEach((edges, tokenPair) => {
-      // Case 1: If any selected protocol has an edge for this pair, show it in blue
+      // For each token pair, check if any of the edges have a protocol
+      // that matches one of the selected protocols
+      
+      // If no protocols are selected, or no matching protocols found,
+      // show the edge in gray
+      let edgeToDisplay = edges[0]; // Default to first edge
+      let isProtocolMatch = false;
+      
       if (selectedProtocols.length > 0) {
-        const selectedProtocolEdge = edges.find(edge => selectedProtocols.includes(edge.protocol));
-        if (selectedProtocolEdge) {
-          finalEdges.push({
-            ...selectedProtocolEdge,
-            color: '#64B5F6', // Blue
-            width: 3
-          });
-          return; // Skip to next token pair
+        // Case-insensitive matching of protocols
+        const matchingEdge = edges.find(edge => 
+          selectedProtocols.some(protocol => 
+            protocol.toLowerCase() === edge.protocol.toLowerCase()
+          )
+        );
+        
+        if (matchingEdge) {
+          // Found a matching protocol for this token pair
+          edgeToDisplay = matchingEdge;
+          isProtocolMatch = true;
+          console.log(`Match found for ${tokenPair}: ${matchingEdge.protocol}`);
+        } else {
+          console.log(`No protocol match for ${tokenPair}. Available:`, 
+            edges.map(e => e.protocol), 
+            "Selected:", selectedProtocols);
         }
       }
       
-      // Case 2: No protocols selected OR no edge belongs to selected protocols, show any edge in gray
+      // Add the edge to the final list with appropriate styling
       finalEdges.push({
-        ...edges[0], // Just take the first edge
-        color: '#D3D3D3', // Gray
-        width: 2
+        ...edgeToDisplay,
+        color: isProtocolMatch ? '#64B5F6' : '#D3D3D3', // Blue if matched, Gray otherwise
+        width: isProtocolMatch ? 3 : 2
       });
     });
     
@@ -102,42 +134,50 @@ const PoolGraphView: React.FC = () => {
       edges: finalEdges
     };
     
-    // Check structural equality with previous result
-    const nodesEqual = result.nodes.length === prevFilteredDataRef.current.nodes.length &&
-      new Set(result.nodes.map(n => n.id)).size === new Set(prevFilteredDataRef.current.nodes.map(n => n.id)).size;
+    // Helper function to check if two sets have the same elements
+    const areSetsEqual = (a, b) => {
+      if (a.size !== b.size) return false;
+      return Array.from(a).every(element => b.has(element));
+    };
     
-    const edgesEqual = result.edges.length === prevFilteredDataRef.current.edges.length &&
-      new Set(result.edges.map(e => e.id)).size === new Set(prevFilteredDataRef.current.edges.map(e => e.id)).size;
+    // Check structural equality with previous result
+    const nodeIdsNew = new Set(result.nodes.map(n => n.id));
+    const nodeIdsPrev = new Set(prevFilteredDataRef.current.nodes.map(n => n.id));
+    const nodesEqual = areSetsEqual(nodeIdsNew, nodeIdsPrev);
+    
+    const edgeIdsNew = new Set(result.edges.map(e => e.id));
+    const edgeIdsPrev = new Set(prevFilteredDataRef.current.edges.map(e => e.id));
+    const edgesEqual = areSetsEqual(edgeIdsNew, edgeIdsPrev);
     
     // Only update reference if structure changed
     if (!nodesEqual || !edgesEqual) {
-      console.log('DEBUG: filtered data structure changed');
+      console.log('DEBUG_EQ: filtered data structure changed');
       prevFilteredDataRef.current = result;
     } else {
-      console.log('DEBUG: returning same filtered data structure');
+      console.log('DEBUG_EQ: returning same filtered data structure');
       return prevFilteredDataRef.current;
     }
     
     return result;
-  }, [tokenNodes, poolEdges, selectedTokens, selectedProtocols, shouldRender]);
+  }, [tokenNodes, poolEdges, selectedTokens, selectedProtocols, renderCounter]);
   
   // Handle reset
   const handleReset = () => {
     setSelectedTokens([]);
     setSelectedProtocols([]);
-    setShouldRender(false);
+    setRenderCounter(0);
   };
   
   // Handle render
   const handleRender = () => {
     if (selectedTokens.length > 0 || selectedProtocols.length > 0) {
-      setShouldRender(true);
+      setRenderCounter(prev => prev + 1);
     }
   };
   
   // Statistics for rendered graph
   const graphStats = useMemo(() => {
-    if (!shouldRender) return null;
+    if (renderCounter === 0) return null;
     
     return {
       nodeCount: filteredData.nodes.length,
@@ -145,7 +185,7 @@ const PoolGraphView: React.FC = () => {
       tokenCount: selectedTokens.length,
       protocolCount: selectedProtocols.length
     };
-  }, [filteredData, selectedTokens, selectedProtocols, shouldRender]);
+  }, [filteredData, selectedTokens, selectedProtocols, renderCounter]);
   
   return (
     <div className="flex flex-col h-full" style={{ height: "100%" }}>
@@ -160,7 +200,7 @@ const PoolGraphView: React.FC = () => {
         onReset={handleReset}
       />
       
-      {shouldRender ? (
+      {renderCounter > 0 ? (
         <>
           {graphStats && (
             <div className="flex gap-4 mb-2 text-xs text-muted-foreground">
