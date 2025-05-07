@@ -8,15 +8,13 @@ const PoolGraphView: React.FC = () => {
   const renderCountRef = useRef(0);
   console.log(`DEBUG: GraphViewContent render #${++renderCountRef.current}`);
   
-  const { tokenNodes, poolEdges } = useGraphData();
+  const { tokenNodes, poolEdges, currentBlockNumber } = useGraphData();
   
   // State for filtering with multi-select
   const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
   const [renderCounter, setRenderCounter] = useState(0);
-  
-  // Store reference to previous filtered data to maintain stability
-  const prevFilteredDataRef = useRef<{nodes: any[], edges: any[]}>({nodes: [], edges: []});
+
   
   // Add useEffect for auto-rendering on selection changes
   useEffect(() => {
@@ -61,8 +59,6 @@ const PoolGraphView: React.FC = () => {
       selectedTokens.includes(edge.from) && selectedTokens.includes(edge.to)
     );
 
-    console.log("possibleEdges count:", possibleEdges.length);
-
     // 3. Group pools by token pairs
     const finalEdges = [];
     const tokenPairsMap = new Map();
@@ -75,10 +71,6 @@ const PoolGraphView: React.FC = () => {
       }
       tokenPairsMap.get(tokenPair).push(edge);
     });
-    
-    console.log("tokenPairsMap size:", tokenPairsMap.size);
-    console.log("tokenPairsMap :", tokenPairsMap);
-
  
     // Process each token pair
     tokenPairsMap.forEach((edges, tokenPair) => {
@@ -110,45 +102,26 @@ const PoolGraphView: React.FC = () => {
         }
       }
       
+      // Check if this edge was updated in the current block
+      const isUpdatedInCurrentBlock = 
+        edgeToDisplay.lastUpdatedAtBlock === currentBlockNumber && 
+        currentBlockNumber > 0;
+      
       // Add the edge to the final list with appropriate styling
       finalEdges.push({
         ...edgeToDisplay,
-        color: isProtocolMatch ? '#64B5F6' : '#D3D3D3', // Blue if matched, Gray otherwise
-        width: isProtocolMatch ? 3 : 2
+        // Use orange for recently updated pools, blue for protocol matches, gray for others
+        color: isUpdatedInCurrentBlock ? '#FF9800' : (isProtocolMatch ? '#64B5F6' : '#D3D3D3'),
+        width: isUpdatedInCurrentBlock ? 5 : (isProtocolMatch ? 3 : 2),
+        label: isUpdatedInCurrentBlock ? 'CHANGED' : undefined
       });
     });
-    
-    const result = {
+
+    return {
       nodes: filteredNodes,
       edges: finalEdges
     };
-    
-    // Helper function to check if two sets have the same elements
-    const areSetsEqual = (a, b) => {
-      if (a.size !== b.size) return false;
-      return Array.from(a).every(element => b.has(element));
-    };
-    
-    // Check structural equality with previous result
-    const nodeIdsNew = new Set(result.nodes.map(n => n.id));
-    const nodeIdsPrev = new Set(prevFilteredDataRef.current.nodes.map(n => n.id));
-    const nodesEqual = areSetsEqual(nodeIdsNew, nodeIdsPrev);
-    
-    const edgeIdsNew = new Set(result.edges.map(e => e.id));
-    const edgeIdsPrev = new Set(prevFilteredDataRef.current.edges.map(e => e.id));
-    const edgesEqual = areSetsEqual(edgeIdsNew, edgeIdsPrev);
-    
-    // Only update reference if structure changed
-    if (!nodesEqual || !edgesEqual) {
-      console.log('DEBUG_EQ: filtered data structure changed');
-      prevFilteredDataRef.current = result;
-    } else {
-      console.log('DEBUG_EQ: returning same filtered data structure');
-      return prevFilteredDataRef.current;
-    }
-    
-    return result;
-  }, [tokenNodes, poolEdges, selectedTokens, selectedProtocols, renderCounter]);
+  }, [tokenNodes, poolEdges, selectedTokens, selectedProtocols, renderCounter, currentBlockNumber]);
   
   // Handle reset
   const handleReset = () => {
@@ -177,7 +150,7 @@ const PoolGraphView: React.FC = () => {
   }, [filteredData, selectedTokens, selectedProtocols, renderCounter]);
   
   return (
-    <div className="flex flex-col h-full" style={{ height: "100%" }}>
+    <div className="flex flex-col h-full" style={{ height: "100%", minHeight: "800px" }}>
       <GraphControls 
         tokenList={tokenNodes}
         protocols={uniqueProtocols}
@@ -196,13 +169,15 @@ const PoolGraphView: React.FC = () => {
               <span>Displaying {graphStats.nodeCount} tokens and {graphStats.edgeCount} connections</span>
             </div>
           )}
-          <GraphView
-            tokenNodes={filteredData.nodes}
-            poolEdges={filteredData.edges}
-          />
+          <div style={{ height: "800px" }}>
+            <GraphView
+              tokenNodes={filteredData.nodes}
+              poolEdges={filteredData.edges}
+            />
+          </div>
         </>
       ) : (
-        <div className="flex items-center justify-center h-full border rounded-md bg-muted/20" style={{ minHeight: "600px" }}>
+        <div className="flex items-center justify-center h-full border rounded-md bg-muted/20" style={{ minHeight: "800px" }}>
           <p className="text-muted-foreground text-center">
             Select tokens and/or protocols, then click "Render Graph" to visualize connections
           </p>

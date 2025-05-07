@@ -130,7 +130,7 @@ const convertWebSocketPool = (
   return {
     ...modifiedPool,
     spotPrice: spotPrices[pool.id] || 0, // Use spot price from map if available
-    updatedAt: new Date().toISOString().slice(0, 19)
+    updatedAt: new Date().toISOString().slice(0, 19),
   } as unknown as Pool;
 };
 
@@ -252,7 +252,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
                 poolUpdates[id] = {
                   ...stateRef.current.pools[id],
                   spotPrice: price,
-                  updatedAt: new Date().toISOString().slice(0, 19)
+                  updatedAt: new Date().toISOString().slice(0, 19),
+                  lastUpdatedAtBlock: data.block_number || stateRef.current.blockNumber // Track which block this update happened in
                 };
               }
             });

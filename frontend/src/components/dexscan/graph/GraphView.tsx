@@ -34,24 +34,17 @@ const networkOptions = {
     }
   },
   physics: {
-    enabled: true,
-    barnesHut: { 
-      springLength: 150, 
-      gravitationalConstant: -1500, // Reduced gravitational force
-      damping: 0.95, // Increased damping to reduce oscillation
-      centralGravity: 0.3 // Increased central gravity
+    barnesHut: {
+      springLength: 800,
+      gravitationalConstant: -2000,
     },
-    stabilization: {
-      enabled: true,
-      iterations: 2000, // More iterations for better stabilization
-      fit: true,
-      updateInterval: 50
-    },
-    timestep: 0.3, // Slower timestep for more stability
-    adaptiveTimestep: true,
-    minVelocity: 0.75 // System considered stable once nodes move slower than this
+    solver: "repulsion",
+    repulsion: {
+      nodeDistance: 600 // Put more distance between the nodes.
+    }
   },
   layout: {
+    randomSeed: 42,
     improvedLayout: false
   }
 };

@@ -9,7 +9,7 @@ const deepEqual = (a: any, b: any) => {
 };
 
 export function useGraphData() {
-  const { pools } = usePoolData();
+  const { pools, blockNumber } = usePoolData();
   const prevPoolsRef = useRef<any>(null);
   const prevResultRef = useRef<{tokenNodes: any[], poolEdges: any[]} | null>(null);
   const runCountRef = useRef(0);
@@ -69,7 +69,8 @@ export function useGraphData() {
           to: pool.tokens[1].address,
           width: 3, // Could be based on volume or liquidity
           protocol: pool.protocol_system,
-          spotPrice: pool.spotPrice
+          spotPrice: pool.spotPrice,
+          lastUpdatedAtBlock: pool.lastUpdatedAtBlock || 0
         });
       }
     });
@@ -78,7 +79,8 @@ export function useGraphData() {
     
     const result = {
       tokenNodes,
-      poolEdges
+      poolEdges,
+      currentBlockNumber: blockNumber
     };
     
     // Save the result for future comparison
