@@ -19,6 +19,16 @@ interface PoolListViewProps {
   highlightedPoolId?: string | null;
   onPoolSelect?: (poolId: string | null) => void;
 }
+const renderTokens = (pool: Pool) => {
+  return pool.tokens.map(token => {
+    const address = token.address || '';
+    // Get first and last byte if address is available
+    const firstByte = address ? address.slice(2, 4) : '';
+    const lastByte = address ? address.slice(-2) : '';
+    
+    return `${token.symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
+  }).join(' / ');
+};
 
 const POOLS_PER_PAGE = 10;
 
@@ -127,11 +137,9 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   // Filter function for pools
   const filterPools = useCallback((poolsToFilter: Pool[]) => {
     return poolsToFilter.filter(pool => {
-      // Filter by tokens
+      // Filter by tokens using the same rendered format as display
       const tokenMatch = !filters.tokens || 
-        pool.tokens.some(token => 
-          token.symbol.toLowerCase().includes(filters.tokens.toLowerCase())
-        );
+        renderTokens(pool).toLowerCase().includes(filters.tokens.toLowerCase());
       
       // Filter by protocol
       const protocolMatch = !filters.protocol_system || 
@@ -189,9 +197,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   
   // console.log('Paginated pools for table:', paginatedPools.length, 'pools (page', currentPage, 'of', totalPages, ')');
 
-  const renderTokens = (pool: Pool) => {
-    return pool.tokens.map(token => token.symbol).join(' / ');
-  };
+
 
   const renderFee = (pool: Pool) => {
     
