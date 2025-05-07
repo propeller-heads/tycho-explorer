@@ -8,6 +8,17 @@ import { Badge } from '@/components/ui/badge';
 import { Search, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Helper function to format token with address bytes
+const formatTokenWithAddress = (symbol: string, address: string) => {
+  if (!address || address.length < 4) return symbol;
+  
+  // Get first and last byte if address is available
+  const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
+  const lastByte = address.slice(-2);
+  
+  return `${symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
+};
+
 interface GraphControlsProps {
   tokenList: Array<{id: string, label: string}>;
   protocols: string[];
@@ -95,7 +106,7 @@ const VirtualizedTokenList: React.FC<{
                 htmlFor={`token-${token.id}`}
                 className="ml-2 text-sm cursor-pointer flex-grow"
               >
-                {token.label}
+                {formatTokenWithAddress(token.label, token.id)}
               </label>
             </div>
           );
@@ -250,7 +261,12 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   const selectedTokenLabels = React.useMemo(() => {
     return selectedTokens.map(id => {
       const token = tokenList.find(t => t.id === id);
-      return token?.label || 'Unknown';
+      // Just extract the symbol name to avoid double formatting
+      if (token?.label) {
+        const labelParts = token.label.split(' ');
+        return labelParts[0]; // Just return the symbol part
+      }
+      return 'Unknown';
     });
   }, [selectedTokens, tokenList]);
 
@@ -470,19 +486,27 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   )}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedTokenLabels.map((label, index) => (
-                    <Badge 
-                      key={`token-${selectedTokens[index]}`} 
-                      variant="secondary" 
-                      className="flex items-center gap-1 bg-opacity-50"
-                    >
-                      {label}
-                      <X 
-                        className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 
-                        onClick={() => removeToken(selectedTokens[index])}
-                      />
-                    </Badge>
-                  ))}
+                  {selectedTokenLabels.map((symbol, index) => {
+                    const tokenId = selectedTokens[index];
+                    // Format address once
+                    const address = tokenId || '';
+                    const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
+                    const lastByte = address.slice(-2);
+                    
+                    return (
+                      <Badge 
+                        key={`token-${tokenId}`} 
+                        variant="secondary" 
+                        className="flex items-center gap-1 bg-opacity-50"
+                      >
+                        {`${symbol} (0x${firstByte}..${lastByte})`}
+                        <X 
+                          className="h-3 w-3 cursor-pointer opacity-70 hover:opacity-100" 
+                          onClick={() => removeToken(tokenId)}
+                        />
+                      </Badge>
+                    );
+                  })}
                 </div>
               </div>
             )}

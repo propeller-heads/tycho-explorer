@@ -5,14 +5,22 @@ import { DataSet } from 'vis-data';
 // Define the network options
 const networkOptions = {
   nodes: {
-    shape: "circle",
+    shape: "box", // Box shape to fit the token labels
     color: {
       border: "#ffffff",
       background: "#232323",
       highlight: { border: "#000000", background: "#F66733" }
     },
     borderWidth: 1,
-    font: { size: 10, color: "#ffffff" },
+    font: { size: 12, color: "#ffffff" },
+    widthConstraint: {
+      maximum: 120 // Width constraint for labels
+    },
+    heightConstraint: {
+      minimum: 30, // Min height for nodes
+      valign: "middle"
+    },
+    margin: 10, // Margin around text
     fixed: {
       // Fix key nodes like WETH in place to prevent rattling
       // Will be applied to specific nodes in the useEffect
@@ -50,7 +58,7 @@ const networkOptions = {
 
 // Props interface
 interface GraphViewProps {
-  tokenNodes: Array<{id: string; label: string}>;
+  tokenNodes: Array<{id: string; label: string; symbol?: string}>;
   poolEdges: Array<{id: string; from: string; to: string; protocol: string; width?: number; color?: string}>;
 }
 
@@ -74,6 +82,21 @@ class GraphManager {
     // Create datasets
     this.nodesDataset = new DataSet(initialNodes);
     this.edgesDataset = new DataSet(initialEdges);
+    
+    // Format node labels to include address before creating network
+    const nodes = this.nodesDataset.get();
+    nodes.forEach(node => {
+      // Add address format to label
+      if (node.id && node.symbol) {
+        const address = node.id.toString();
+        const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
+        const lastByte = address.slice(-2);
+        
+        // Update the label to include the address format
+        node.label = `${node.symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
+        this.nodesDataset.update(node);
+      }
+    });
     
     // Create network
     this.network = new Network(
@@ -194,16 +217,22 @@ class GraphManager {
     }
     
     // Format address for display
-    const shortAddress = `${data.address.substring(0, 6)}...${data.address.slice(-6)}`;
+    const address = data.address || '';
+    const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
+    const lastByte = address.slice(-2);
+    const shortAddress = address && firstByte && lastByte 
+      ? `0x${firstByte}..${lastByte}`
+      : address;
     
-    // Get label (token symbol) from node
+    // Get node data
     const node = this.nodesDataset?.get(nodeId);
-    const tokenSymbol = node?.label || '';
+    const tokenSymbol = node?.symbol || ''; // Use symbol for token name
     
     // Create HTML content for popup
     const content = `
       <div style="padding: 10px; background-color: rgba(35, 35, 35, 0.9); color: white; border-radius: 4px; border: 1px solid #444; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
         <div style="font-weight: bold; margin-bottom: 8px;">Token Info</div>
+        <div style="margin-bottom: 6px;">Symbol: ${tokenSymbol}</div>
         <div style="margin-bottom: 6px;">Pools: ${data.poolCount}</div>
         <div>
           Address: <a href="https://etherscan.io/token/${data.address}" 

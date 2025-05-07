@@ -39,9 +39,24 @@ export function useGraphData() {
     Object.values(pools).forEach(pool => {
       pool.tokens.forEach(token => {
         if (!tokenMap.has(token.address)) {
+          // Format token label with address bytes
+          const address = token.address || '';
+          const tokenName = token.symbol;
+          
+          // Get first and last byte if address is available
+          const firstByte = address ? address.slice(2, 4) : '';
+          const lastByte = address ? address.slice(-2) : '';
+          
+          // Format like in ListView: TokenName (0xab..cd)
+          const formattedLabel = `${tokenName}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
+            
           tokenMap.set(token.address, {
             id: token.address,
+            // Use just the token symbol for graph nodes (to be modified in GraphView.tsx)
             label: token.symbol,
+            symbol: token.symbol, // Keep original symbol separately
+            formattedLabel: formattedLabel, // Store formatted label for reference
+            address: token.address // Keep raw address for reference
           });
         }
       });

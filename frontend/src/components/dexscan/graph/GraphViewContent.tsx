@@ -4,6 +4,17 @@ import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
 
+// Helper function to format token with address bytes
+const formatTokenWithAddress = (symbol: string, address: string) => {
+  if (!address || address.length < 4) return symbol;
+  
+  // Get first and last byte if address is available
+  const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
+  const lastByte = address.slice(-2);
+  
+  return `${symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
+};
+
 const PoolGraphView: React.FC = () => {
   const renderCountRef = useRef(0);
   console.log(`DEBUG: GraphViewContent render #${++renderCountRef.current}`);
