@@ -20,17 +20,14 @@ const networkOptions = {
       minimum: 30, // Min height for nodes
       valign: "middle"
     },
-    margin: 10, // Margin around text
+    margin: { top: 10, right: 10, bottom: 10, left: 10 },
     fixed: {
       // Fix key nodes like WETH in place to prevent rattling
       // Will be applied to specific nodes in the useEffect
     },
-    // Add tooltip settings
     chosen: {
-      node: function(values, id, selected, hovering) {
-        values.borderWidth = 2;
-        values.borderColor = "#F66733";
-      }
+      node: true,
+      label: true
     }
   },
   physics: {

@@ -198,7 +198,7 @@ const DexScanContentMain = () => {
         <div ref={graphContainerRef} style={
           {
             display: activeTab === 'graph' ? 'block' : 'none',
-            height: "150vh", // 2x viewport height minus header space
+            height: "110vh", // 2x viewport height minus header space
             width: "100%",
             position: "relative",
             overflow: "hidden"  // Allow scrolling for the taller container
