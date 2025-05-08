@@ -72,7 +72,12 @@ const PoolTable: React.FC<PoolTableProps> = ({
         </div>
       </div>
       
-      <ScrollArea className="w-full" style={{ height: 'min(60vh, 600px)', minHeight: '400px' }} ref={tableRef}>
+      <ScrollArea 
+        className="w-full" 
+        style={{ height: 'min(60vh, 600px)', minHeight: '400px' }} 
+        ref={tableRef}
+        withHorizontalScrollbar={true}
+      >
         <div className="w-full min-w-max">
           <Table>
             <TableHeader>
@@ -81,7 +86,15 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableHead 
                     key={column.id}
                     className={cn(
-                      "sticky top-0 bg-secondary/30 cursor-pointer",
+                      "sticky top-0 bg-secondary/30 cursor-pointer p-3",
+                      column.id === 'id' && "min-w-[150px]",
+                      column.id === 'tokens' && "min-w-[250px]",
+                      column.id === 'protocol_system' && "min-w-[100px]",
+                      column.id === 'static_attributes.fee' && "min-w-[80px]",
+                      column.id === 'spotPrice' && "min-w-[100px]",
+                      column.id === 'created_at' && "min-w-[180px]",
+                      column.id === 'updatedAt' && "min-w-[180px]",
+                      column.id === 'lastUpdatedAtBlock' && "min-w-[120px]",
                       column.type === 'number' && "text-right"
                     )}
                     onClick={() => onSort && onSort(column.id)}
@@ -191,11 +204,22 @@ const PoolTable: React.FC<PoolTableProps> = ({
                           <TableCell 
                             key={column.id} 
                             className={cn(
+                              "p-3",
+                              column.id === 'id' && "min-w-[150px]",
+                              column.id === 'tokens' && "min-w-[250px]",
+                              column.id === 'protocol_system' && "min-w-[100px]",
+                              column.id === 'static_attributes.fee' && "min-w-[80px]",
+                              column.id === 'spotPrice' && "min-w-[100px]",
+                              column.id === 'created_at' && "min-w-[180px]",
+                              column.id === 'updatedAt' && "min-w-[180px]",
+                              column.id === 'lastUpdatedAtBlock' && "min-w-[120px]",
                               column.type === 'number' && "text-right",
                               isRowHighlighted && "font-medium text-black dark:text-white" // Ensure text is black in light mode and white in dark mode
                             )}
                           >
-                            {displayValue}
+                            <div className="break-words whitespace-normal">
+                              {displayValue}
+                            </div>
                           </TableCell>
                         );
                       })}
