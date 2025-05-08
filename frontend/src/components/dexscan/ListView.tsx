@@ -39,7 +39,8 @@ const COLUMNS = [
   { id: 'static_attributes.fee', name: 'Fee Rate', type: 'fee' },
   { id: 'spotPrice', name: 'Spot Price', type: 'number' },
   { id: 'created_at', name: 'Created At', type: 'date' },
-  { id: 'updatedAt', name: 'Updated At', type: 'date' }
+  { id: 'updatedAt', name: 'Updated At', type: 'date' },
+  { id: 'lastUpdatedAtBlock', name: 'Last Block', type: 'number' }
 ];
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
@@ -110,13 +111,16 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
       } else if (sortConfig.column === 'updatedAt') {
         valueA = new Date(a.updatedAt).getTime();
         valueB = new Date(b.updatedAt).getTime();
+      } else if (sortConfig.column === 'lastUpdatedAtBlock') {
+        valueA = a.lastUpdatedAtBlock || 0;
+        valueB = b.lastUpdatedAtBlock || 0;
       } else {
         valueA = a[sortConfig.column as keyof Pool];
         valueB = b[sortConfig.column as keyof Pool];
       }
       
       // Compare values
-      if (sortConfig.column === 'static_attributes.fee' || sortConfig.column === 'spotPrice') {
+      if (sortConfig.column === 'static_attributes.fee' || sortConfig.column === 'spotPrice' || sortConfig.column === 'lastUpdatedAtBlock') {
         // Ensure numerical comparison for fee and spot price
         const numA = typeof valueA === 'number' ? valueA : 0;
         const numB = typeof valueB === 'number' ? valueB : 0;
@@ -313,6 +317,9 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                       Protocol: <span className="font-medium">{selectedPool.protocol_system}</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Last Updated at Block: <span className="font-medium">{selectedPool.lastUpdatedAtBlock?.toLocaleString() || 'Unknown'}</span>
                     </p>
                   </div>
 
