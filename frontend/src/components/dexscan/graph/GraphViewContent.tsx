@@ -113,7 +113,7 @@ const PoolGraphView: React.FC = () => {
         // Use orange for recently updated pools, blue for protocol matches, gray for others
         color: isUpdatedInCurrentBlock ? '#FF9800' : (isProtocolMatch ? '#64B5F6' : '#D3D3D3'),
         width: isUpdatedInCurrentBlock ? 5 : (isProtocolMatch ? 3 : 2),
-        label: isUpdatedInCurrentBlock ? 'CHANGED' : undefined
+        label: isUpdatedInCurrentBlock ? 'CHANGED' : " ",
       });
     });
 

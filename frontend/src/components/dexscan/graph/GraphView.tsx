@@ -65,7 +65,7 @@ class GraphManager {
   private popupDiv: HTMLElement | null = null;
   private activeTimeout: NodeJS.Timeout | null = null;
   
-  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[], callback?: () => void) {
+  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[]) {
     console.log('DEBUG: GraphManager.initialize', initialNodes.length, initialEdges.length);
     this.container = container;
     
@@ -233,7 +233,7 @@ class GraphManager {
     });
   }
   
-  updateData(nodes: any[], edges: any[], structureChanged: boolean) {
+  updateData(nodes: any[], edges: any[]) {
       // Keep physics disabled, just update properties
       this.nodesDataset.update(nodes);
       this.edgesDataset.update(edges);
@@ -267,63 +267,42 @@ class GraphManager {
 const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphManagerRef = useRef<GraphManager | null>(null);
-  const renderCountRef = useRef(0);
-  const prevNodesRef = useRef<string[]>([]);
-  const prevEdgesRef = useRef<string[]>([]);
-  const [graphReady, setGraphReady] = useState(false);
   
-  // Log props changes
-  console.log(`DEBUG: GraphView render #${++renderCountRef.current}`, 
-              `Nodes: ${tokenNodes.length}`, 
-              `Edges: ${poolEdges.length}`);
-  
-  // Calculate structure change by comparing node and edge IDs
-  const structureChanged = useCallback(() => {
-    const currentNodeIds = tokenNodes.map(n => n.id).sort().join(',');
-    const currentEdgeIds = poolEdges.map(e => e.id).sort().join(',');
-    
-    const nodesChanged = currentNodeIds !== prevNodesRef.current.join(',');
-    const edgesChanged = currentEdgeIds !== prevEdgesRef.current.join(',');
-    
-    // Update refs for next comparison
-    prevNodesRef.current = tokenNodes.map(n => n.id);
-    prevEdgesRef.current = poolEdges.map(e => e.id);
-    
-    const changed = nodesChanged || edgesChanged;
-    console.log('DEBUG: Structure changed?', changed, 'Nodes:', nodesChanged, 'Edges:', edgesChanged);
-    return changed;
-  }, [tokenNodes, poolEdges]);
-  
+  // Initialize graph only once
   useEffect(() => {
-    // Create GraphManager if it doesn't exist
     if (!graphManagerRef.current) {
-      console.log('DEBUG: Creating new GraphManager');
       graphManagerRef.current = new GraphManager();
     }
     
-    // If we have a container and data, initialize
-    if (containerRef.current && tokenNodes.length > 0 && poolEdges.length > 0) {
+    if (containerRef.current) {
       const manager = graphManagerRef.current;
-      
-      if (!manager.isInitialized()) {
-        console.log('DEBUG: Initializing graph');
-        manager.initialize(containerRef.current, tokenNodes, poolEdges, () => {
-          setGraphReady(true);
-        });
-      } else {
-        console.log('DEBUG: Updating existing graph');
-        manager.updateData(tokenNodes, poolEdges, structureChanged());
+      if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
+        manager.initialize(containerRef.current, tokenNodes, poolEdges);
       }
     }
     
+    // Only clean up on unmount
     return () => {
       if (graphManagerRef.current) {
-        console.log('DEBUG: Cleaning up GraphManager');
         graphManagerRef.current.destroy();
         graphManagerRef.current = null;
       }
     };
-  }, [tokenNodes, poolEdges, structureChanged]);
+  }, []); // Empty dependency array = only run on mount/unmount
+  
+  // Handle data updates separately
+  useEffect(() => {
+    if (containerRef.current && tokenNodes.length > 0 && poolEdges.length > 0) {
+      const manager = graphManagerRef.current;
+      if (manager) {
+        if (!manager.isInitialized()) {
+          manager.initialize(containerRef.current, tokenNodes, poolEdges);
+        } else {
+          manager.updateData(tokenNodes, poolEdges);
+        }
+      }
+    }
+  }, [tokenNodes, poolEdges]);
   
   return <div ref={containerRef} style={{ height: "100%", width: "100%", border: "1px solid transparent" }} />;
 };

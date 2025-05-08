@@ -11,7 +11,7 @@ const deepEqual = (a: any, b: any) => {
 export function useGraphData() {
   const { pools, blockNumber } = usePoolData();
   const prevPoolsRef = useRef<any>(null);
-  const prevResultRef = useRef<{tokenNodes: any[], poolEdges: any[]} | null>(null);
+  const prevResultRef = useRef<{tokenNodes: any[], poolEdges: any[], currentBlockNumber: number} | null>(null);
   const runCountRef = useRef(0);
   
   return useMemo(() => {
