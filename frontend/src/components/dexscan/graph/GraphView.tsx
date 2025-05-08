@@ -304,7 +304,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
     }
   }, [tokenNodes, poolEdges]);
   
-  return <div ref={containerRef} style={{ height: "100%", width: "100%", border: "1px solid transparent" }} />;
+  return <div ref={containerRef} style={{ height: "100%", width: "100%", border: "2px solid black" }} />;
 };
 
 export default GraphView;

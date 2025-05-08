@@ -118,7 +118,7 @@ const DexScanContentMain = () => {
         <DexScanHeader />
       </div>
 
-      <div className="flex flex-col gap-4 mx-12">
+      <div className="flex flex-col gap-4 mx-44">
         <div className="flex justify-between items-center">
           <ViewSelector
             activeTab={activeTab}
@@ -198,10 +198,10 @@ const DexScanContentMain = () => {
         <div ref={graphContainerRef} style={
           {
             display: activeTab === 'graph' ? 'block' : 'none',
-            height: "calc(100vh - 150px)", // Dynamic height based on viewport
+            height: "150vh", // 2x viewport height minus header space
             width: "100%",
             position: "relative",
-            overflow: "hidden"  // Prevent scrollbars
+            overflow: "hidden"  // Allow scrolling for the taller container
           }
         }>
           <GraphViewContent />
