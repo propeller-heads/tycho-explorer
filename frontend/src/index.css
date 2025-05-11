@@ -74,7 +74,6 @@
   }
   body {
     @apply bg-space-deep-blue text-foreground font-mono antialiased;
-    background-image: url('/lovable-uploads/b039c843-ff72-4535-9b61-7b939c3fec04.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
