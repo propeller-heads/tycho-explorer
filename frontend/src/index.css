@@ -73,7 +73,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-space-deep-blue text-foreground font-sans antialiased;
+    background-image: url('./assets/background/background.svg');
+    background-repeat: no-repeat;
+    @apply text-foreground font-sans antialiased;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
