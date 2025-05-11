@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DexScanHeader from './DexScanHeader';
 import ListView from './ListView';
-import { WebSocketConfig } from './WebSocketConfig';
 import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
-import { Button } from '@/components/ui/button';
-import { Globe, PlugZap, ChevronDown, ChevronUp, X } from 'lucide-react';
 import GraphViewContent from './graph/GraphViewContent';
 
 // Main content component using context
@@ -18,11 +15,6 @@ const DexScanContentMain = () => {
   const [activeTab, setActiveTab] = useState<'graph' | 'pools'>(
     tabParam === 'graph' ? 'graph' : 'pools'
   );
-
-  // Add state for WebSocket panel collapse
-  const [wsConfigExpanded, setWsConfigExpanded] = useState(false);
-  const wsConfigRef = useRef<HTMLDivElement>(null);
-  const wsButtonRef = useRef<HTMLButtonElement>(null);
 
   // Refs for view containers
   const graphContainerRef = useRef<HTMLDivElement>(null);
@@ -81,35 +73,6 @@ const DexScanContentMain = () => {
     }
   }, [activeTab]);
 
-  // Toggle WebSocket config panel
-  const toggleWsConfig = () => {
-    setWsConfigExpanded(prev => !prev);
-  };
-
-  // Close WebSocket config panel
-  const closeWsConfig = () => {
-    setWsConfigExpanded(false);
-  };
-
-  // Handle click outside to close panel
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        wsConfigExpanded &&
-        wsConfigRef.current &&
-        !wsConfigRef.current.contains(event.target as Node) &&
-        wsButtonRef.current &&
-        !wsButtonRef.current.contains(event.target as Node)
-      ) {
-        setWsConfigExpanded(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [wsConfigExpanded]);
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -119,76 +82,7 @@ const DexScanContentMain = () => {
       </div>
 
       <div className="flex flex-col gap-4 mx-44">
-        <div className="flex justify-end items-center">
-          {/* WebSocket Connection Indicator and Toggle */}
-          <div className="relative z-10">
-            <div className="flex flex-col items-end">
-              <Button
-                ref={wsButtonRef}
-                variant="ghost"
-                size="sm"
-                className={`flex items-center ${isConnected ? 'text-green-500' : 'text-red-500'} text-xs md:text-sm`}
-                onClick={toggleWsConfig}
-              >
-                {isConnected ? (
-                  <PlugZap className="h-4 w-4 mr-1.5" />
-                ) : (
-                  <Globe className="h-4 w-4 mr-1.5" />
-                )}
-                <span className="hidden xs:inline">
-                  {isConnected ? 'Connected' : 'Disconnected'}
-                </span>
-                {/* Display current chain and block number when connected */}
-                {isConnected && blockNumber > 0 && (
-                  <span className="font-medium text-sm ml-2 bg-background/30 px-2 py-0.5 rounded border border-green-500/20">
-                    {selectedChain} #{blockNumber.toLocaleString()}
-                  </span>
-                )}
-                {wsConfigExpanded ? (
-                  <ChevronUp className="h-4 w-4 ml-1 xs:ml-2" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 ml-1 xs:ml-2" />
-                )}
-              </Button>
-
-              {/* Collapsible WebSocket Config */}
-              {wsConfigExpanded && (
-                <div
-                  ref={wsConfigRef}
-                  className="mt-2 w-72 md:w-80 shadow-lg absolute top-10 right-0 z-20"
-                >
-                  <div className="bg-card rounded-lg border shadow-lg relative">
-                    <div className="flex items-center p-2 border-b">
-                      <h3 className="text-sm font-medium mr-auto">WebSocket Connection</h3>
-                      {isConnected && blockNumber > 0 && (
-                        <div className="text-sm font-medium text-green-500 mx-2">
-                          {selectedChain} #{blockNumber.toLocaleString()}
-                        </div>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 ml-1"
-                        onClick={closeWsConfig}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div className="p-3">
-                      <WebSocketConfig
-                        onConnect={connectToWebSocket}
-                        defaultUrl={websocketUrl}
-                        isConnected={isConnected}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
+        
         {/* Render both views but control visibility with CSS */}
         <div ref={graphContainerRef} style={
           {
