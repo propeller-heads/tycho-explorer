@@ -1,8 +1,42 @@
 This is the specification for this project.
 
-When you edit or add code, write a line of comment above every line of code to explain the purpose of the code and what the code does.
 
-You do not want to implement anything for accessibility.
+
+<code-style>
+* Abstract repeated css classes into strings
+* No magic strings: always name your strings and reuse them
+* Aim for small functions, ideally less than 20 lines each
+* Aim for small files, ideally less than 200 lines each
+* When you edit or add code, write a line of comment above each concept
+* You do not want to implement anything for accessibility
+* When you write functions, follow these:
+
+From Problem Analysis to Data Definitions
+
+Identify the information that must be represented and how it is represented in the chosen programming language. Formulate data definitions and illustrate them with examples.
+
+Signature, Purpose Statement, Header
+
+State what kind of data the desired function consumes and produces. Formulate a concise answer to the question what the function computes. Define a stub that lives up to the signature.
+
+Functional Examples
+
+Work through examples that illustrate the function’s purpose.
+
+Function Template
+
+Translate the data definitions into an outline of the function.
+
+Function Definition
+
+Fill in the gaps in the function template. Exploit the purpose statement and the examples.
+
+Testing (when you are asked to write tests, otherwise, don't write tests)
+
+Articulate the examples as tests and ensure that the function passes all. Doing so discovers mistakes. Tests also supplement examples in that they help others read and understand the definition when the need arises—and it will arise for any serious program.
+* Keep components and any code modular and reduce depedency between them as much as possible
+
+</code-style>
 
 <specification>
 # Pool Explorer
