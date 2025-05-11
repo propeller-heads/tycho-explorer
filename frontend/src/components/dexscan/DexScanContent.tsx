@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { DexScanHeader } from './DexScanHeader';
-import { ViewSelector } from './ViewSelector';
+import DexScanHeader from './DexScanHeader';
 import ListView from './ListView';
 import { WebSocketConfig } from './WebSocketConfig';
 import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
@@ -115,16 +114,12 @@ const DexScanContentMain = () => {
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex justify-between items-center relative mb-6 md:mb-0">
-        <DexScanHeader />
+        {/* Pass activeTab and handleTabChange to DexScanHeader */}
+        <DexScanHeader currentView={activeTab} onViewChange={handleTabChange} />
       </div>
 
       <div className="flex flex-col gap-4 mx-44">
-        <div className="flex justify-between items-center">
-          <ViewSelector
-            activeTab={activeTab}
-            setActiveTab={handleTabChange}
-          />
-
+        <div className="flex justify-end items-center">
           {/* WebSocket Connection Indicator and Toggle */}
           <div className="relative z-10">
             <div className="flex flex-col items-end">

@@ -14,7 +14,7 @@ export const ViewSelector = ({ activeTab, setActiveTab }: ViewSelectorProps) => 
         size="sm"
         onClick={() => setActiveTab('pools')}
       >
-        List View
+        Pool List
       </Button>
       
       <Button 
@@ -22,7 +22,7 @@ export const ViewSelector = ({ activeTab, setActiveTab }: ViewSelectorProps) => 
         size="sm"
         onClick={() => setActiveTab('graph')}
       >
-        Graph View
+        Market Graph
       </Button>
     </div>
   );

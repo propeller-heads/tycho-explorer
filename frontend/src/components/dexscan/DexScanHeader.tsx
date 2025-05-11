@@ -6,14 +6,14 @@ import HeaderBranding from '@/components/dexscan/header/HeaderBranding';
 // Import the HeaderActions component for the right section of the header
 import HeaderActions from '@/components/dexscan/header/HeaderActions';
 // Import the ViewSelector component for the center section of the header
-import ViewSelector from '@/components/dexscan/ViewSelector';
+import { ViewSelector } from '@/components/dexscan/ViewSelector';
 
 // Define an interface for the props that this component accepts
 interface DexScanHeaderProps {
   // The currently active view identifier (either 'list' or 'graph')
   currentView: "graph" | "pools";
   // A callback function that is triggered when a user selects a different view
-  onViewChange: (view: string) => void;
+  onViewChange: (view: "graph" | "pools") => void;
 }
 
 // Define the DexScanHeader component with typed props
