@@ -73,7 +73,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-space-deep-blue text-foreground font-mono antialiased;
+    @apply bg-space-deep-blue text-foreground font-sans antialiased;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -90,7 +90,7 @@
     @apply bg-space-deep-blue bg-opacity-60 backdrop-blur-sm;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-mono tracking-wider text-white;
+    @apply font-sans tracking-wider text-white;
   }
   
   /* Glass morphism for space theme */
