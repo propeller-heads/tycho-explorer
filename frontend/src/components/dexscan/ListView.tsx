@@ -3,9 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn, formatPoolId, getExternalLink } from '@/lib/utils';
 import { Pool } from './types';
 import SwapSimulator from './SwapSimulator';
-import MetricsCards from './poolList/MetricsCards';
-import PoolTable from './poolList/PoolTable';
-import TablePagination from './poolList/TablePagination';
+import MetricsCards from './pools/MetricsCards';
+import PoolTable from './pools/PoolTable';
+import TablePagination from './pools/TablePagination';
 import {
   Tooltip,
   TooltipContent,
