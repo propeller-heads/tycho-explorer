@@ -1,56 +1,49 @@
-# Active Context: Pool Explorer - Memory Bank Initialization
+# Active Context: Pool Explorer - Graph View Refactoring Plan
 
 ## Current Work Focus
 
-The current task is to initialize the Memory Bank for the Pool Explorer project. This involves creating and populating the six core documentation files:
-
-1.  `projectbrief.md` (Completed)
-2.  `productContext.md` (Completed)
-3.  `techContext.md` (Completed)
-4.  `systemPatterns.md` (Completed)
-5.  `activeContext.md` (This file - In Progress)
-6.  `progress.md` (Next to be created)
-
-The information for these files is being sourced from:
-*   `docs/specification.md`
-*   `package.json`
-*   `vite.config.ts`
-*   The file structure and content of `src/components/dexscan/`
-*   `.clinerules`
+The current primary task is to refactor the **Market Graph View** (`src/components/dexscan/graph/`) to align its visual styling, component organization, and interactive behaviors with the TC Design (Figma mockups, specifically node `7903:5193` for the Graph View and `7895:5185` for global background elements). This involves implementing a detailed, multi-step plan developed through discussion.
 
 ## Recent Changes
 
-*   Created `memory-bank/projectbrief.md`.
-*   Created `memory-bank/productContext.md`.
-*   Created `memory-bank/techContext.md`.
-*   Created `memory-bank/systemPatterns.md`.
+*   Completed initial Memory Bank setup (`projectbrief.md`, `productContext.md`, `techContext.md`, `systemPatterns.md`, initial `activeContext.md` and `progress.md`).
+*   Conducted a detailed analysis of the TC Design for the Graph View by fetching and reviewing Figma data.
+*   Compared the TC Design with the current application's Graph View (via screenshot).
+*   Collaboratively developed a comprehensive, step-by-step plan to refactor the Graph View. This plan includes:
+    *   Downloading specific Figma assets (backgrounds, UI icons).
+    *   Implementing an app-wide layered background.
+    *   Restyling the Graph View's main content frame.
+    *   Overhauling `GraphControls.tsx` layout and components (filters, reset link, animated block number display).
+    *   Implementing auto-rendering of the graph on filter changes.
+    *   Updating node, edge, and tooltip styling in `GraphView.tsx` to match TC Design, with interim solutions for data availability (text-only nodes, simplified tooltip content).
 
 ## Next Steps
 
-1.  Complete the content for this file (`activeContext.md`).
-2.  Create and populate `memory-bank/progress.md` to reflect the initial understanding of the project's implementation status based on the provided files.
-3.  Confirm completion of the Memory Bank initialization.
+1.  **Download Figma Assets**:
+    *   Use the `download_figma_images` MCP tool to fetch specified background textures and UI icons.
+    *   Target storage path: `src/assets/figma_generated/`.
+    *   Asset list includes global backgrounds (noise, comets, god rays), graph frame texture, and UI icons (close 'x', dropdown arrow).
+2.  Proceed with the phased implementation of the Graph View refactoring plan (global background, graph frame, controls, graph elements, etc.) as detailed in `progress.md` under "Evolution of Project Decisions."
 
 ## Active Decisions and Considerations
 
-*   **Information Granularity**: Striving to capture essential details in each Memory Bank file without excessive verbosity. The goal is to provide a comprehensive yet digestible overview for future sessions.
-*   **Source of Truth**: Relying on the provided project files (`specification.md`, `package.json`, source code) as the primary sources of information.
-*   **Interpretation**: Some aspects, like the exact functionality of uninspected sub-components (e.g., within `src/components/dexscan/graph/`), are inferred based on naming conventions and context. Deeper dives into these areas will occur as specific tasks require them.
+*   **App-Wide Background**: The elaborate TC Design background (dark purple base, comets, rays, noise) will be implemented globally (e.g., in `App.tsx`) to affect both List and Graph views.
+*   **Graph View Frame**: A distinct, styled frame (semi-transparent fill, specific texture, border, backdrop-blur) will wrap the Graph View's controls and visualization area, appearing "on top" of the global background.
+*   **Graph Controls Redesign**: `GraphControls.tsx` will be significantly refactored to a single-row layout. Filter selection will use styled text-based displays (e.g., "Select tokens" or "ETH, USDT...") triggering popovers, instead of the current button+badge system.
+*   **Auto-Rendering**: The "Render Graph" button will be removed; the graph will update automatically upon changes to token or protocol filters.
+*   **Animated Block Number Display**: The dot next to the block number in controls will be an animated progress indicator (filling with `#FF3366` color) representing the current block's estimated duration. This requires logic in `PoolDataContext.tsx` to track block timestamps and estimate duration.
+*   **Node Styling (Interim)**: Nodes will be text-based (token symbol/name) for now, without logos. Selected nodes will have a `2px solid #FF3366` border.
+*   **Edge Styling**: Edges will be thin, light-colored, and straight.
+*   **Tooltip Content (Interim)**: Tooltip will show Token Symbol, Pool Count, and clickable Address. TVL and Volume data will be omitted until available. Tooltip container will be styled per Figma.
+*   **Asset Management**: Downloaded Figma assets will be stored in `src/assets/figma_generated/`.
 
 ## Important Patterns and Preferences (from `.clinerules` and project structure)
 
-*   **Modularity**: The project structure (e.g., `dexscan` components, `ui` components) and `.clinerules` emphasize modular design.
-*   **Clarity and Comments**: `.clinerules` requires comments above concepts.
-*   **Small Functions/Files**: A preference for concise code units.
-*   **Data-Driven UI**: The application heavily relies on data fetched via WebSockets to drive its views.
-*   **React Best Practices**: Usage of Context API, hooks, and component composition aligns with modern React development.
-*   **Shadcn/ui and Tailwind CSS**: These form the core of the UI's look and feel, and component construction.
+*   Continue adherence to modularity, clarity, small functions/files, and React best practices.
+*   Styling will primarily use Tailwind CSS, with custom CSS/inline styles for specific Figma effects if necessary.
 
-## Learnings and Project Insights (Initial)
+## Learnings and Project Insights
 
-*   The project is a sophisticated data visualization tool for DeFi liquidity.
-*   Real-time data handling via WebSockets is a critical aspect.
-*   Two primary views (List and Graph) are central to the user experience.
-*   The existing codebase in `src/components/dexscan/` provides a solid foundation for these core features.
-*   The `PoolDataContext` is a key architectural piece for managing shared state and data.
-*   The `.clinerules` provide strong guidance on coding style and design principles.
+*   Detailed Figma analysis is crucial for accurate UI implementation.
+*   Iterative refinement of the plan through discussion leads to a more robust and accurate approach.
+*   The block number display is a more complex feature than initially assumed, involving animation and block time estimation.

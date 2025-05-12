@@ -1,97 +1,93 @@
-# Progress: Pool Explorer - Initial State
+# Progress: Pool Explorer - Graph View Refactoring Planned
 
-This document outlines the current implementation status of the Pool Explorer project, based on an initial review of `docs/specification.md` and the provided source code in `src/components/dexscan/`.
+This document outlines the current implementation status and planned work for the Pool Explorer project.
 
 ## What Works (Implemented Features based on `src/components/dexscan/`)
 
 ### Core UI & Navigation:
 *   **Main Layout (`DexScanContent.tsx`)**:
-    *   A primary content area is established.
-    *   Tab-based navigation between "Pool List" and "Market Graph" views is implemented.
-    *   URL synchronization for active tab (`?tab=pools` or `?tab=graph`) is present.
-*   **Header (`DexScanHeader.tsx`, `HeaderBranding.tsx`, `HeaderActions.tsx`)**:
-    *   A header structure is in place, including branding, view selection, and action items.
-    *   `ViewSelector.tsx` allows switching between "Pool List" and "Market Graph" views.
+    *   Primary content area, tab-based navigation (Pool List/Market Graph), URL synchronization.
+*   **Header (`DexScanHeader.tsx`, etc.)**:
+    *   Structure for branding, view selection, actions. `ViewSelector.tsx` handles view switching.
 *   **WebSocket Connection (`WebSocketConfig.tsx`, `PoolDataContext.tsx`)**:
-    *   UI for configuring WebSocket URL and selecting chain (Ethereum primarily).
-    *   Context (`PoolDataContext`) for managing WebSocket connection state (URL, connection status, selected chain, block number, pool data).
-    *   Connection status display (Connected, Reconnecting, Not Connected).
+    *   UI for WS URL/chain config. Context for WS state management (URL, status, chain, block number, pool data). Connection status display.
 
 ### Pool List View (`ListView.tsx`):
-*   **Display**:
-    *   Renders a list of pools in a table (`PoolTable.tsx`).
-    *   Displays overall metrics (`MetricsCards.tsx`): total pools, protocols, unique tokens.
-    *   Pagination for the pool table (`TablePagination.tsx`).
-*   **Data Columns**: Implements display for Pool Address, Tokens, Protocol, Fee Rate, Spot Price, Created At, Updated At, Last Block.
-*   **Interactivity**:
-    *   Sorting by various columns.
-    *   Filtering by tokens (string match), protocol (string match), and pool ID (string match).
-    *   Selection of a pool to view its details.
-*   **Pool Detail Card**:
-    *   Displays detailed information for a selected pool (address, protocol, tokens with Etherscan links).
-    *   Includes a `SwapSimulator.tsx`.
-*   **Fee Parsing**: Logic to parse fee data, with specific handling for `uniswap_v2`, `uniswap_v4`, and `vm:balancer_v2` (`parsePoolFee`, `parseFeeHexValue`).
-*   **External Links**: Provides links to external explorers for pool addresses and token addresses.
+*   **Display**: Pool table, overall metrics, pagination.
+*   **Data Columns**: Pool Address, Tokens, Protocol, Fee Rate, Spot Price, Dates, Last Block.
+*   **Interactivity**: Sorting, filtering (token, protocol, pool ID), pool selection for details.
+*   **Pool Detail Card**: Info, `SwapSimulator.tsx`.
+*   **Fee Parsing & External Links**: Implemented.
 
-### Swap Simulator (`SwapSimulator.tsx`, `simulation/SwapControls.tsx`, `simulation/SwapResults.tsx`):
-*   UI for inputting swap amount and selecting source/target tokens from the selected pool.
-*   Placeholder for displaying simulation results.
-*   The actual simulation logic connection (e.g., to `simulationApi.ts` and Tycho) is present but its full functionality isn't detailed in the provided file contents alone.
+### Swap Simulator (`SwapSimulator.tsx`, etc.):
+*   UI for swap input. Placeholder for results. (Full backend simulation TBD).
 
-### Graph View (`graph/GraphViewContent.tsx`):
-*   A container component (`GraphViewContent.tsx`) exists, suggesting a placeholder or entry point for the graph visualization.
-*   The actual graph rendering logic (`GraphView.tsx`, `useGraphData.ts`, etc.) is present in the file structure but not fully detailed in the initial file contents provided.
+### Graph View (`graph/GraphViewContent.tsx`, etc.):
+*   Basic container and rendering logic (`GraphView.tsx`, `useGraphData.ts`) exist.
+*   **Current state does not match TC Design.** A detailed refactoring plan is in place (see "Evolution of Project Decisions").
 
 ### Data Types (`types.ts`):
-*   Definitions for `WebSocketPool` and `Pool` interfaces are established.
+*   `WebSocketPool` and `Pool` interfaces defined.
 
-## What's Left to Build / Verify (Based on Specification vs. Current Code)
+## What's Left to Build / Verify (Focus: Graph View Refactor)
 
-This is an initial assessment. Deeper dives are needed to confirm the extent of implementation for each feature.
+### Graph View - TC Design Alignment (High Priority - Current Focus):
+*   **App-Wide Background Implementation**:
+    *   Apply TC Design's multi-layered background (dark purple base, comets, rays, noise) globally (e.g., in `App.tsx`).
+*   **Graph View Main Frame Styling**:
+    *   Implement the distinct styled frame (semi-transparent fill, specific texture, border, backdrop-blur) for `GraphViewContent.tsx`.
+*   **`GraphControls.tsx` Overhaul**:
+    *   Redesign to a single-row layout.
+    *   Implement new styled text-based filter displays (for tokens/protocols) with placeholder text and comma-separated selections, triggering popovers.
+    *   Replace "Reset" button with a "Reset filters" text link.
+    *   Remove "Render Graph" button (implement auto-rendering).
+    *   Add animated block number display (circular progress icon filling with `#FF3366`, live block number text). This requires enhancing `PoolDataContext.tsx` to track block timestamps and estimate duration.
+*   **Graph Auto-Rendering**:
+    *   Implement logic for graph to update automatically on filter changes.
+*   **`GraphView.tsx` Node Styling**:
+    *   Default: Styled boxes with centered token name/symbol text (no logos for now).
+    *   Selected: Apply `2px solid #FF3366` border.
+*   **`GraphView.tsx` Edge Styling**:
+    *   Style to be thin, light-colored, and straight lines.
+*   **`GraphView.tsx` Tooltip Styling & Content**:
+    *   Style container per Figma (semi-transparent, blurred, bordered).
+    *   Interim Content: Token Symbol, Pool Count, clickable Address. (TVL/Volume omitted for now).
 
-### Essential Requirements:
-*   **Pool List View - Columns**:
-    *   TVL (in USDC): The `Pool` type in `types.ts` doesn't explicitly list TVL. It's unclear if this is calculated on the fly or expected from the WebSocket. The `ListView.tsx` doesn't explicitly show rendering TVL.
-    *   Last Tx (last update) block number: `lastUpdatedAtBlock` is present.
-    *   Last update time: `updatedAt` is present.
-*   **Graph View**:
-    *   Basic rendering of nodes (tokens) and edges (pools) based on current filter needs verification. The components exist (`GraphViewContent`, `GraphView`, `useGraphData`).
-*   **Current Block Indicator**:
-    *   `PoolDataContext` manages `blockNumber`. Verification needed on how/where it's displayed in both views and if it updates live.
-
-### Important Requirements:
-*   **Graph View Detail**:
-    *   Click on node: See total TVL for token, number of pools, top 5 pools. (Needs verification in `GraphView.tsx` interactivity).
-    *   Scale nodes by TVL: (Needs verification).
-    *   Simulate on pool (in graph): (Needs verification).
-    *   Edge Coloring by protocol: (Needs verification, `protocolColors.ts` exists).
-    *   Filter option (protocol, min TVL, tokens): `GraphControls.tsx` exists, functionality needs verification.
-    *   Show latest update on graph (flashing edges): (Needs verification).
-*   **Overall Metrics**:
-    *   Total number of pools indexed: `ListView` shows this for the current `poolsArray`.
-    *   Total number of contracts/protocols indexed: `ListView` shows this.
-    *   Total TVL indexed: (Needs verification, depends on TVL data availability).
-*   **Filter View Metrics**:
-    *   Total number of pools in current filter view: `ListView` shows this.
-    *   Total TVL in current filter view: (Needs verification).
-
-### Nice-to-Have Requirements:
-*   Simulate trading curve in realtime: (Likely not implemented yet).
-*   Path finder: (Likely not implemented yet).
-*   DEX Event timeline: (Likely not implemented yet).
-*   Visual Solving: (Likely not implemented yet).
-*   Execute the swap: (Likely not implemented yet).
-*   % depth calculation: (Likely not implemented yet).
-*   Two token filter (order-idempotent): Current `ListView` filter for tokens is a single string search.
+### Other Pending Items (from initial assessment, lower priority than current Graph View refactor):
+*   **Pool List View - TVL Column**: Verify data source and implement display.
+*   **Graph View - Advanced Features (Post-Refactor)**:
+    *   Node click details (full TVL, top pools - depends on data).
+    *   Scale nodes by TVL.
+    *   Simulate on pool (in graph).
+    *   Edge coloring by protocol (confirm final design for this).
+    *   Highlighting edges updated in the last block.
+*   **Metrics - TVL**: Verify data and implement for overall/filter view TVL.
+*   **Nice-to-Have Requirements**: Trading curve simulation, path finder, event timeline, visual solving, swap execution, % depth, advanced two-token filter.
 
 ## Current Status Summary
 
-*   The foundational UI structure, view navigation, and WebSocket data handling context are in place.
-*   The "Pool List" view is substantially implemented with sorting, filtering, pagination, and a detailed pool view incorporating a swap simulator UI.
-*   The "Market Graph" view has its basic components and data hooks set up, but the extent of its interactive features and visual details (scaling, coloring, filtering specific to graph) needs further verification by inspecting its dedicated components.
-*   Core data types are defined.
-*   Many "Important" and "Nice-to-have" features from the specification, especially advanced graph interactions and simulations, likely require further development or deeper inspection to confirm their status.
-*   The connection to and capabilities of the "Tycho Simulation" backend for the swap simulator and other potential features is a key area for future exploration.
+*   Foundational UI, navigation, and WebSocket data handling are in place.
+*   Pool List view is largely functional.
+*   **Market Graph view is the current focus for a major refactoring effort to align with TC Design.** A detailed plan for this is established.
+*   Many advanced features from the specification remain pending.
 
 ## Evolution of Project Decisions
-*   (This section will be populated as the project progresses and decisions are made).
+
+*   **(Previous decisions regarding initial setup omitted for brevity)**
+*   **Graph View Refactoring Plan (May 2025):**
+    *   **Overall Goal:** Align current Graph View with TC Design (Figma).
+    *   **Key Changes & Implementation Steps:**
+        1.  **Asset Download:** Fetch specified Figma assets (global backgrounds like comets/rays/noise; graph frame texture; UI icons for filters) via MCP tool. Store in `src/assets/figma_generated/`.
+        2.  **Global Background:** Implement multi-layered app-wide background (dark purple base, decorative SVGs, noise texture) in `App.tsx` or root layout.
+        3.  **Graph View Frame:** Style the main container in `GraphViewContent.tsx` with its unique semi-transparent fill, texture, border, and backdrop-blur.
+        4.  **`GraphControls.tsx` Refactor:**
+            *   Convert to single-row layout.
+            *   Replace filter buttons/badges with styled text boxes (showing "Select tokens/protocols" or comma-separated list) that trigger selection popovers. Use downloaded icons.
+            *   Change "Reset" button to "Reset filters" text link.
+            *   Remove "Render Graph" button.
+            *   Implement animated block number display: circular icon showing fill progress (`#FF3366`) based on estimated block time (requires `PoolDataContext` update for timestamps/duration estimation), plus block number text.
+        5.  **Auto-Rendering:** Graph updates automatically on filter changes.
+        6.  **Node Styling (`GraphView.tsx`):** Text-only nodes (symbol/name) for now. Default: dark box, light border/text. Selected: `2px solid #FF3366` border.
+        7.  **Edge Styling (`GraphView.tsx`):** Thin, light-colored, straight lines.
+        8.  **Tooltip Styling & Content (`GraphView.tsx`):** Styled container per Figma. Interim content: Symbol, Pool Count, Address. (TVL/Volume deferred).
+    *   This plan was developed through iterative discussion, clarifying details like the animated block timer, selected node styling, interim content for nodes/tooltips, and the scope of background elements.
