@@ -1,4 +1,4 @@
-// src/components/dexscan/hooks/useGraphData.ts
+// src/components/dexscan/graph/hooks/useGraphData.ts
 import { useMemo, useRef } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
 
@@ -9,11 +9,20 @@ const deepEqual = (a: any, b: any) => {
 };
 
 export function useGraphData() {
-  const { pools, blockNumber } = usePoolData();
+  const { pools, blockNumber, lastBlockTimestamp, estimatedBlockDuration } = usePoolData(); // Added new values
   const prevPoolsRef = useRef<any>(null);
-  const prevResultRef = useRef<{tokenNodes: any[], poolEdges: any[], currentBlockNumber: number} | null>(null);
+  // Update the type of prevResultRef to include the new fields
+  const prevResultRef = useRef<{
+    tokenNodes: any[], 
+    poolEdges: any[], 
+    currentBlockNumber: number,
+    lastBlockTimestamp: number | null,
+    estimatedBlockDuration: number
+  } | null>(null);
   const runCountRef = useRef(0);
   
+  // The main data (nodes, edges) depends on `pools`.
+  // Other values (blockNumber, timestamps) are passed through but also trigger re-memoization if they change.
   return useMemo(() => {
     runCountRef.current++;
     console.log("DEBUG: useGraphData running memoization", `#${runCountRef.current}`, new Date().toISOString());
@@ -22,16 +31,24 @@ export function useGraphData() {
     const poolsEqual = deepEqual(pools, prevPoolsRef.current);
     console.log("DEBUG: Pools structurally equal to previous?", poolsEqual);
     
-    // If pools haven't changed, return the previous result to maintain reference equality
-    if (poolsEqual && prevResultRef.current) {
-      console.log("DEBUG: Pools unchanged, returning previous result");
-      return prevResultRef.current;
-    }
+    // If pools haven't changed, and other pass-through values are the same, return cached result.
+    // This caching logic might need refinement if blockNumber/timestamps change frequently without pool changes
+    // but for now, any change in dependencies will recompute.
+    // const poolsEqual = deepEqual(pools, prevPoolsRef.current);
+    // if (poolsEqual && prevResultRef.current && 
+    //     prevResultRef.current.currentBlockNumber === blockNumber &&
+    //     prevResultRef.current.lastBlockTimestamp === lastBlockTimestamp &&
+    //     prevResultRef.current.estimatedBlockDuration === estimatedBlockDuration
+    // ) {
+    //   console.log("DEBUG: Data unchanged, returning previous result from useGraphData");
+    //   return prevResultRef.current;
+    // }
+    // Simpler: always recompute if dependencies change, rely on downstream memoization if needed.
+    // The main cost is nodes/edges generation, which is tied to `pools`.
+
+    // prevPoolsRef.current = pools; // Store for deep equality check if re-enabled
     
-    // Save the current pools for future comparison
-    prevPoolsRef.current = pools;
-    
-    console.log("DEBUG: Generating new graph data");
+    console.log("DEBUG: Generating new graph data in useGraphData");
     const tokenMap = new Map();
     const poolEdges = [];
     
@@ -80,12 +97,13 @@ export function useGraphData() {
     const result = {
       tokenNodes,
       poolEdges,
-      currentBlockNumber: blockNumber
+      currentBlockNumber: blockNumber,
+      lastBlockTimestamp: lastBlockTimestamp, // Added
+      estimatedBlockDuration: estimatedBlockDuration // Added
     };
     
-    // Save the result for future comparison
-    prevResultRef.current = result;
+    // prevResultRef.current = result; // Store for deep equality check if re-enabled
     
     return result;
-  }, [pools]);
+  }, [pools, blockNumber, lastBlockTimestamp, estimatedBlockDuration]); // Add new dependencies
 }

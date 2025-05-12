@@ -20,6 +20,8 @@ interface PoolDataContextValue {
   blockNumber: number;
   selectedChain: string;
   availableChains: string[];
+  lastBlockTimestamp: number | null; // Added
+  estimatedBlockDuration: number; // Added
 }
 
 // Define actions for our reducer
@@ -29,7 +31,7 @@ type PoolDataAction =
   | { type: 'SET_HIGHLIGHTED_POOL', payload: string | null }
   | { type: 'SET_CONNECTION_STATE', payload: { isConnected: boolean } }
   | { type: 'SET_WEBSOCKET_URL', payload: string }
-  | { type: 'SET_BLOCK_NUMBER', payload: number }
+  | { type: 'SET_BLOCK_NUMBER', payload: { blockNumber: number; timestamp: number } } // Updated
   | { type: 'SET_SELECTED_CHAIN', payload: string }
   | { type: 'RESET_STATE' };
 
@@ -41,12 +43,16 @@ interface PoolDataState {
   websocketUrl: string;
   blockNumber: number;
   selectedChain: string;
+  lastBlockTimestamp: number | null; // Added
+  estimatedBlockDuration: number; // Added
   pendingUpdates: {
     pools: Record<string, Pool>;
   };
 }
 
 // Reducer function for better state management
+const DEFAULT_ESTIMATED_BLOCK_DURATION = 12000; // Default for Ethereum ~12s
+
 function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolDataState {
   switch (action.type) {
     case 'SET_POOLS':
@@ -84,11 +90,23 @@ function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolData
         ...state,
         websocketUrl: action.payload
       };
-    case 'SET_BLOCK_NUMBER':
+    case 'SET_BLOCK_NUMBER': {
+      const newTimestamp = action.payload.timestamp;
+      let newEstimatedDuration = state.estimatedBlockDuration;
+      if (state.lastBlockTimestamp) {
+        const duration = newTimestamp - state.lastBlockTimestamp;
+        // Basic sanity check for duration, e.g., between 1s and 60s
+        if (duration > 1000 && duration < 60000) {
+          newEstimatedDuration = duration;
+        }
+      }
       return {
         ...state,
-        blockNumber: action.payload
+        blockNumber: action.payload.blockNumber,
+        lastBlockTimestamp: newTimestamp,
+        estimatedBlockDuration: newEstimatedDuration,
       };
+    }
     case 'SET_SELECTED_CHAIN':
       return {
         ...state,
@@ -154,6 +172,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     websocketUrl: savedWebSocketUrl,
     blockNumber: 0,
     selectedChain: savedChain,
+    lastBlockTimestamp: null, // Initialize
+    estimatedBlockDuration: DEFAULT_ESTIMATED_BLOCK_DURATION, // Initialize
     pendingUpdates: {
       pools: {}
     }
@@ -229,7 +249,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
 
           // Update block number if provided
           if (data.block_number) {
-            dispatch({ type: 'SET_BLOCK_NUMBER', payload: data.block_number });
+            dispatch({ 
+              type: 'SET_BLOCK_NUMBER', 
+              payload: { blockNumber: data.block_number, timestamp: Date.now() } 
+            });
           }
 
           // Collect spot prices
@@ -367,6 +390,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       websocketUrl: state.websocketUrl,
       blockNumber: state.blockNumber,
       selectedChain: state.selectedChain,
+      lastBlockTimestamp: state.lastBlockTimestamp, // Added
+      estimatedBlockDuration: state.estimatedBlockDuration, // Added
       connectToWebSocket,
       disconnectWebSocket,
       highlightPool,
@@ -380,6 +405,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     state.websocketUrl,
     state.blockNumber,
     state.selectedChain,
+    state.lastBlockTimestamp, // Added
+    state.estimatedBlockDuration, // Added
     connectToWebSocket,
     disconnectWebSocket,
     highlightPool,
@@ -398,4 +425,4 @@ export function usePoolData() {
     throw new Error('usePoolData must be used within a PoolDataProvider');
   }
   return context;
-} 
+}

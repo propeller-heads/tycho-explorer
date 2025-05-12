@@ -5,30 +5,46 @@ import { DataSet } from 'vis-data';
 // Define the network options
 const networkOptions = {
   nodes: {
-    shape: "box", // Box shape to fit the token labels
+    shape: "box", 
     color: {
-      border: "#ffffff",
-      background: "#232323",
-      highlight: { border: "#000000", background: "#F66733" }
+      border: "#FFF4E0", // Default border color from Figma text
+      background: "#232323", // Default node background
+      highlight: { // For hover
+        border: "#FFFFFF", // Brighter border on hover
+        background: "rgba(255, 244, 224, 0.1)" // Slight highlight background on hover
+      }
     },
-    borderWidth: 1,
-    font: { size: 12, color: "#ffffff" },
+    borderWidth: 1, // Default border width
+    font: { 
+      size: 14, // Figma node labels are 14px
+      color: "#FFF4E0" // Figma text color
+    },
     widthConstraint: {
-      maximum: 120 // Width constraint for labels
+      maximum: 120 
     },
     heightConstraint: {
-      minimum: 30, // Min height for nodes
+      minimum: 30, 
       valign: "middle"
     },
     margin: { top: 10, right: 10, bottom: 10, left: 10 },
     fixed: {
-      // Fix key nodes like WETH in place to prevent rattling
-      // Will be applied to specific nodes in the useEffect
-    },
-    chosen: {
-      node: true,
-      label: true
+      // This can be used later if specific nodes need to be fixed
     }
+    // `chosen` option removed, selection styling handled manually via dataset update
+  },
+  edges: {
+    smooth: {
+      enabled: true, 
+      type: "continuous", 
+      roundness: 0 // Add roundness to satisfy TypeScript, 0 for straighter lines
+    },
+    color: {
+      color: "rgba(255, 244, 224, 0.07)", // Default subtle edge color from Figma
+      highlight: "rgba(255, 244, 224, 0.2)", // Brighter on hover
+      hover: "rgba(255, 244, 224, 0.2)",
+    },
+    width: 1, // Default edge width from Figma
+    hoverWidth: 1.5, // Slightly thicker on hover
   },
   physics: {
     barnesHut: {
@@ -61,6 +77,7 @@ class GraphManager {
   private container: HTMLElement | null = null;
   private popupDiv: HTMLElement | null = null;
   private activeTimeout: NodeJS.Timeout | null = null;
+  private selectedNodeId: string | null = null; // To track selected node
   
   initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[]) {
     console.log('DEBUG: GraphManager.initialize', initialNodes.length, initialEdges.length);
@@ -70,20 +87,10 @@ class GraphManager {
     this.nodesDataset = new DataSet(initialNodes);
     this.edgesDataset = new DataSet(initialEdges);
     
-    // Format node labels to include address before creating network
-    const nodes = this.nodesDataset.get();
-    nodes.forEach(node => {
-      // Add address format to label
-      if (node.id && node.symbol) {
-        const address = node.id.toString();
-        const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
-        const lastByte = address.slice(-2);
-        
-        // Update the label to include the address format
-        node.label = `${node.symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
-        this.nodesDataset.update(node);
-      }
-    });
+    // Node labels are assumed to be set correctly (just symbol) by useGraphData
+    // No need for the address formatting loop here if useGraphData provides final labels.
+    // const nodes = this.nodesDataset.get();
+    // nodes.forEach(node => { ... });
     
     // Create network
     this.network = new Network(
@@ -94,19 +101,56 @@ class GraphManager {
     
     // Add click event handler for nodes
     this.network.on('click', (params) => {
-      // Always hide existing popup first
-      this.hidePopup();
+      this.hidePopup(); // Always hide popup on any click
       
-      if (params.nodes.length > 0) {
-        // Store the click event for later use
+      const clickedNodeId = params.nodes.length > 0 ? params.nodes[0] : null;
+
+      // If a different node was previously selected, revert its style
+      if (this.selectedNodeId && this.selectedNodeId !== clickedNodeId) {
+        this.nodesDataset?.update({ 
+          id: this.selectedNodeId, 
+          borderWidth: networkOptions.nodes.borderWidth, // Default border width
+          color: { border: networkOptions.nodes.color.border } // Default border color
+        });
+      }
+
+      if (clickedNodeId) {
+        // A node was clicked
+        if (this.selectedNodeId === clickedNodeId) {
+          // Clicked the same node again, deselect it (optional behavior)
+          // For now, let's keep it selected and just re-show tooltip
+          // Or, to deselect:
+          // this.nodesDataset?.update({ id: clickedNodeId, borderWidth: networkOptions.nodes.borderWidth, color: { border: networkOptions.nodes.color.border }});
+          // this.selectedNodeId = null;
+        } else {
+          // A new node is selected
+          this.nodesDataset?.update({ 
+            id: clickedNodeId, 
+            borderWidth: 2, 
+            color: { border: '#FF3366' } // Selected style
+          });
+          this.selectedNodeId = clickedNodeId;
+        }
+
+        // Show tooltip for the clicked node
         const clickEvent = params.event?.center || { x: 0, y: 0 };
-        
-        // Clicked on a node - show popup with small delay to ensure accurate positioning
-        setTimeout(() => {
-          const nodeId = params.nodes[0];
-          const tokenData = this.getTokenData(nodeId);
-          this.showTokenInfo(nodeId, tokenData, clickEvent);
+        setTimeout(() => { // Small delay for positioning
+          if (this.selectedNodeId) { // Check if still selected (in case of rapid clicks)
+             const tokenData = this.getTokenData(this.selectedNodeId);
+             this.showTokenInfo(this.selectedNodeId, tokenData, clickEvent);
+          }
         }, 50);
+
+      } else {
+        // Clicked on canvas (not a node), deselect any currently selected node
+        if (this.selectedNodeId) {
+          this.nodesDataset?.update({ 
+            id: this.selectedNodeId, 
+            borderWidth: networkOptions.nodes.borderWidth,
+            color: { border: networkOptions.nodes.color.border }
+          });
+          this.selectedNodeId = null;
+        }
       }
     });
     
@@ -209,16 +253,39 @@ class GraphManager {
     const tokenSymbol = node?.symbol || ''; // Use symbol for token name
     
     // Create HTML content for popup
+    // Applying styles based on Figma's tooltip (7903:5709)
     const content = `
-      <div style="padding: 10px; background-color: rgba(35, 35, 35, 0.9); color: white; border-radius: 4px; border: 1px solid #444; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-        <div style="font-weight: bold; margin-bottom: 8px;">Token Info</div>
-        <div style="margin-bottom: 6px;">Symbol: ${tokenSymbol}</div>
-        <div style="margin-bottom: 6px;">Pools: ${data.poolCount}</div>
+      <div style="
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        padding: 16px; 
+        background-color: rgba(255, 244, 224, 0.04); 
+        color: #FFF4E0; 
+        border-radius: 8px; 
+        border: 1px solid rgba(255, 244, 224, 0.2); 
+        box-shadow: 0px 4px 16px 0px rgba(37, 0, 63, 0.2);
+        backdrop-filter: blur(10.4px);
+        -webkit-backdrop-filter: blur(10.4px);
+        min-width: 200px; /* Ensure a reasonable minimum width */
+      ">
+        <div style="font-weight: 500; margin-bottom: 12px; font-size: 14px; color: #FFF4E0;">Token Info</div>
+        
+        <div style="margin-bottom: 8px;">
+          <span style="color: rgba(255, 244, 224, 0.64);">Symbol: </span>
+          <span style="color: #FFF4E0;">${tokenSymbol}</span>
+        </div>
+        
+        <div style="margin-bottom: 8px;">
+          <span style="color: rgba(255, 244, 224, 0.64);">Pools: </span>
+          <span style="color: #FFF4E0;">${data.poolCount}</span>
+        </div>
+        
         <div>
-          Address: <a href="https://etherscan.io/token/${data.address}" 
-                     target="_blank" 
-                     style="color: #69a1ff; text-decoration: underline;"
-                     rel="noopener noreferrer">${shortAddress}</a>
+          <span style="color: rgba(255, 244, 224, 0.64);">Address: </span>
+          <a href="https://etherscan.io/token/${data.address}" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             style="color: #69a1ff; text-decoration: underline; word-break: break-all;">${shortAddress}</a>
         </div>
       </div>
     `;
@@ -301,7 +368,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
     }
   }, [tokenNodes, poolEdges]);
   
-  return <div ref={containerRef} style={{ height: "100%", width: "100%", border: "2px solid black" }} />;
+  return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */}
 };
 
 export default GraphView;
