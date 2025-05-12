@@ -191,7 +191,7 @@ const PoolGraphView: React.FC = () => {
         backgroundImage: `url(${graphFrameBgArtboard})`,
         backgroundSize: "cover", // Or "contain", "auto" depending on image aspect ratio and desired effect
         backgroundPosition: "center",
-        border: "1px solid rgba(255, 244, 224, 0.6)",
+        border: "1px solid rgba(255, 244, 224, 0.4)", // Changed opacity from 0.6 to 0.4
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)", // For Safari
         boxSizing: "border-box", // Ensure padding and border are included in height/width
@@ -214,11 +214,6 @@ const PoolGraphView: React.FC = () => {
       
       {renderCounter > 0 ? (
         <>
-          {graphStats && (
-            <div className="flex gap-4 mb-2 text-xs text-muted-foreground">
-              <span>Displaying {graphStats.nodeCount} tokens and {graphStats.edgeCount} connections</span>
-            </div>
-          )}
           {/* Ensure GraphView container takes remaining height */}
           <div style={{ flexGrow: 1, height: "0", minHeight:"0" /* Fix for flex child height in some browsers */ }}>
             <GraphView

@@ -156,10 +156,16 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 
   // Main layout changed to a single horizontal row
   // Removed outer border and p-3, mb-4 as these are now on GraphViewContent's frame
+  // Added responsive flex classes: flex-col on small screens, md:flex-row on medium and up.
+  // md:items-center to ensure vertical alignment in row mode.
+  // items-start on small screens (column mode) to align items to the left.
   return (
-    <div className="flex items-center justify-between gap-4 p-4" style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', marginBottom: '16px' /* Spacing before graph area */ }}>
-      {/* Left section for filters */}
-      <div className="flex items-center gap-3">
+    <div 
+      className="flex flex-col md:flex-row md:items-center md:justify-between items-start gap-4 p-4" 
+      style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', marginBottom: '16px' /* Spacing before graph area */ }}
+    >
+      {/* Left section for filters - allow wrapping on small screens */}
+      <div className="flex flex-wrap items-center gap-3"> {/* flex-wrap allows filters to wrap if needed */}
         {/* Token Filter Display */}
         <Popover open={tokenSearchOpen} onOpenChange={setTokenSearchOpen}>
           <PopoverTrigger asChild>
@@ -284,8 +290,8 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         </Popover>
       </div>
 
-      {/* Right section for reset and block number */}
-      <div className="flex items-center gap-3">
+      {/* Right section for reset and block number - ensure it doesn't shrink excessively and aligns well in column mode */}
+      <div className="flex items-center gap-3 mt-4 md:mt-0 flex-shrink-0"> {/* mt-4 for spacing in col mode, md:mt-0 for row mode */}
         <button
           onClick={handleFullReset}
           className="text-sm font-medium"

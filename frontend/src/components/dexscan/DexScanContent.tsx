@@ -81,7 +81,8 @@ const DexScanContentMain = () => {
         <DexScanHeader currentView={activeTab} onViewChange={handleTabChange} />
       </div>
 
-      <div className="flex flex-col gap-4 mx-44">
+      {/* Adjusted margin from mx-44 to mx-6 (24px) to match Figma's graph panel horizontal margins */}
+      <div className="flex flex-col gap-4 mx-6"> 
         
         {/* Render both views but control visibility with CSS */}
         <div ref={graphContainerRef} style={
