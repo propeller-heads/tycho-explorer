@@ -242,15 +242,14 @@ class GraphManager {
     
     // Format address for display
     const address = data.address || '';
-    const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 4) : address.slice(0, 2);
-    const lastByte = address.slice(-2);
+    const firstByte = address.slice(0, 2) === '0x' ? address.slice(2, 6) : address.slice(0, 4);
+    const lastByte = address.slice(-4);
     const shortAddress = address && firstByte && lastByte 
-      ? `0x${firstByte}..${lastByte}`
+      ? `0x${firstByte}...${lastByte}`
       : address;
     
     // Get node data
     const node = this.nodesDataset?.get(nodeId);
-    const tokenSymbol = node?.symbol || ''; // Use symbol for token name
     
     // Create HTML content for popup
     // Applying styles based on Figma's tooltip (7903:5709)
@@ -267,14 +266,7 @@ class GraphManager {
         backdrop-filter: blur(10.4px);
         -webkit-backdrop-filter: blur(10.4px);
         min-width: 200px; /* Ensure a reasonable minimum width */
-      ">
-        <div style="font-weight: 500; margin-bottom: 12px; font-size: 14px; color: #FFF4E0;">Token Info</div>
-        
-        <div style="margin-bottom: 8px;">
-          <span style="color: rgba(255, 244, 224, 0.64);">Symbol: </span>
-          <span style="color: #FFF4E0;">${tokenSymbol}</span>
-        </div>
-        
+      ">        
         <div style="margin-bottom: 8px;">
           <span style="color: rgba(255, 244, 224, 0.64);">Pools: </span>
           <span style="color: #FFF4E0;">${data.poolCount}</span>
