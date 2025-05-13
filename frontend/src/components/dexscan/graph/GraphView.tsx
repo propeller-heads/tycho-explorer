@@ -73,9 +73,11 @@ class GraphManager {
   private popupDiv: HTMLElement | null = null;
   private activeTimeout: NodeJS.Timeout | null = null;
   private selectedNodeId: string | null = null; // To track selected node
+  private boundHandleDocumentMousedown: ((event: MouseEvent) => void) | null = null;
   
   initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[]) {
     console.log('DEBUG: GraphManager.initialize', initialNodes.length, initialEdges.length);
+    this.boundHandleDocumentMousedown = this.handleDocumentMousedown.bind(this);
     this.container = container;
     
     // Create datasets
@@ -96,68 +98,66 @@ class GraphManager {
     
     // Add click event handler for nodes
     this.network.on('click', (params) => {
-      this.hidePopup(); // Always hide popup on any click
-      
       const clickedNodeId = params.nodes.length > 0 ? params.nodes[0] : null;
-
-      // If a different node was previously selected, revert its style
-      if (this.selectedNodeId && this.selectedNodeId !== clickedNodeId) {
-        // Revert previously selected node to default styling
-        this.nodesDataset?.update({ 
-          id: this.selectedNodeId, 
-          borderWidth: networkOptions.nodes.borderWidth, 
-          color: { 
-            border: networkOptions.nodes.color.border,
-            background: networkOptions.nodes.color.background,
-            highlight: networkOptions.nodes.color.highlight 
-          } 
-        });
-      }
+      const previousSelectedNodeId = this.selectedNodeId;
+      const clickEvent = params.event?.center || { x: 0, y: 0 };
 
       if (clickedNodeId) {
         // A node was clicked
-        if (this.selectedNodeId === clickedNodeId) {
-          // Optional: Clicking an already selected node could deselect it
-          // For now, if clicked again, it just re-triggers tooltip and keeps selection style
-          // To deselect:
-          // this.nodesDataset?.update({ 
-          //   id: clickedNodeId, 
-          //   borderWidth: networkOptions.nodes.borderWidth, 
-          //   color: { ...networkOptions.nodes.color }
-          // });
-          // this.selectedNodeId = null;
+        if (clickedNodeId === previousSelectedNodeId) {
+          // Clicked on the SAME already selected node.
+          // Re-show/re-position the tooltip. showTokenInfo handles hide/show and doc listener.
+          const tokenData = this.getTokenData(clickedNodeId);
+          this.showTokenInfo(clickedNodeId, tokenData, clickEvent);
         } else {
-          // A new node is selected
+          // Clicked on a NEW (different) node.
+          this.hidePopup(); // Hide any existing popup (and removes doc listener)
+
+          // Revert style of the previously selected node (if any)
+          if (previousSelectedNodeId) {
+            this.nodesDataset?.update({ 
+              id: previousSelectedNodeId, 
+              borderWidth: networkOptions.nodes.borderWidth, 
+              color: { 
+                border: networkOptions.nodes.color.border,
+                background: networkOptions.nodes.color.background,
+                highlight: networkOptions.nodes.color.highlight 
+              } 
+            });
+          }
+
+          // Apply selected style to the new node.
           this.nodesDataset?.update({ 
             id: clickedNodeId, 
             borderWidth: 2, 
             color: { 
-              border: '#FF3366', // Folly red selected border
-              background: networkOptions.nodes.color.background, // Keep default background
-              highlight: { // Ensure highlight state for selected node also uses red border
+              border: '#FF3366', 
+              background: networkOptions.nodes.color.background, 
+              highlight: { 
                 border: '#FF3366',
                 background: networkOptions.nodes.color.highlight.background 
               }
             } 
           });
           this.selectedNodeId = clickedNodeId;
+
+          // Show tooltip for the new node.
+          // Using setTimeout for consistent behavior.
+          setTimeout(() => {
+            if (this.selectedNodeId === clickedNodeId) { 
+               const tokenData = this.getTokenData(clickedNodeId);
+               this.showTokenInfo(clickedNodeId, tokenData, clickEvent); // This will add the doc listener
+            }
+          }, 50);
         }
-
-        // Show tooltip for the clicked node
-        const clickEvent = params.event?.center || { x: 0, y: 0 };
-        setTimeout(() => { // Small delay for positioning
-          if (this.selectedNodeId) { // Check if still selected (in case of rapid clicks)
-             const tokenData = this.getTokenData(this.selectedNodeId);
-             this.showTokenInfo(this.selectedNodeId, tokenData, clickEvent);
-          }
-        }, 50);
-
       } else {
-        // Clicked on canvas (not a node), deselect any currently selected node
-        if (this.selectedNodeId) {
-          // Revert to default styling if canvas is clicked
+        // Clicked on CANVAS (not a node).
+        this.hidePopup(); // Hide any existing popup (and removes doc listener)
+        
+        // Deselect any currently selected node
+        if (previousSelectedNodeId) {
           this.nodesDataset?.update({ 
-            id: this.selectedNodeId, 
+            id: previousSelectedNodeId, 
             borderWidth: networkOptions.nodes.borderWidth,
             color: {
               border: networkOptions.nodes.color.border,
@@ -165,8 +165,8 @@ class GraphManager {
               highlight: networkOptions.nodes.color.highlight
             }
           });
-          this.selectedNodeId = null;
         }
+        this.selectedNodeId = null; // No node is selected.
       }
     });
     
@@ -230,8 +230,33 @@ class GraphManager {
     // Position popup directly above the click position
     this.popupDiv.style.left = `${clickX - (popupWidth / 2)}px`;
     this.popupDiv.style.top = `${clickY - popupHeight - 20}px`;
+
+    // Add document mousedown listener only when popup is shown
+    if (this.boundHandleDocumentMousedown) {
+      document.addEventListener('mousedown', this.boundHandleDocumentMousedown, true); // Use capture phase
+    }
   }
   
+  private handleDocumentMousedown(event: MouseEvent) {
+    if (this.popupDiv && !this.popupDiv.contains(event.target as Node)) {
+      // Clicked outside the popup
+      this.hidePopup();
+      if (this.selectedNodeId) {
+        // Revert previously selected node to default styling
+        this.nodesDataset?.update({ 
+          id: this.selectedNodeId, 
+          borderWidth: networkOptions.nodes.borderWidth, 
+          color: { 
+            border: networkOptions.nodes.color.border,
+            background: networkOptions.nodes.color.background,
+            highlight: networkOptions.nodes.color.highlight 
+          } 
+        });
+        this.selectedNodeId = null;
+      }
+    }
+  }
+
   hidePopup() {
     if (this.activeTimeout) {
       clearTimeout(this.activeTimeout);
@@ -244,6 +269,10 @@ class GraphManager {
         this.popupDiv.parentNode.removeChild(this.popupDiv);
       }
       this.popupDiv = null;
+      // Remove document mousedown listener when popup is hidden
+      if (this.boundHandleDocumentMousedown) {
+        document.removeEventListener('mousedown', this.boundHandleDocumentMousedown, true);
+      }
     }
   }
   
@@ -315,11 +344,8 @@ class GraphManager {
     console.log('DEBUG: GraphManager.destroy');
     
     // Clean up popup
-    this.hidePopup();
-    if (this.popupDiv && this.container) {
-      this.container.removeChild(this.popupDiv);
-      this.popupDiv = null;
-    }
+    this.hidePopup(); // This will also remove the document listener if active
+    // No need to explicitly remove this.popupDiv from container, hidePopup handles it.
     
     if (this.network) {
       this.network.destroy();
