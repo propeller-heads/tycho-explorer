@@ -132,9 +132,6 @@ const PoolGraphView: React.FC = () => {
       if (isUpdatedInCurrentBlock) {
         edgeColor = '#FF9800'; // Orange for recently updated
         edgeWidth = 2;         // Prominent width
-      } else if (isProtocolMatch) {
-        edgeColor = '#64B5F6'; // Blue for protocol match
-        edgeWidth = 1.5;       // Slightly thicker than default
       } else {
         // Default: color and width will be taken from networkOptions.edges
         // by not setting them here (or setting to undefined)
