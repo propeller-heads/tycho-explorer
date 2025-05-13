@@ -28,14 +28,22 @@ const formatTokenWithAddress = (symbol: string, address: string): React.ReactNod
   return (
     <>
       <span>{symbol}</span>
-      <span style={{
-        marginLeft: '0.375rem', // approx 6px, slightly more than ml-1
-        fontSize: '0.75rem',  // 12px
-        color: 'rgba(255, 244, 224, 0.64)',
-        opacity: 0.85, // Slightly more de-emphasis
-      }}>
+      <a
+        href={`https://etherscan.io/address/${address}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="underline"
+        style={{
+          marginLeft: '0.375rem', // approx 6px, slightly more than ml-1
+          fontSize: '0.75rem',  // 12px
+          color: 'rgba(255, 244, 224, 0.64)',
+          opacity: 0.85, // Slightly more de-emphasis
+          cursor: 'pointer',
+        }}
+      >
         {addressSummary}
-      </span>
+      </a>
     </>
   );
 };

@@ -293,7 +293,7 @@ class GraphManager {
           <a href="https://etherscan.io/token/${data.address}" 
              target="_blank" 
              rel="noopener noreferrer"
-             style="color: #69a1ff; text-decoration: underline; word-break: break-all;">${shortAddress}</a>
+             style="color: rgba(255, 244, 224, 0.64); text-decoration: underline; word-break: break-all;">${shortAddress}</a>
         </div>
       </div>
     `;
