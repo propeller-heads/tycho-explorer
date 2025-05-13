@@ -1,49 +1,69 @@
-# Active Context: Pool Explorer - Graph View Refactoring Plan
+# Active Context: Pool Explorer - Graph View Refactoring Review
 
 ## Current Work Focus
 
-The current primary task is to refactor the **Market Graph View** (`src/components/dexscan/graph/`) to align its visual styling, component organization, and interactive behaviors with the TC Design (Figma mockups, specifically node `7903:5193` for the Graph View and `7895:5185` for global background elements). This involves implementing a detailed, multi-step plan developed through discussion.
+The primary task of refactoring the **Market Graph View** (`src/components/dexscan/graph/`) to align with the TC Design is now substantially complete. We are currently in a review phase, awaiting user feedback on the implemented changes and instructions for any further refinements or new tasks.
 
 ## Recent Changes
 
-*   Completed initial Memory Bank setup (`projectbrief.md`, `productContext.md`, `techContext.md`, `systemPatterns.md`, initial `activeContext.md` and `progress.md`).
-*   Conducted a detailed analysis of the TC Design for the Graph View by fetching and reviewing Figma data.
-*   Compared the TC Design with the current application's Graph View (via screenshot).
-*   Collaboratively developed a comprehensive, step-by-step plan to refactor the Graph View. This plan includes:
-    *   Downloading specific Figma assets (backgrounds, UI icons).
-    *   Implementing an app-wide layered background.
-    *   Restyling the Graph View's main content frame.
-    *   Overhauling `GraphControls.tsx` layout and components (filters, reset link, animated block number display).
-    *   Implementing auto-rendering of the graph on filter changes.
-    *   Updating node, edge, and tooltip styling in `GraphView.tsx` to match TC Design, with interim solutions for data availability (text-only nodes, simplified tooltip content).
+The following changes were implemented to refactor the Graph View and related components:
+
+*   **Global Styling (`App.tsx`):**
+    *   Implemented an app-wide, multi-layered background using downloaded Figma assets (dark purple base, comets, rays, noise texture) to ensure visual consistency across all views.
+*   **`DexScanContent.tsx`:**
+    *   Adjusted horizontal margins for the main content area to `mx-6` (24px) to match Figma panel placement.
+    *   Modified the content container height to `calc(100vh - 104px)` for better viewport fit, with child views (`GraphViewContent`, `ListView`) taking `100%` of this calculated height.
+*   **`GraphViewContent.tsx`:**
+    *   Styled the main Graph View frame with Figma-specified background color (`rgba(255,244,224,0.02)`), background texture (`graph_frame_bg_artboard.png`), border (`1px solid rgba(255,244,224,0.4)`), rounded corners (`12px`), and backdrop-filter (`blur(24px)`).
+    *   Implemented auto-rendering logic for the graph, triggering updates on filter changes. The manual "Render Graph" button and related handlers were removed.
+    *   Refined edge styling logic to use default subtle colors/widths from `networkOptions` and apply specific styles for "protocol match" or "updated in current block" states.
+    *   Removed the "Displaying X tokens and Y connections" text.
+*   **`GraphControls.tsx`:**
+    *   **Layout:** Converted to a single horizontal row, responsive (stacks on small screens). "Reset filters" text link moved to the left group.
+    *   **Filter Displays (Tokens & Protocols):** Replaced old UI with styled clickable boxes showing "Select..." or comma-separated selections. Dropdown arrows now rotate on popover open/close. Token filter has a `LucideX` icon (in styled circular wrapper) to clear selections. Popovers align to the start of the trigger. Trigger buttons have `max-w-xs`.
+    *   **Block Number Display:** Implemented with an animated circular progress icon (`BlockProgressIcon.tsx`) using Folly red (`#FF3366`) and the live block number.
+    *   **Popover Content:**
+        *   Frames styled per Figma (bg, border, radius, shadow, backdrop-filter).
+        *   Token search bar styled per Figma, with auto-focus on open and dynamic Folly red border on focus (2px thick).
+        *   List items styled (padding, hover bg). `formatTokenWithAddress` updated to return JSX for differential styling of symbol vs. address summary (address part smaller and lighter).
+        *   Checkboxes styled with Tailwind classes to approximate Figma's red-filled checked state.
+        *   "Done" button/footer removed from popovers; selections apply instantly.
+        *   Entire list item rows made clickable for selection.
+*   **`PoolDataContext.tsx`:**
+    *   Enhanced to track `lastBlockTimestamp` and `estimatedBlockDuration` to support the animated block progress icon.
+*   **`useGraphData.ts`:**
+    *   Updated to pass through `lastBlockTimestamp` and `estimatedBlockDuration` from the context.
+*   **`GraphView.tsx`:**
+    *   **Nodes:** Default shape changed to "circle" with updated default styling (colors, font size). Selected nodes now correctly display a `2px solid #FF3366` border, managed by updating the node's data in the `DataSet`.
+    *   **Edges:** Default styling (color, width, straight lines) defined in `networkOptions`.
+    *   **Tooltip:** HTML content styled to match Figma design (bg, border, blur, shadow, text styles). Content is interim (Symbol, Pool Count, Address).
+*   **New Component (`BlockProgressIcon.tsx`):** Created for the animated block progress display.
 
 ## Next Steps
 
-1.  **Download Figma Assets**:
-    *   Use the `download_figma_images` MCP tool to fetch specified background textures and UI icons.
-    *   Target storage path: `src/assets/figma_generated/`.
-    *   Asset list includes global backgrounds (noise, comets, god rays), graph frame texture, and UI icons (close 'x', dropdown arrow).
-2.  Proceed with the phased implementation of the Graph View refactoring plan (global background, graph frame, controls, graph elements, etc.) as detailed in `progress.md` under "Evolution of Project Decisions."
+1.  Await user feedback on the extensive Graph View refactoring and implemented fixes.
+2.  Address any further refinements or bugs identified by the user.
+3.  Proceed with new tasks as directed by the user.
 
-## Active Decisions and Considerations
+## Active Decisions and Considerations (Reflecting Implemented State)
 
-*   **App-Wide Background**: The elaborate TC Design background (dark purple base, comets, rays, noise) will be implemented globally (e.g., in `App.tsx`) to affect both List and Graph views.
-*   **Graph View Frame**: A distinct, styled frame (semi-transparent fill, specific texture, border, backdrop-blur) will wrap the Graph View's controls and visualization area, appearing "on top" of the global background.
-*   **Graph Controls Redesign**: `GraphControls.tsx` will be significantly refactored to a single-row layout. Filter selection will use styled text-based displays (e.g., "Select tokens" or "ETH, USDT...") triggering popovers, instead of the current button+badge system.
-*   **Auto-Rendering**: The "Render Graph" button will be removed; the graph will update automatically upon changes to token or protocol filters.
-*   **Animated Block Number Display**: The dot next to the block number in controls will be an animated progress indicator (filling with `#FF3366` color) representing the current block's estimated duration. This requires logic in `PoolDataContext.tsx` to track block timestamps and estimate duration.
-*   **Node Styling (Interim)**: Nodes will be text-based (token symbol/name) for now, without logos. Selected nodes will have a `2px solid #FF3366` border.
-*   **Edge Styling**: Edges will be thin, light-colored, and straight.
-*   **Tooltip Content (Interim)**: Tooltip will show Token Symbol, Pool Count, and clickable Address. TVL and Volume data will be omitted until available. Tooltip container will be styled per Figma.
-*   **Asset Management**: Downloaded Figma assets will be stored in `src/assets/figma_generated/`.
+*   **App-Wide Background:** Implemented globally.
+*   **Graph View Frame:** Implemented with specified styling.
+*   **Graph Controls:** Single-row, responsive layout. Styled filter triggers. Animated block display with Folly red progress.
+*   **Auto-Rendering:** Implemented for graph updates.
+*   **Node Styling:** Circles, text-only (no logos). Selected nodes: Folly red border.
+*   **Edge Styling:** Subtle defaults, conditional highlighting, straight lines.
+*   **Tooltip Content:** Interim (Symbol, Pools, Address), styled per Figma.
+*   **Popover Styling:** Frame, search (with auto-focus & dynamic focus border), list items (including styled address summary), and checkbox styling implemented to match TC Design. "Done" buttons removed.
+*   **Asset Management:** Figma assets stored in `src/assets/figma_generated/`. `icon_close_x.svg` was not downloadable; `LucideX` used instead.
 
-## Important Patterns and Preferences (from `.clinerules` and project structure)
+## Important Patterns and Preferences
 
-*   Continue adherence to modularity, clarity, small functions/files, and React best practices.
-*   Styling will primarily use Tailwind CSS, with custom CSS/inline styles for specific Figma effects if necessary.
+*   Adherence to `.clinerules` maintained.
+*   **Iterative refinement based on user feedback has been key.**
 
 ## Learnings and Project Insights
 
-*   Detailed Figma analysis is crucial for accurate UI implementation.
-*   Iterative refinement of the plan through discussion leads to a more robust and accurate approach.
-*   The block number display is a more complex feature than initially assumed, involving animation and block time estimation.
+*   Successfully translated complex Figma designs into functional React components, including nuanced styling for transparency, blurs, and dynamic states.
+*   The process of iterative feedback and refinement is crucial for aligning with user expectations and catching subtle design details (e.g., selected node border color, popover behaviors, block timer animation).
+*   Managing component state for interactive styling (e.g., `isSearchFocused` for border changes) is a common pattern.

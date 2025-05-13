@@ -1,4 +1,4 @@
-# Progress: Pool Explorer - Graph View Refactoring Planned
+# Progress: Pool Explorer - Graph View Refactoring Largely Complete
 
 This document outlines the current implementation status and planned work for the Pool Explorer project.
 
@@ -6,88 +6,80 @@ This document outlines the current implementation status and planned work for th
 
 ### Core UI & Navigation:
 *   **Main Layout (`DexScanContent.tsx`)**:
-    *   Primary content area, tab-based navigation (Pool List/Market Graph), URL synchronization.
+    *   Primary content area, tab-based navigation, URL synchronization.
+    *   **Content area height adjusted** for better viewport fit (`calc(100vh - 104px)`).
+    *   **Horizontal margins adjusted** to `mx-6` (24px).
+*   **Global Background (`App.tsx`)**:
+    *   **Implemented TC Design's multi-layered background** (dark purple base, comets, rays, noise texture) app-wide.
 *   **Header (`DexScanHeader.tsx`, etc.)**:
-    *   Structure for branding, view selection, actions. `ViewSelector.tsx` handles view switching.
+    *   Standard structure in place.
 *   **WebSocket Connection (`WebSocketConfig.tsx`, `PoolDataContext.tsx`)**:
-    *   UI for WS URL/chain config. Context for WS state management (URL, status, chain, block number, pool data). Connection status display.
+    *   Functional.
+    *   **Enhanced `PoolDataContext.tsx`** to track `lastBlockTimestamp` and `estimatedBlockDuration` for the animated block timer.
 
 ### Pool List View (`ListView.tsx`):
-*   **Display**: Pool table, overall metrics, pagination.
-*   **Data Columns**: Pool Address, Tokens, Protocol, Fee Rate, Spot Price, Dates, Last Block.
-*   **Interactivity**: Sorting, filtering (token, protocol, pool ID), pool selection for details.
-*   **Pool Detail Card**: Info, `SwapSimulator.tsx`.
-*   **Fee Parsing & External Links**: Implemented.
+*   Largely functional as per initial assessment. (No new changes in this phase).
 
-### Swap Simulator (`SwapSimulator.tsx`, etc.):
-*   UI for swap input. Placeholder for results. (Full backend simulation TBD).
-
-### Graph View (`graph/GraphViewContent.tsx`, etc.):
-*   Basic container and rendering logic (`GraphView.tsx`, `useGraphData.ts`) exist.
-*   **Current state does not match TC Design.** A detailed refactoring plan is in place (see "Evolution of Project Decisions").
+### Graph View (`graph/` components):
+*   **TC Design Alignment Substantially Completed:**
+    *   **Graph View Main Frame (`GraphViewContent.tsx`):** Styled with Figma-specified background color, texture, border (`rgba(255,244,224,0.4)`), rounded corners, and backdrop-filter.
+    *   **`GraphControls.tsx` Overhaul:**
+        *   Layout: Single-row, responsive (stacks on small screens).
+        *   Filter Displays: Styled clickable boxes for token/protocol selection (text-based, "Select..." placeholders, comma-separated lists, icons, `max-w-xs`, popovers align start). Dropdown arrows rotate. Token clear 'x' icon styled.
+        *   "Render Graph" Button: Removed.
+        *   "Reset filters" Link: Styled text link, moved to left filter group.
+        *   Animated Block Number Display: Implemented with `BlockProgressIcon.tsx` (Folly red progress) and live block number.
+    *   **Filter Popover Content (`GraphControls.tsx`):**
+        *   Popover Frame: Styled per TC Design (bg, border, radius, shadow, backdrop-filter).
+        *   Token Search Bar: Styled per TC Design, auto-focuses, dynamic Folly red border (2px) on focus.
+        *   List Items: Styled rows (padding, hover bg). Token text shows symbol + smaller, lighter address summary. Entire rows are clickable.
+        *   Checkboxes: Styled with Tailwind to approximate Figma's red-filled checked state.
+        *   "Done" Button/Footer: Removed.
+    *   **Graph Auto-Rendering (`GraphViewContent.tsx`):** Implemented; graph updates on filter changes. "Displaying X tokens..." text removed.
+    *   **Node Styling (`GraphView.tsx`):**
+        *   Shape: "circle", default size 25.
+        *   Default Style: Dark background, light cream border/text. Text-only (no logos).
+        *   Selected Style: `2px solid #FF3366` border correctly applied.
+    *   **Edge Styling (`GraphView.tsx`, `GraphViewContent.tsx`):**
+        *   Default: Thin (`1px`), subtle light color (`rgba(255,244,224,0.07)`), straight lines.
+        *   Conditional Styling: updated in current block" (orange, 2px).
+    *   **Tooltip Styling & Content (`GraphView.tsx`):**
+        *   Container: Styled per Figma (bg, border, blur, shadow).
+        *   Interim Content: Symbol, Pool Count, clickable Address.
 
 ### Data Types (`types.ts`):
 *   `WebSocketPool` and `Pool` interfaces defined.
 
-## What's Left to Build / Verify (Focus: Graph View Refactor)
+## What's Left to Build / Verify
 
-### Graph View - TC Design Alignment (High Priority - Current Focus):
-*   **App-Wide Background Implementation**:
-    *   Apply TC Design's multi-layered background (dark purple base, comets, rays, noise) globally (e.g., in `App.tsx`).
-*   **Graph View Main Frame Styling**:
-    *   Implement the distinct styled frame (semi-transparent fill, specific texture, border, backdrop-blur) for `GraphViewContent.tsx`.
-*   **`GraphControls.tsx` Overhaul**:
-    *   Redesign to a single-row layout.
-    *   Implement new styled text-based filter displays (for tokens/protocols) with placeholder text and comma-separated selections, triggering popovers.
-    *   Replace "Reset" button with a "Reset filters" text link.
-    *   Remove "Render Graph" button (implement auto-rendering).
-    *   Add animated block number display (circular progress icon filling with `#FF3366`, live block number text). This requires enhancing `PoolDataContext.tsx` to track block timestamps and estimate duration.
-*   **Graph Auto-Rendering**:
-    *   Implement logic for graph to update automatically on filter changes.
-*   **`GraphView.tsx` Node Styling**:
-    *   Default: Styled boxes with centered token name/symbol text (no logos for now).
-    *   Selected: Apply `2px solid #FF3366` border.
-*   **`GraphView.tsx` Edge Styling**:
-    *   Style to be thin, light-colored, and straight lines.
-*   **`GraphView.tsx` Tooltip Styling & Content**:
-    *   Style container per Figma (semi-transparent, blurred, bordered).
-    *   Interim Content: Token Symbol, Pool Count, clickable Address. (TVL/Volume omitted for now).
-
-### Other Pending Items (from initial assessment, lower priority than current Graph View refactor):
-*   **Pool List View - TVL Column**: Verify data source and implement display.
-*   **Graph View - Advanced Features (Post-Refactor)**:
-    *   Node click details (full TVL, top pools - depends on data).
-    *   Scale nodes by TVL.
-    *   Simulate on pool (in graph).
-    *   Edge coloring by protocol (confirm final design for this).
-    *   Highlighting edges updated in the last block.
-*   **Metrics - TVL**: Verify data and implement for overall/filter view TVL.
-*   **Nice-to-Have Requirements**: Trading curve simulation, path finder, event timeline, visual solving, swap execution, % depth, advanced two-token filter.
+* Edge coloring by protocol
+* Multiple edges between tokens, one per protocol
+* Websocket config UI should match that of TC styling
+* The graph layout should be less rigid, now there is a hub and spoke style by default
+* When a pool updates, flashing the pool edge, making it fat until the next block update comes in.
 
 ## Current Status Summary
 
 *   Foundational UI, navigation, and WebSocket data handling are in place.
 *   Pool List view is largely functional.
-*   **Market Graph view is the current focus for a major refactoring effort to align with TC Design.** A detailed plan for this is established.
-*   Many advanced features from the specification remain pending.
+*   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing, controls layout and styling, filter popover design, node/edge appearances, and tooltip.
+*  **The current focus has been on achieving the TC Design for the existing Graph View structure.**
 
 ## Evolution of Project Decisions
 
 *   **(Previous decisions regarding initial setup omitted for brevity)**
-*   **Graph View Refactoring Plan (May 2025):**
+*   **Graph View Refactoring (May 2025 - Current Phase):**
     *   **Overall Goal:** Align current Graph View with TC Design (Figma).
-    *   **Key Changes & Implementation Steps:**
-        1.  **Asset Download:** Fetch specified Figma assets (global backgrounds like comets/rays/noise; graph frame texture; UI icons for filters) via MCP tool. Store in `src/assets/figma_generated/`.
-        2.  **Global Background:** Implement multi-layered app-wide background (dark purple base, decorative SVGs, noise texture) in `App.tsx` or root layout.
-        3.  **Graph View Frame:** Style the main container in `GraphViewContent.tsx` with its unique semi-transparent fill, texture, border, and backdrop-blur.
-        4.  **`GraphControls.tsx` Refactor:**
-            *   Convert to single-row layout.
-            *   Replace filter buttons/badges with styled text boxes (showing "Select tokens/protocols" or comma-separated list) that trigger selection popovers. Use downloaded icons.
-            *   Change "Reset" button to "Reset filters" text link.
-            *   Remove "Render Graph" button.
-            *   Implement animated block number display: circular icon showing fill progress (`#FF3366`) based on estimated block time (requires `PoolDataContext` update for timestamps/duration estimation), plus block number text.
-        5.  **Auto-Rendering:** Graph updates automatically on filter changes.
-        6.  **Node Styling (`GraphView.tsx`):** Text-only nodes (symbol/name) for now. Default: dark box, light border/text. Selected: `2px solid #FF3366` border.
-        7.  **Edge Styling (`GraphView.tsx`):** Thin, light-colored, straight lines.
-        8.  **Tooltip Styling & Content (`GraphView.tsx`):** Styled container per Figma. Interim content: Symbol, Pool Count, Address. (TVL/Volume deferred).
-    *   This plan was developed through iterative discussion, clarifying details like the animated block timer, selected node styling, interim content for nodes/tooltips, and the scope of background elements.
+    *   **Completed Sub-tasks:**
+        1.  Downloaded Figma assets (backgrounds, UI icons).
+        2.  Implemented app-wide multi-layered background.
+        3.  Styled Graph View main frame (bg, texture, border, blur, margins, height).
+        4.  Refactored `GraphControls.tsx`: single-row responsive layout, new styled filter display buttons (text-based, icons, rotating arrow, popover triggers), "Reset filters" text link, removed "Render Graph" button.
+        5.  Implemented animated block number display with `BlockProgressIcon.tsx`.
+        6.  Enabled graph auto-rendering on filter changes.
+        7.  Updated node styling (circle shape, text-only, default/selected styles including Folly red border).
+        8.  Updated edge styling (thin, light default, conditional highlights, straight lines).
+        9.  Updated tooltip (styled container, interim content).
+        10. Styled filter popover contents: frame, token search bar (styled, auto-focus, dynamic focus border), list items (padding, hover, styled address summary), approximated checkbox styles, removed "Done" buttons.
+        11. Addressed various UX fixes: popover item clickability, selected node border color.
+    *   **Key Decisions during refactor:** Used Folly red for block timer dot; selected node border is Folly red; node content is text-only for now; tooltip content is interim; popover selections apply instantly (no "Done" button); address summary in token lists styled differently.
