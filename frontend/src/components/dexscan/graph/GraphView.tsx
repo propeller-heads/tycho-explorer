@@ -5,32 +5,27 @@ import { DataSet } from 'vis-data';
 // Define the network options
 const networkOptions = {
   nodes: {
-    shape: "box", 
+    shape: "circle", // Changed from "box" to "circle"
+    size: 25, // Default size (radius) for circle nodes, adjust as needed
     color: {
-      border: "#FFF4E0", // Default border color from Figma text
-      background: "#232323", // Default node background
-      highlight: { // For hover
-        border: "#FFFFFF", // Brighter border on hover
-        background: "rgba(255, 244, 224, 0.1)" // Slight highlight background on hover
+      border: "#FFF4E0", 
+      background: "#232323", 
+      highlight: { 
+        border: "#FFFFFF", 
+        background: "rgba(255, 244, 224, 0.1)" 
       }
     },
-    borderWidth: 1, // Default border width
+    borderWidth: 1, 
     font: { 
-      size: 14, // Figma node labels are 14px
-      color: "#FFF4E0" // Figma text color
+      size: 14, 
+      color: "#FFF4E0" 
     },
-    widthConstraint: {
-      maximum: 120 
-    },
-    heightConstraint: {
-      minimum: 30, 
-      valign: "middle"
-    },
-    margin: { top: 10, right: 10, bottom: 10, left: 10 },
+    // widthConstraint and heightConstraint.valign are less relevant for circles, 
+    // label fitting is managed by node size and font margin.
+    margin: { top: 8, right: 8, bottom: 8, left: 8 }, // Adjust margin for label inside circle
     fixed: {
       // This can be used later if specific nodes need to be fixed
     }
-    // `chosen` option removed, selection styling handled manually via dataset update
   },
   edges: {
     smooth: {
@@ -107,27 +102,43 @@ class GraphManager {
 
       // If a different node was previously selected, revert its style
       if (this.selectedNodeId && this.selectedNodeId !== clickedNodeId) {
+        // Revert previously selected node to default styling
         this.nodesDataset?.update({ 
           id: this.selectedNodeId, 
-          borderWidth: networkOptions.nodes.borderWidth, // Default border width
-          color: { border: networkOptions.nodes.color.border } // Default border color
+          borderWidth: networkOptions.nodes.borderWidth, 
+          color: { 
+            border: networkOptions.nodes.color.border,
+            background: networkOptions.nodes.color.background,
+            highlight: networkOptions.nodes.color.highlight 
+          } 
         });
       }
 
       if (clickedNodeId) {
         // A node was clicked
         if (this.selectedNodeId === clickedNodeId) {
-          // Clicked the same node again, deselect it (optional behavior)
-          // For now, let's keep it selected and just re-show tooltip
-          // Or, to deselect:
-          // this.nodesDataset?.update({ id: clickedNodeId, borderWidth: networkOptions.nodes.borderWidth, color: { border: networkOptions.nodes.color.border }});
+          // Optional: Clicking an already selected node could deselect it
+          // For now, if clicked again, it just re-triggers tooltip and keeps selection style
+          // To deselect:
+          // this.nodesDataset?.update({ 
+          //   id: clickedNodeId, 
+          //   borderWidth: networkOptions.nodes.borderWidth, 
+          //   color: { ...networkOptions.nodes.color }
+          // });
           // this.selectedNodeId = null;
         } else {
           // A new node is selected
           this.nodesDataset?.update({ 
             id: clickedNodeId, 
             borderWidth: 2, 
-            color: { border: '#FF3366' } // Selected style
+            color: { 
+              border: '#FF3366', // Folly red selected border
+              background: networkOptions.nodes.color.background, // Keep default background
+              highlight: { // Ensure highlight state for selected node also uses red border
+                border: '#FF3366',
+                background: networkOptions.nodes.color.highlight.background 
+              }
+            } 
           });
           this.selectedNodeId = clickedNodeId;
         }
@@ -144,10 +155,15 @@ class GraphManager {
       } else {
         // Clicked on canvas (not a node), deselect any currently selected node
         if (this.selectedNodeId) {
+          // Revert to default styling if canvas is clicked
           this.nodesDataset?.update({ 
             id: this.selectedNodeId, 
             borderWidth: networkOptions.nodes.borderWidth,
-            color: { border: networkOptions.nodes.color.border }
+            color: {
+              border: networkOptions.nodes.color.border,
+              background: networkOptions.nodes.color.background,
+              highlight: networkOptions.nodes.color.highlight
+            }
           });
           this.selectedNodeId = null;
         }
