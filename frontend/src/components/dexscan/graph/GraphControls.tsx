@@ -176,7 +176,21 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   }, [tokenSearchOpen]);
   
   // Memoized sorted/filtered lists - keep for popovers
-  const sortedTokens = React.useMemo(() => [...tokenList].sort((a, b) => a.label.localeCompare(b.label)), [tokenList]);
+  const sortedTokens = React.useMemo(() => {
+    return [...tokenList].sort((a, b) => {
+      const aIsSelected = selectedTokens.includes(a.id);
+      const bIsSelected = selectedTokens.includes(b.id);
+
+      if (aIsSelected && !bIsSelected) {
+        return -1; // a comes first
+      }
+      if (!aIsSelected && bIsSelected) {
+        return 1; // b comes first
+      }
+      // If both are selected or both are unselected, sort by label
+      return a.label.localeCompare(b.label);
+    });
+  }, [tokenList, selectedTokens]); // Added selectedTokens to dependency array
   const filteredTokens = React.useMemo(() => tokenSearchQuery ? sortedTokens.filter(t => t.label.toLowerCase().includes(tokenSearchQuery.toLowerCase())) : sortedTokens, [sortedTokens, tokenSearchQuery]);
   const sortedProtocols = React.useMemo(() => [...protocols].sort((a, b) => a.localeCompare(b)), [protocols]);
 
