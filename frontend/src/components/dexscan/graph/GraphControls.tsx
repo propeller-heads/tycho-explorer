@@ -170,7 +170,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         <Popover open={tokenSearchOpen} onOpenChange={setTokenSearchOpen}>
           <PopoverTrigger asChild>
             <button
-              className="flex items-center justify-between gap-2 text-sm font-medium"
+              className="flex items-center justify-between gap-2 text-sm font-medium max-w-xs" // Added max-w-xs
               style={{
                 backgroundColor: "rgba(255, 244, 224, 0.06)",
                 border: "1px solid rgba(255, 244, 224, 0.4)",
@@ -198,7 +198,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <img src={IconDropdownArrow} alt="select" className="h-4 w-4 opacity-70" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0">
+          <PopoverContent className="w-[300px] p-0" align="start"> {/* Added align="start" */}
             <div className="flex items-center border-b px-3 py-2">
               <Search className="mr-2 h-4 w-4 shrink-0 opacity-70" />
               <Input
@@ -232,7 +232,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         <Popover open={protocolSearchOpen} onOpenChange={setProtocolSearchOpen}>
           <PopoverTrigger asChild>
             <button
-              className="flex items-center justify-between gap-2 text-sm font-medium"
+              className="flex items-center justify-between gap-2 text-sm font-medium max-w-xs" // Added max-w-xs
               style={{
                 backgroundColor: "rgba(255, 244, 224, 0.06)",
                 border: "1px solid rgba(255, 244, 224, 0.4)",
@@ -251,7 +251,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <img src={IconDropdownArrow} alt="select" className="h-4 w-4 opacity-70" />
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-[300px] p-0">
+          <PopoverContent className="w-[300px] p-0" align="start"> {/* Added align="start" */}
             {/* No search input for protocols in current design, can be added if needed */}
             <ScrollArea className="max-h-[240px] overflow-y-auto">
               {sortedProtocols.map(protocol => (
@@ -288,10 +288,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             </div>
           </PopoverContent>
         </Popover>
-      </div>
-
-      {/* Right section for reset and block number - ensure it doesn't shrink excessively and aligns well in column mode */}
-      <div className="flex items-center gap-3 mt-4 md:mt-0 flex-shrink-0"> {/* mt-4 for spacing in col mode, md:mt-0 for row mode */}
+        {/* Moved Reset filters button to the left group */}
         <button
           onClick={handleFullReset}
           className="text-sm font-medium"
@@ -299,6 +296,11 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         >
           Reset filters
         </button>
+      </div>
+
+      {/* Right section for reset and block number - ensure it doesn't shrink excessively and aligns well in column mode */}
+      {/* This div now only contains the block number display */}
+      <div className="flex items-center gap-3 mt-4 md:mt-0 flex-shrink-0"> 
         {/* Block Number Display */}
         <div className="flex items-center gap-2">
           <BlockProgressIcon

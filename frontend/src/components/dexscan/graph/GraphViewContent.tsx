@@ -225,7 +225,7 @@ const PoolGraphView: React.FC = () => {
       ) : (
         <div className="flex flex-grow items-center justify-center border rounded-md bg-muted/20" style={{ minHeight: "300px" /* Ensure empty state has some height */ }}>
           <p className="text-muted-foreground text-center">
-            Select tokens and/or protocols, then click "Render Graph" to visualize connections
+            Select tokens and/or protocols.
           </p>
         </div>
       )}

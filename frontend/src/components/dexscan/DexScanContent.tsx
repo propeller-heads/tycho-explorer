@@ -82,22 +82,30 @@ const DexScanContentMain = () => {
       </div>
 
       {/* Adjusted margin from mx-44 to mx-6 (24px) to match Figma's graph panel horizontal margins */}
-      <div className="flex flex-col gap-4 mx-6"> 
+      {/* Set height for this content container */}
+      <div 
+        className="flex flex-col gap-4 mx-6" 
+        style={{ height: 'calc(100vh - 72px - 16px - 16px)' }} // 100vh - header height - DexScanContent top padding - desired bottom gap
+      > 
         
         {/* Render both views but control visibility with CSS */}
+        {/* These inner containers should take full height of their parent */}
         <div ref={graphContainerRef} style={
           {
             display: activeTab === 'graph' ? 'block' : 'none',
-            height: "110vh", // 2x viewport height minus header space
+            height: "100%", // Take full height of the parent (which has calculated height)
             width: "100%",
             position: "relative",
-            overflow: "hidden"  // Allow scrolling for the taller container
+            overflow: "hidden" 
           }
         }>
           <GraphViewContent />
         </div>
 
-        <div ref={poolListContainerRef} style={{ display: activeTab === 'pools' ? 'block' : 'none' }}>
+        <div ref={poolListContainerRef} style={{ 
+          display: activeTab === 'pools' ? 'block' : 'none',
+          height: "100%" // Take full height of the parent
+        }}>
           <ListView
             pools={poolsArray}
             highlightedPoolId={highlightedPoolId}
