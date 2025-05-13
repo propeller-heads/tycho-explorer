@@ -182,7 +182,10 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             >
               <span className="truncate">
                 {selectedTokens.length > 0
-                  ? selectedTokens.map(id => tokenList.find(t => t.id === id)?.label.split(' ')[0] || 'Unknown').join(', ')
+                  ? selectedTokens.map(id => {
+                      const token = tokenList.find(t => t.id === id);
+                      return token?.label || 'Unknown'; // Use the label directly
+                    }).join(', ')
                   : "Select tokens"}
               </span>
               {selectedTokens.length > 0 && (
