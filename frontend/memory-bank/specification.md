@@ -69,23 +69,6 @@ Make on-chain liquidity easy to observe and explore, directly, through a local, 
 	- **Total number of pools in current filter view**
 	- **Total TVL in current filter view**
 
-### Nice-to-have requirements
-
-- **Simulate trading curve in realtime**: On a single pool (either in graph view and/or list view when you click on the pool) you allow the user to simulate 1.000 sample points (even log spacing between 0 and pool limit) in one click, in real-time. In front of the users eyes, dot-by-dot, the UI "draws out" the amount in / amount out curve as the simulations (with Tycho Simulation) run through sequentially. To illustrate the speed of the simulation.
-
-- **Path finder**: Given an in-token and an out-token find all paths of length 2-4 through the graph and highlight those paths.
-	- **Most liquid**: Highlight the path that goes through the sequence of most liquid pools (the path that has the most liquid lowest-liquidity leg).
-
-- **DEX Event timeline:** A timeline of all events in real-time. With every new block update add all events from the latest block. Events include: DEX name, pool address, tokens. If you click on it you can view the raw json update from the event. Show the last X (e.g. 200) events.
-
-- **Visual Solving**: Given an in-token, out-token and in-token amount ("sell amount") – Run a solver (e.g. find all paths of depth 1-3 from in-token to out-token, then check the price on all paths), and visualize what's happening on the graph in realtime. (e.g. 1. All the paths found light up, then every path flashes as it is being simulated with Tycho Simulation and turns another color once it has been simulated, after all simulation ran through the best path is highlighted. Then in the end you show some metrics "found 250 paths, simulated in average time of 1ms / path, best path is X with price Y, and show the list of all paths and their price in a sorted list (from best to worst)").
-
-- **Execute the swap**: Add a modal to execute swaps: Both in the single pool view (execute any amount you simulated) and the visual solver finder to let users execute on the pool / or swap path.
-
-- **% depth**: Calculate 0.5, 1 and 2% depth for every pool. Recalculate for every pool after it had an update. Show the depth (in USD) in the pool list view, and the pool detail card in the graph view.
-
-- **Two token filter**: Let users select multiple tokens in the token filter in the list view – so that you can effectively filter for all pools of a given token pair (or triplet for pools with more tokens). Take care that you display both (A,B) and (B,A) for a filter of [A,B] - token order-idempotent. (This plus % depth lets DEXs compare their pools competitiveness).
-
 ## Definitions
 
 - **TVL**: Total value locked in a liquidity pool. The sum total of all tokens, denominated in a common numeraire (commonly USDC or ETH).
@@ -130,3 +113,10 @@ https://www.figma.com/design/f0WDvjnB7zph0s0VJPAaWV/ph-website-v1?node-id=7675-7
 
 https://www.figma.com/design/f0WDvjnB7zph0s0VJPAaWV/ph-website-v1?node-id=7903-5193&m=dev
 
+## Token and protocol filter in Graph View
+
+https://www.figma.com/design/f0WDvjnB7zph0s0VJPAaWV/ph-website-v1?node-id=7673-6974&t=rXP5U90rz4Te6DVr-4
+
+## Token and protocol popovers 
+
+https://www.figma.com/design/f0WDvjnB7zph0s0VJPAaWV/ph-website-v1?node-id=7673-6973&m=dev
