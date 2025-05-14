@@ -113,7 +113,20 @@ const WebSocketIndicator: React.FC<WebSocketIndicatorProps> = ({
 
       {wsConfigExpanded && (
         <div ref={wsConfigRef} className={WS_PANEL_CLASSES}>
-          <div className={WS_PANEL_CARD_CLASSES}>
+          <div 
+            className="overflow-hidden shadow-lg relative" // Keep overflow-hidden, shadow-lg, relative. Remove bg-card, rounded-lg, border.
+            style={{
+              backgroundColor: "rgba(255, 244, 224, 0.04)",
+              borderColor: "rgba(255, 244, 224, 0.2)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderRadius: "12px",
+              color: "#FFF4E0", // Default text color for the panel
+              // boxShadow: "0px 4px 16px 0px rgba(37, 0, 63, 0.2)", // shadow-lg is present, let's see if it's sufficient or if this specific one is needed
+              backdropFilter: "blur(10.4px)",
+              WebkitBackdropFilter: "blur(10.4px)",
+            }}
+          >
             <div className={WS_PANEL_HEADER_CLASSES}>
               <h3 className="text-sm font-medium mr-auto">{TEXT_WS_CONNECTION_TITLE}</h3>
               {isConnected && selectedChain && (
