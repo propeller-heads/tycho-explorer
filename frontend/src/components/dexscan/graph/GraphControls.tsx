@@ -315,7 +315,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               </div>
             </div>
             {/* ScrollArea should grow to fill available space in the flex-col PopoverContent */}
-            <ScrollArea className="max-h-[240px] overflow-y-auto flex-grow" style={{padding: "8px 0px"}}> 
+            <ScrollArea className="max-h-[260px] overflow-y-auto flex-grow" style={{padding: "8px 0px"}}> 
               <VirtualizedTokenList 
                 tokens={filteredTokens} 
                 selectedTokens={selectedTokens} 
