@@ -2,7 +2,10 @@
 
 ## Current Work Focus
 
-Refinements to the **Market Graph View** and **Graph Controls** based on user feedback. This includes UX improvements for token selection popovers and graph tooltips.
+Refinements to UI components based on user feedback, including:
+*   **Graph Controls**: Arrow rotation for popover triggers.
+*   **WebSocket Connection Popover**: Styling to match other popovers.
+*   **Graph View Content**: Border styling.
 
 ## Recent Changes
 
@@ -14,13 +17,13 @@ The following changes were implemented to refactor the Graph View and related co
     *   Adjusted horizontal margins for the main content area to `mx-6` (24px) to match Figma panel placement.
     *   Modified the content container height to `calc(100vh - 104px)` for better viewport fit, with child views (`GraphViewContent`, `ListView`) taking `100%` of this calculated height.
 *   **`GraphViewContent.tsx`:**
-    *   Styled the main Graph View frame with Figma-specified background color (`rgba(255,244,224,0.02)`), background texture (`graph_frame_bg_artboard.png`), border (`1px solid rgba(255,244,224,0.4)`), rounded corners (`12px`), and backdrop-filter (`blur(24px)`).
+    *   Styled the main Graph View frame with Figma-specified background color (`rgba(255,244,224,0.02)`), background texture (`graph_frame_bg_artboard.png`), **border (`1px solid rgba(255,244,224,0.2)`)**, rounded corners (`12px`), and backdrop-filter (`blur(24px)`).
     *   Implemented auto-rendering logic for the graph, triggering updates on filter changes. The manual "Render Graph" button and related handlers were removed.
     *   Refined edge styling logic to use default subtle colors/widths from `networkOptions` and apply specific styles for "protocol match" or "updated in current block" states.
     *   Removed the "Displaying X tokens and Y connections" text.
 *   **`GraphControls.tsx`:**
     *   **Layout:** Converted to a single horizontal row, responsive (stacks on small screens). "Reset filters" text link moved to the left group.
-    *   **Filter Displays (Tokens & Protocols):** Replaced old UI with styled clickable boxes showing "Select..." or comma-separated selections. Dropdown arrows now rotate on popover open/close. Token filter has a `LucideX` icon (in styled circular wrapper) to clear selections. Popovers align to the start of the trigger. Trigger buttons have `max-w-xs`.
+    *   **Filter Displays (Tokens & Protocols):** Replaced old UI with styled clickable boxes showing "Select..." or comma-separated selections. **Dropdown arrows now rotate 180 degrees with a smooth transition when popovers are open.** Token filter has a `LucideX` icon (in styled circular wrapper) to clear selections. Popovers align to the start of the trigger. Trigger buttons have `max-w-xs`.
     *   **Block Number Display:** Implemented with an animated circular progress icon (`BlockProgressIcon.tsx`) using Folly red (`#FF3366`) and the live block number.
     *   **Popover Content:**
         *   Frames styled per Figma (bg, border, radius, shadow, backdrop-filter).
@@ -43,18 +46,20 @@ The following changes were implemented to refactor the Graph View and related co
         *   **Token address URL in tooltip now styled with a gray color (`rgba(255, 244, 224, 0.64)`) to match popover.**
         *   **Tooltip now disappears on any click outside the tooltip popup itself or the selected node (including clicks outside the graph area).**
 *   **New Component (`BlockProgressIcon.tsx`):** Created for the animated block progress display.
+*   **WebSocket Connection Popover (`src/components/dexscan/header/HeaderActions.tsx`):**
+    *   The main popover card is now styled with blur, transparency, and other visual styles consistent with filter popovers.
 
 ## Next Steps
 
-1.  Await user feedback on the recent Graph View and Controls refinements.
+1.  Await user feedback on the recent UI refinements.
 2.  Address any further refinements or bugs identified by the user.
 3.  Proceed with new tasks as directed by the user, potentially from the "What's Left to Build / Verify" section in `progress.md`.
 
 ## Active Decisions and Considerations (Reflecting Implemented State)
 
 *   **App-Wide Background:** Implemented globally.
-*   **Graph View Frame:** Implemented with specified styling.
-*   **Graph Controls:** Single-row, responsive layout. Styled filter triggers. Animated block display with Folly red progress.
+*   **Graph View Frame:** Implemented with specified styling, **border color updated to `rgba(255,244,224,0.2)`**.
+*   **Graph Controls:** Single-row, responsive layout. Styled filter triggers (with rotating arrows). Animated block display with Folly red progress.
 *   **Auto-Rendering:** Implemented for graph updates.
 *   **Node Styling:** Circles, text-only (no logos). Selected nodes: Folly red border.
 *   **Edge Styling:** Subtle defaults, conditional highlighting, straight lines.
@@ -62,10 +67,11 @@ The following changes were implemented to refactor the Graph View and related co
     *   Interim content (Symbol, Pools, Address), styled per Figma.
     *   Address is a clickable Etherscan link, styled gray.
     *   Tooltip hides on clicks outside itself or its parent node.
-*   **Popover Styling & Behavior:**
+*   **Popover Styling & Behavior (GraphControls):**
     *   Frame, search (with auto-focus & dynamic focus border), list items (including styled, clickable Etherscan link for address summary), and checkbox styling implemented to match TC Design.
     *   Token list sorting: selected first, then lexicographical.
     *   "Done" buttons removed.
+*   **WebSocket Config Popover Styling:** Main card styled with blur/transparency. (Note: Shared Select component styling changes were reverted by user).
 *   **Asset Management:** Figma assets stored in `src/assets/figma_generated/`. `icon_close_x.svg` was not downloadable; `LucideX` used instead.
 
 ## Important Patterns and Preferences

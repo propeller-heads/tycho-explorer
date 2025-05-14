@@ -22,10 +22,10 @@ This document outlines the current implementation status and planned work for th
 
 ### Graph View (`graph/` components):
 *   **TC Design Alignment Substantially Completed:**
-    *   **Graph View Main Frame (`GraphViewContent.tsx`):** Styled with Figma-specified background color, texture, border (`rgba(255,244,224,0.4)`), rounded corners, and backdrop-filter.
+    *   **Graph View Main Frame (`GraphViewContent.tsx`):** Styled with Figma-specified background color, texture, **border (`rgba(255,244,224,0.2)`)**, rounded corners, and backdrop-filter.
     *   **`GraphControls.tsx` Overhaul:**
         *   Layout: Single-row, responsive (stacks on small screens).
-        *   Filter Displays: Styled clickable boxes for token/protocol selection (text-based, "Select..." placeholders, comma-separated lists, icons, `max-w-xs`, popovers align start). Dropdown arrows rotate. Token clear 'x' icon styled.
+        *   Filter Displays: Styled clickable boxes for token/protocol selection (text-based, "Select..." placeholders, comma-separated lists, icons, `max-w-xs`, popovers align start). **Dropdown arrows now rotate 180 degrees with transition.** Token clear 'x' icon styled.
         *   "Render Graph" Button: Removed.
         *   "Reset filters" Link: Styled text link, moved to left filter group.
         *   Animated Block Number Display: Implemented with `BlockProgressIcon.tsx` (Folly red progress) and live block number.
@@ -49,7 +49,11 @@ This document outlines the current implementation status and planned work for th
         *   Container: Styled per Figma (bg, border, blur, shadow).
         *   Interim Content: Symbol, Pool Count, clickable Address.
         *   **Token Address URL:** Styled with gray color (`rgba(255, 244, 224, 0.64)`) to match popover.
-        *   **Tooltip Dismissal:** Tooltip now hides on any click outside the tooltip popup itself or the selected node.
+        *   **Tooltip Dismissal:** Tooltip now hides on any click outside the tooltip popup itself or volunteelected node.
+
+### Header Components (`src/components/dexscan/header/`):
+*   **`HeaderActions.tsx`**:
+    *   WebSocket Connection popover card styled with blur, transparency, and other styles to match filter popovers.
 
 ### Data Types (`types.ts`):
 *   `WebSocketPool` and `Pool` interfaces defined.
@@ -58,17 +62,17 @@ This document outlines the current implementation status and planned work for th
 
 * Edge coloring by protocol
 * Multiple edges between tokens, one per protocol
-* Websocket config UI should match that of TC styling
 * The graph layout should be less rigid, now there is a hub and spoke style by default
 * When a pool updates, flashing the pool edge, making it fat until the next block update comes in.
+* Verify if the "Websocket config UI should match that of TC styling" is fully complete now that the popover card and select dropdown are styled.
 
 ## Current Status Summary
 
 *   Foundational UI, navigation, and WebSocket data handling are in place.
 *   Pool List view is largely functional.
-*   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing, controls layout and styling, filter popover design, node/edge appearances, and tooltip.
-*   **Recent refinements focused on UX improvements for token selection popovers (sorting, Etherscan links) and graph tooltips (Etherscan link styling, dismissal behavior).**
-*  **The current focus has been on achieving the TC Design for the existing Graph View structure and responding to user feedback for UX enhancements.**
+*   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (Etherscan link styling, dismissal behavior).
+*   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
+*  **The current focus has been on achieving the TC Design across components and responding to user feedback for UX enhancements.**
 
 ## Evolution of Project Decisions
 
@@ -93,4 +97,7 @@ This document outlines the current implementation status and planned work for th
         13. **Updated graph tooltip in `GraphView.tsx`:**
             *   Styled token address Etherscan link to be gray.
             *   Implemented tooltip dismissal on any click outside the tooltip popup or its selected node.
-    *   **Key Decisions during refactor:** Used Folly red for block timer dot; selected node border is Folly red; node content is text-only for now; tooltip content is interim; popover selections apply instantly (no "Done" button); address summary in token lists styled differently and links to Etherscan; tooltip dismissal is now more comprehensive.
+        14. **Updated `GraphControls.tsx` popover arrows to rotate with transition.**
+        15. **Updated WebSocket Connection popover in `HeaderActions.tsx` to use blur/transparency styling.**
+        16. **Updated `GraphViewContent.tsx` border to be `rgba(255,244,224,0.2)`.**
+    *   **Key Decisions during refactor:** Used Folly red for block timer dot; selected node border is Folly red; node content is text-only for now; tooltip content is interim; popover selections apply instantly (no "Done" button); address summary in token lists styled differently and links to Etherscan; tooltip dismissal is now more comprehensive; popover styling (blur, transparency, rotating arrows) applied to GraphControls and WebSocket popover. Shared Select component styling changes were reverted.
