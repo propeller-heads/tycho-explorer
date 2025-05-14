@@ -265,7 +265,13 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   }}
                 />
               )}
-              <img src={IconDropdownArrow} alt="select" className="h-4 w-4 opacity-70" />
+              <img
+                src={IconDropdownArrow}
+                alt="select"
+                className={`h-4 w-4 opacity-70 transition-transform duration-200 ${
+                  tokenSearchOpen ? 'rotate-180' : ''
+                }`}
+              />
             </button>
           </PopoverTrigger>
           <PopoverContent 
@@ -346,7 +352,13 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   : "Select protocols"}
               </span>
               {/* No 'x' clear icon for protocols as per Figma design for this specific item */}
-              <img src={IconDropdownArrow} alt="select" className="h-4 w-4 opacity-70" />
+              <img
+                src={IconDropdownArrow}
+                alt="select"
+                className={`h-4 w-4 opacity-70 transition-transform duration-200 ${
+                  protocolSearchOpen ? 'rotate-180' : ''
+                }`}
+              />
             </button>
           </PopoverTrigger>
           <PopoverContent 
