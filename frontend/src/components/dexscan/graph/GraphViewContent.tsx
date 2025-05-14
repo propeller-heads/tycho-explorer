@@ -188,7 +188,7 @@ const PoolGraphView: React.FC = () => {
         backgroundImage: `url(${graphFrameBgArtboard})`,
         backgroundSize: "cover", // Or "contain", "auto" depending on image aspect ratio and desired effect
         backgroundPosition: "center",
-        border: "1px solid rgba(255, 244, 224, 0.4)", // Changed opacity from 0.6 to 0.4
+        border: "1px solid rgba(255, 244, 224, 0.2)", // Changed opacity from 0.4 to 0.2
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)", // For Safari
         boxSizing: "border-box", // Ensure padding and border are included in height/width
