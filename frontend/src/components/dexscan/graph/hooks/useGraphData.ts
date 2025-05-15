@@ -117,6 +117,7 @@ export function useGraphData(
       return {
         nodes: [],
         edges: [],
+        rawPoolsData: pools, // Expose the raw pools data
         currentBlockNumber,
         lastBlockTimestamp,
         estimatedBlockDuration
@@ -207,6 +208,7 @@ export function useGraphData(
     return {
       nodes: finalNodes,
       edges: finalEdgesWithSmoothness, // Use the processed edges
+      rawPoolsData: pools, // Expose the raw pools data
       currentBlockNumber,
       lastBlockTimestamp,
       estimatedBlockDuration

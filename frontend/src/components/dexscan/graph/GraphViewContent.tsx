@@ -74,6 +74,7 @@ const PoolGraphView: React.FC = () => {
   const { 
     nodes: graphDisplayNodes, 
     edges: graphDisplayEdges,
+    rawPoolsData, // Destructure the new rawPoolsData
     currentBlockNumber, // This now comes from useGraphData
     lastBlockTimestamp,   // This now comes from useGraphData
     estimatedBlockDuration // This now comes from useGraphData
@@ -119,7 +120,8 @@ const PoolGraphView: React.FC = () => {
           <div style={{ flexGrow: 1, height: "0", minHeight:"0" }}>
             <GraphView
               tokenNodes={graphDisplayNodes} 
-              poolEdges={graphDisplayEdges}   
+              poolEdges={graphDisplayEdges}
+              rawPoolsData={rawPoolsData} // Pass rawPoolsData as a prop
             />
           </div>
         </>

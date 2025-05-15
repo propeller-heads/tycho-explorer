@@ -85,10 +85,22 @@ const networkOptions = {
 };
 
 
+// Minimal types for rawPoolsData, assuming structure from PoolDataContext/useGraphData
+interface RawToken {
+  address: string;
+}
+
+interface RawPool {
+  id: string;
+  tokens: RawToken[];
+  // Other pool properties are not needed for pool count logic here
+}
+
 // Props interface
 interface GraphViewProps {
   tokenNodes: Array<{ id: string; label: string; symbol?: string }>;
   poolEdges: Array<{ id: string; from: string; to: string; protocol: string; width?: number; color?: string }>;
+  rawPoolsData: Record<string, RawPool>; // Optional for now, to avoid breaking if not passed immediately
 }
 
 // Class to manage the network and position cache
@@ -96,6 +108,7 @@ class GraphManager {
   private network: Network | null = null;
   private nodesDataset: DataSet<any> | null = null;
   private edgesDataset: DataSet<any> | null = null;
+  public rawPoolsData: Record<string, RawPool>
   private initialized = false;
   private container: HTMLElement | null = null;
   private popupDiv: HTMLElement | null = null;
@@ -103,8 +116,8 @@ class GraphManager {
   private selectedNodeId: string | null = null; // To track selected node
   private boundHandleDocumentMousedown: ((event: MouseEvent) => void) | null = null;
 
-  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[]) {
-    console.log('DEBUG: GraphManager.initialize', initialNodes.length, initialEdges.length);
+  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[], rawPools: Record<string, RawPool>) {
+    this.rawPoolsData = rawPools; // Store raw pools data
     this.boundHandleDocumentMousedown = this.handleDocumentMousedown.bind(this);
     this.container = container;
 
@@ -213,15 +226,19 @@ class GraphManager {
   }
 
   getTokenData(nodeId: string) {
-    if (!this.edgesDataset) return { poolCount: 0, address: nodeId };
+    // Use rawPoolsData to count pools
+    if (!this.rawPoolsData) return { poolCount: 0, address: nodeId };
 
-    // Count pools for this token
-    const connectedPools = this.edgesDataset.get({
-      filter: (edge: any) => edge.from === nodeId || edge.to === nodeId
-    });
+    let poolCount = 0;
+    for (const poolId in this.rawPoolsData) {
+      const pool = this.rawPoolsData[poolId];
+      if (pool.tokens.some(token => token.address === nodeId)) {
+        poolCount++;
+      }
+    }
 
     return {
-      poolCount: connectedPools.length,
+      poolCount: poolCount,
       address: nodeId
     };
   }
@@ -342,7 +359,7 @@ class GraphManager {
       ">        
         <div style="margin-bottom: 8px;">
           <span style="color: rgba(255, 244, 224, 0.64);">Pools: </span>
-          <span style="color: #FFF4E0;">${data.poolCount}</span>
+          <span id="tooltip-pool-count" style="color: #FFF4E0;">${data.poolCount}</span>
         </div>
         
         <div>
@@ -368,6 +385,16 @@ class GraphManager {
     this.network.setData({nodes, edges});
   }
 
+  refreshCurrentTooltipData() {
+    if (this.popupDiv && this.selectedNodeId) {
+      const poolCountSpan = this.popupDiv.querySelector('#tooltip-pool-count');
+      if (poolCountSpan) {
+        const freshTokenData = this.getTokenData(this.selectedNodeId);
+        poolCountSpan.textContent = freshTokenData.poolCount.toString();
+      }
+    }
+  }
+
   destroy() {
     // Clean up popup
     this.hidePopup(); // This will also remove the document listener if active
@@ -388,7 +415,7 @@ class GraphManager {
 }
 
 // Main component
-const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
+const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsData }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphManagerRef = useRef<GraphManager | null>(null);
 
@@ -401,7 +428,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
     if (containerRef.current) {
       const manager = graphManagerRef.current;
       if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
-        manager.initialize(containerRef.current, tokenNodes, poolEdges);
+        manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData);
       }
     }
 
@@ -414,16 +441,18 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
     };
   }, []); // Empty dependency array = only run on mount/unmount
 
-  if (containerRef.current) {
-    const manager = graphManagerRef.current;
-    if (manager) {
-      if (!manager.isInitialized()) {
-        manager.initialize(containerRef.current, tokenNodes, poolEdges);
-      } else {
-        manager.updateData(tokenNodes, poolEdges);
-      }
+  // Handle updates to nodes, edges, or rawPoolsData
+  useEffect(() => {
+    if (containerRef.current && graphManagerRef.current && graphManagerRef.current.isInitialized()) {
+      const manager = graphManagerRef.current;
+      // Pass rawPoolsData to updateData if it needs to be updated,
+      // or ensure manager.rawPoolsData is updated if it changes.
+      // For now, assuming rawPoolsData is primarily for initialization's getTokenData.
+      manager.rawPoolsData = rawPoolsData; // Update manager's 
+      manager.updateData(tokenNodes, poolEdges);
+      manager.refreshCurrentTooltipData(); // Refresh tooltip if open
     }
-  }
+  }, [tokenNodes, poolEdges, rawPoolsData]); // Add rawPoolsData to dependency array
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */ }
 };
