@@ -72,7 +72,7 @@ This document outlines the current implementation status and planned work for th
 *   Pool List view is largely functional.
 *   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (Etherscan link styling, dismissal behavior).
 *   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
-*  **The current focus has been on achieving the TC Design across components and responding to user feedback for UX enhancements.**
+*   **The current focus is on diagnosing and resolving graph layout issues, specifically the stacking of parallel edges, to align with the Figma design (`node-id=7903-5193`).** This involves tuning global `networkOptions` in `GraphView.tsx` and planning dynamic edge styling in `useGraphData.ts`.
 
 ## Evolution of Project Decisions
 
@@ -100,4 +100,17 @@ This document outlines the current implementation status and planned work for th
         14. **Updated `GraphControls.tsx` popover arrows to rotate with transition.**
         15. **Updated WebSocket Connection popover in `HeaderActions.tsx` to use blur/transparency styling.**
         16. **Updated `GraphViewContent.tsx` border to be `rgba(255,244,224,0.2)`.**
-    *   **Key Decisions during refactor:** Used Folly red for block timer dot; selected node border is Folly red; node content is text-only for now; tooltip content is interim; popover selections apply instantly (no "Done" button); address summary in token lists styled differently and links to Etherscan; tooltip dismissal is now more comprehensive; popover styling (blur, transparency, rotating arrows) applied to GraphControls and WebSocket popover. Shared Select component styling changes were reverted.
+    *   **Key Decisions during refactor (UI Alignment Phase):** Used Folly red for block timer dot; selected node border is Folly red; node content is text-only for now; tooltip content is interim; popover selections apply instantly (no "Done" button); address summary in token lists styled differently and links to Etherscan; tooltip dismissal is now more comprehensive; popover styling (blur, transparency, rotating arrows) applied to GraphControls and WebSocket popover. Shared Select component styling changes were reverted.
+    *   **Graph Layout Refinement (Current - May 15, 2025 onwards):**
+        *   **Problem Identified**: Parallel edges in the graph stack on top of each other instead of fanning out as per Figma design.
+        *   **Root Cause**: Default `smooth: { type: 'continuous' }` applied to all edges in `useGraphData.ts` without differentiation for parallel edges.
+        *   **Goal**: Achieve an organic, force-directed layout with fanned-out parallel edges.
+        *   **Strategy**:
+            1.  Update global `networkOptions` in `GraphView.tsx`:
+                *   Set `layout.hierarchical.enabled: false`.
+                *   Enable and tune `physics.barnesHut` solver (e.g., `gravitationalConstant`, `springLength`, `avoidOverlap`).
+                *   (Initial options applied: `gravitationalConstant: -15000`, `springLength: 150`, `avoidOverlap: 0.2`).
+            2.  Modify `useGraphData.ts`:
+                *   Implement logic to identify parallel edges.
+                *   Dynamically assign `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` to these edges.
+        *   **Status**: User is currently exploring and tuning the updated global `networkOptions` in `GraphView.tsx`. Next step is to implement the dynamic edge fanning logic in `useGraphData.ts`.

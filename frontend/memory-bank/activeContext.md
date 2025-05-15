@@ -2,10 +2,10 @@
 
 ## Current Work Focus
 
-Refinements to UI components based on user feedback, including:
-*   **Graph Controls**: Arrow rotation for popover triggers.
-*   **WebSocket Connection Popover**: Styling to match other popovers.
-*   **Graph View Content**: Border styling.
+**Diagnosing and resolving graph layout issues in the Pool Explorer's Graph View.**
+*   **Primary Issue**: Multiple edges between the same two token nodes are stacking on top of each other, appearing as a single edge, instead of fanning out as depicted in the Figma design.
+*   **Goal**: Achieve an organic, force-directed layout where parallel edges are visually distinct and gently curved, closely matching the Figma reference (`node-id=7903-5193`).
+*   **Current Step**: Refining global `networkOptions` in `GraphView.tsx` (physics, layout defaults) and planning modifications to `useGraphData.ts` to implement dynamic `smooth.type` and `smooth.roundness` for parallel edges.
 
 ## Recent Changes
 
@@ -51,37 +51,37 @@ The following changes were implemented to refactor the Graph View and related co
 
 ## Next Steps
 
-1.  Await user feedback on the recent UI refinements.
-2.  Address any further refinements or bugs identified by the user.
-3.  Proceed with new tasks as directed by the user, potentially from the "What's Left to Build / Verify" section in `progress.md`.
+1.  **User Exploration**: User to experiment with the updated global `networkOptions` in `GraphView.tsx` to achieve a satisfactory base node layout.
+2.  **Implement Edge Fanning Logic**: Modify `useGraphData.ts` to:
+    *   Group pools by the pair of tokens they connect.
+    *   For parallel edges, dynamically assign `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` to create a fanned-out effect.
+3.  **Iterative Tuning**: Collaboratively tune `roundness` values and physics parameters to match the Figma design aesthetic.
+4.  Verify that edge coloring by protocol and width changes for updated pools remain correct with the new layout logic.
 
-## Active Decisions and Considerations (Reflecting Implemented State)
+## Active Decisions and Considerations (Graph Layout Focus)
 
-*   **App-Wide Background:** Implemented globally.
-*   **Graph View Frame:** Implemented with specified styling, **border color updated to `rgba(255,244,224,0.2)`**.
-*   **Graph Controls:** Single-row, responsive layout. Styled filter triggers (with rotating arrows). Animated block display with Folly red progress.
-*   **Auto-Rendering:** Implemented for graph updates.
-*   **Node Styling:** Circles, text-only (no logos). Selected nodes: Folly red border.
-*   **Edge Styling:** Subtle defaults, conditional highlighting, straight lines.
-*   **Tooltip Content & Behavior:**
-    *   Interim content (Symbol, Pools, Address), styled per Figma.
-    *   Address is a clickable Etherscan link, styled gray.
-    *   Tooltip hides on clicks outside itself or its parent node.
-*   **Popover Styling & Behavior (GraphControls):**
-    *   Frame, search (with auto-focus & dynamic focus border), list items (including styled, clickable Etherscan link for address summary), and checkbox styling implemented to match TC Design.
-    *   Token list sorting: selected first, then lexicographical.
-    *   "Done" buttons removed.
-*   **WebSocket Config Popover Styling:** Main card styled with blur/transparency. (Note: Shared Select component styling changes were reverted by user).
-*   **Asset Management:** Figma assets stored in `src/assets/figma_generated/`. `icon_close_x.svg` was not downloadable; `LucideX` used instead.
+*   **Root Cause of Edge Stacking**: Confirmed to be the default `smooth: { type: 'continuous' }` applied to all edges in `useGraphData.ts` without differentiation for parallel edges.
+*   **Target Layout (Figma `node-id=7903-5193`)**: Organic, force-directed node placement with clearly fanned-out, gently curved parallel edges.
+*   **`vis-network` Configuration Strategy**:
+    *   **Global (`GraphView.tsx`)**:
+        *   `layout.hierarchical.enabled: false`.
+        *   `physics.enabled: true` with `barnesHut` solver. Key parameters to tune: `gravitationalConstant`, `centralGravity`, `springLength`, `avoidOverlap`.
+        *   Default node and edge styles (shape, base colors, base width, no arrows).
+    *   **Dynamic Per-Edge (`useGraphData.ts`)**:
+        *   Logic to identify parallel edges.
+        *   Assign alternating `smooth.type: 'curvedCW'/'curvedCCW'` to parallel edges.
+        *   Assign varying `smooth.roundness` to parallel edges to control the fanning spread.
+        *   Continue applying protocol-based color and update-based width.
+*   **Initial `networkOptions` in `GraphView.tsx`**: Updated with settings to promote an organic layout (e.g., `gravitationalConstant: -15000`, `springLength: 150`, `avoidOverlap: 0.2`, `hierarchical.enabled: false`).
 
 ## Important Patterns and Preferences
 
 *   Adherence to `.clinerules` maintained.
-*   **Iterative refinement based on user feedback has been key.**
+*   Iterative refinement based on user feedback is key, especially for visual tuning of the graph.
 
 ## Learnings and Project Insights
 
-*   Successfully translated complex Figma designs into functional React components, including nuanced styling for transparency, blurs, and dynamic states.
-*   The process of iterative feedback and refinement is crucial for aligning with user expectations and catching subtle design details (e.g., selected node border color, popover behaviors, block timer animation, tooltip dismissal logic).
-*   Managing component state for interactive styling (e.g., `isSearchFocused` for border changes) is a common pattern.
-*   Global event listeners (e.g., document mousedown for tooltip dismissal) need careful management of addition, removal, and context binding (`this`) to prevent memory leaks or incorrect behavior.
+*   Understanding `vis-network`'s `smooth.type` and `smooth.roundness` properties is critical for controlling the appearance of parallel edges.
+*   Achieving a specific aesthetic (like the Figma design) often requires a combination of global physics/layout settings and dynamic per-element styling.
+*   The default behavior of `smooth: { type: 'continuous' }` for multiple edges between the same nodes leads to visual stacking if not further differentiated.
+*   (Previous learnings regarding UI component translation and feedback cycles remain relevant).
