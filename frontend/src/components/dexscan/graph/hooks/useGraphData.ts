@@ -174,8 +174,7 @@ export function useGraphData(
       };
 
       // B. Filter by Selected Protocols & Apply Styling
-      const isProtocolSelected = selectedProtocols.length === 0 ||
-        selectedProtocols.some(sp => sp.toLowerCase() === currentPoolEdge.protocol.toLowerCase());
+      const isProtocolSelected = selectedProtocols.some(sp => sp.toLowerCase() === currentPoolEdge.protocol.toLowerCase());
 
       const isUpdatedInCurrentBlock =
         currentPoolEdge.lastUpdatedAtBlock === currentBlockNumber && currentBlockNumber > 0;
