@@ -4,7 +4,7 @@ import {
   TableHead, TableCell 
 } from '@/components/ui/table';
 import { ExternalLink, ChevronUp, ChevronDown, Search } from 'lucide-react';
-import { cn, formatPoolId, getExternalLink } from '@/lib/utils';
+import { cn, renderHexId, getExternalLink } from '@/lib/utils';
 import { Pool } from '../types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -149,7 +149,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="font-mono text-xs flex items-center">
-                                    <span className="cursor-help">{formatPoolId(pool.id)}</span>
+                                    <span className="cursor-help">{renderHexId(pool.id)}</span>
                                     {linkUrl && (
                                       <a
                                         href={linkUrl}

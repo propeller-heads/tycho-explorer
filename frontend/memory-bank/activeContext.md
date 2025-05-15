@@ -11,18 +11,28 @@
 *   **Primary Issue 3 (Resolved)**: Graph edges were colored by protocol even when no protocol was selected in the filter popover. Expected behavior was for edges to be gray.
     *   **Root Cause Analysis**: The logic in `useGraphData.ts` treated `selectedProtocols.length === 0` as a condition to show all protocols with their specific colors, rather than applying a default gray.
     *   **Solution**: Modified `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`.
-*   **Graph Tooltip Enhancement (Completed)**:
-    *   **Requirement**: Tooltip's "Pool Count" for a token node should display the actual number of pools the token participates in. This count should update in real-time if the tooltip is open when new block data arrives.
-    *   **Solution**:
-        1.  `useGraphData.ts` was modified to expose the raw `pools` data (as `rawPoolsData`) from `PoolDataContext`.
-        2.  `GraphViewContent.tsx` was updated to pass `rawPoolsData` to `GraphView.tsx`.
-        3.  `GraphView.tsx` (`GraphManager` class) was updated:
-            *   It now stores `rawPoolsData`.
-            *   `getTokenData()` method now calculates `poolCount` by iterating through `rawPoolsData`.
-            *   `showTokenInfo()` method now adds an ID (`tooltip-pool-count`) to the pool count `<span>` in the tooltip HTML.
-            *   A new method `refreshCurrentTooltipData()` was added to find the `tooltip-pool-count` span in an active tooltip and update its content with a fresh count from `getTokenData()`.
-            *   The `useEffect` hook (reacting to `rawPoolsData` changes) now calls `refreshCurrentTooltipData()` to ensure live updates.
-*   **Current Step**: Finalizing documentation of all recent graph view enhancements, including the tooltip update.
+*   **Graph Tooltip Enhancements (Completed)**:
+    *   **Node Tooltip (Token Address)**:
+        *   **Requirement**: Tooltip's "Pool Count" for a token node should display the actual number of pools the token participates in. This count should update in real-time if the tooltip is open when new block data arrives.
+        *   **Solution**:
+            1.  `useGraphData.ts` was modified to expose the raw `pools` data (as `rawPoolsData`) from `PoolDataContext`.
+            2.  `GraphViewContent.tsx` was updated to pass `rawPoolsData` to `GraphView.tsx`.
+            3.  `GraphView.tsx` (`GraphManager` class) was updated:
+                *   It now stores `rawPoolsData`.
+                *   `getTokenData()` method now calculates `poolCount` by iterating through `rawPoolsData`.
+                *   `showTokenInfo()` method now adds an ID (`tooltip-pool-count`) to the pool count `<span>` in the tooltip HTML.
+                *   A new method `refreshCurrentTooltipData()` was added to find the `tooltip-pool-count` span in an active tooltip and update its content with a fresh count from `getTokenData()`.
+                *   The `useEffect` hook (reacting to `rawPoolsData` changes) now calls `refreshCurrentTooltipData()` to ensure live updates.
+        *   **Copy Functionality**: Added a "Copy" button to the node tooltip to allow copying the full token address.
+    *   **Edge Tooltip (Pool ID)**:
+        *   **Requirement**: Display pool ID, protocol, fee, and last update block when an edge is clicked. The pool ID should be copyable.
+        *   **Solution**:
+            1.  Implemented `showEdgeInfoPopover` and `hideEdgeInfoPopover` methods in `GraphManager` (`GraphView.tsx`).
+            2.  The `click` event handler in `GraphManager` now detects edge clicks and calls `showEdgeInfoPopover`.
+            3.  Popover displays formatted pool ID (using `renderHexId`), protocol, fee (using `parsePoolFee`), and last update block.
+            4.  Pool ID is linked using `getExternalLink` (fallback to Etherscan).
+            5.  Added a "Copy" button to the edge tooltip to allow copying the full pool ID.
+*   **Current Step**: Finalizing documentation of all recent graph view enhancements, including tooltip updates and copy functionalities.
 
 ## Recent Changes
 
@@ -73,10 +83,19 @@ The following changes were implemented to refactor the Graph View and related co
             *   A new `refreshCurrentTooltipData()` method in `GraphManager` updates this `<span>`'s content.
             *   The main component's `useEffect` (reacting to `rawPoolsData` changes) calls `refreshCurrentTooltipData()`.
         *   **Token address URL in tooltip now styled with a gray color (`rgba(255, 244, 224, 0.64)`) to match popover.**
-        *   **Tooltip now disappears on any click outside the tooltip popup itself or the selected node (including clicks outside the graph area).**
+        *   **Node Tooltip now disappears on any click outside the tooltip popup itself or the selected node (including clicks outside the graph area).**
+        *   **Node Tooltip Address Copy**: Added a "Copy" button for the token address in the node tooltip.
+    *   **Edge Tooltip (New Functionality)**:
+        *   Implemented `showEdgeInfoPopover` in `GraphManager` to display pool details (ID, protocol, fee, last update block) on edge click.
+        *   Pool ID is formatted using `renderHexId` and linked using `getExternalLink` (or Etherscan).
+        *   Added a "Copy" button for the full pool ID in the edge tooltip.
+        *   Edge tooltip dismisses on other graph interactions (click, zoom, drag).
 *   **New Component (`BlockProgressIcon.tsx`):** Created for the animated block progress display.
 *   **WebSocket Connection Popover (`src/components/dexscan/header/HeaderActions.tsx`):**
     *   The main popover card is now styled with blur, transparency, and other visual styles consistent with filter popovers.
+*   **Utility Functions (`src/lib/utils.ts`, `src/lib/poolUtils.ts`):**
+    *   Renamed `formatPoolId` to `renderHexId` in `utils.ts` for clarity.
+    *   Centralized `parsePoolFee` and `parseFeeHexValue` into `poolUtils.ts`.
 
 ## Next Steps
 
@@ -99,14 +118,13 @@ The following changes were implemented to refactor the Graph View and related co
     *   **Observation**: Edges were colored by their specific protocol even if no protocol filter was active.
     *   **Root Cause**: The condition `selectedProtocols.length === 0` in `useGraphData.ts` was incorrectly interpreted as "show all protocols with their colors" instead of "no protocol filter active, so use default gray".
     *   **Solution**: Updated `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`. If protocols *are* selected, matching edges get protocol colors, and non-matching edges get the neutral gray.
-*   **Graph Tooltip Pool Count**:
-    *   **Requirement**: Display the actual number of pools a token participates in.
-    *   **Decision**: Calculate this by iterating through the raw pool data provided to the `GraphView` component, rather than relying solely on the rendered edges (which might be filtered).
-    *   **Implementation**: `useGraphData` exposes raw `pools` data; `GraphView`'s `GraphManager` uses this for `getTokenData`.
-*   **Real-time Tooltip Updates**:
-    *   **Requirement**: If a tooltip is open, its pool count should update when new block data changes the underlying pool participation.
-    *   **Decision**: Implement a mechanism to directly update the DOM content of the visible tooltip.
-    *   **Implementation**: Added an ID to the tooltip's pool count span. A new `refreshCurrentTooltipData` method in `GraphManager` re-calculates and updates this span. This method is triggered by `useEffect` in `GraphView` when `rawPoolsData` changes.
+*   **Graph Node Tooltip (Token Address)**:
+    *   **Pool Count**: Displays the actual number of pools a token participates in, calculated from raw pool data.
+    *   **Real-time Update**: Pool count updates in real-time with new block data.
+    *   **Copy Functionality**: Token address is copyable.
+*   **Graph Edge Tooltip (Pool ID)**:
+    *   **Display**: Shows Pool ID (formatted, linked, and copyable), Protocol, Fee, and Last Update Block.
+    *   **Dismissal**: Hides on other graph interactions.
 *   **`vis-network` Configuration Strategy**:
     *   **Global (`GraphView.tsx`)**:
         *   `layout.hierarchical.enabled: false`.

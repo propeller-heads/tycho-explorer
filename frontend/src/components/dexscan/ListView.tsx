@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn, formatPoolId, getExternalLink } from '@/lib/utils';
+import { cn, renderHexId, getExternalLink } from '@/lib/utils'; // Changed formatPoolId to renderHexId
 import { Pool } from './types';
+import { parsePoolFee } from '@/lib/poolUtils'; // Import from the new utility file
 import SwapSimulator from './SwapSimulator';
 import MetricsCards from './pools/MetricsCards';
 import PoolTable from './pools/PoolTable';
@@ -40,7 +41,7 @@ const COLUMNS = [
   { id: 'spotPrice', name: 'Spot Price', type: 'number' },
   { id: 'created_at', name: 'Created At', type: 'date' },
   { id: 'updatedAt', name: 'Updated At', type: 'date' },
-  { id: 'lastUpdatedAtBlock', name: 'Last Block', type: 'number' }
+  { id: 'lastUpdatedAtBlock', name: 'Last Block Update', type: 'number' }
 ];
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
@@ -281,7 +282,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
                       <TooltipProvider delayDuration={150}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="font-mono text-lg font-medium">{formatPoolId(selectedPool.id)}</span>
+                            <span className="font-mono text-lg font-medium">{renderHexId(selectedPool.id)}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top">
                             <p className="font-mono flex items-center justify-between">
@@ -351,7 +352,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
                           {token.address && (
                             <div className="mt-1">
                               <span className="font-mono text-xs text-muted-foreground">
-                                {formatPoolId(token.address)}
+                                {renderHexId(token.address)}
                               </span>
                             </div>
                           )}
@@ -384,39 +385,6 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
       )}
     </div>
   );
-};
-
-// Extract fee parsing logic into a reusable function that handles different protocols
-export const parsePoolFee = (pool: Pool): number => {
-  // Special case for Uniswap V4 pools
-  if (pool.protocol_system === 'uniswap_v4' && pool.static_attributes['key_lp_fee']) {
-    return parseFeeHexValue(pool, pool.static_attributes['key_lp_fee']);
-  }
-  
-  // Regular case for other protocols
-  return parseFeeHexValue(pool, pool.static_attributes?.fee);
-};
-
-// Helper to parse hex fee value to percentage
-export const parseFeeHexValue = (pool: Pool, feeHex: string): number => {
-  if (!feeHex) return 0;
-  
-  // Convert hex to decimal
-  const feeDecimal = parseInt(feeHex, 16);
-  
-  // Handle protocol-specific fee formats
-  if (pool.protocol_system === 'uniswap_v2') {
-    // For uniswap_v2, fee is in basis points, so divide by 100
-    return isNaN(feeDecimal) ? 0 : feeDecimal / 100;
-  } else if (pool.protocol_system === 'vm:balancer_v2') {
-    // For balancer_v2, fee is in 1e18 format, convert to percentage
-    return isNaN(feeDecimal) ? 0 : (feeDecimal / 1e18) * 100;
-  }
-  
-  // For other protocols (uniswap_v3 and uniswap_v4)
-  // pools have fees in unit of basis point scaled by 100x
-  const feeValue = feeDecimal / 10000;
-  return isNaN(feeValue) ? 0 : feeValue;
 };
 
 export default ListView;

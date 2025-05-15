@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
+import { parsePoolFee } from '@/lib/poolUtils'; // Import for fee parsing
+import { Pool as PoolType } from '@/components/dexscan/types'; // Import Pool type
+import { getExternalLink, renderHexId } from '@/lib/utils'; // Import getExternalLink and renderHexId
 
 // Define the network options
 const networkOptions = {
@@ -90,17 +93,16 @@ interface RawToken {
   address: string;
 }
 
-interface RawPool {
+interface RawPool { // This is used for getTokenData, can remain minimal
   id: string;
   tokens: RawToken[];
-  // Other pool properties are not needed for pool count logic here
 }
 
 // Props interface
 interface GraphViewProps {
   tokenNodes: Array<{ id: string; label: string; symbol?: string }>;
   poolEdges: Array<{ id: string; from: string; to: string; protocol: string; width?: number; color?: string }>;
-  rawPoolsData: Record<string, RawPool>; // Optional for now, to avoid breaking if not passed immediately
+  rawPoolsData: Record<string, PoolType>; // Use the more complete PoolType here
 }
 
 // Class to manage the network and position cache
@@ -108,15 +110,16 @@ class GraphManager {
   private network: Network | null = null;
   private nodesDataset: DataSet<any> | null = null;
   private edgesDataset: DataSet<any> | null = null;
-  public rawPoolsData: Record<string, RawPool>
+  public rawPoolsData: Record<string, PoolType> // Changed RawPool to PoolType
   private initialized = false;
   private container: HTMLElement | null = null;
-  private popupDiv: HTMLElement | null = null;
+  private popupDiv: HTMLElement | null = null; // For node tooltips
+  private currentEdgePopover: { element: HTMLElement; poolId: string } | null = null; // For edge popovers
   private activeTimeout: NodeJS.Timeout | null = null;
   private selectedNodeId: string | null = null; // To track selected node
   private boundHandleDocumentMousedown: ((event: MouseEvent) => void) | null = null;
 
-  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[], rawPools: Record<string, RawPool>) {
+  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[], rawPools: Record<string, PoolType>) {
     this.rawPoolsData = rawPools; // Store raw pools data
     this.boundHandleDocumentMousedown = this.handleDocumentMousedown.bind(this);
     this.container = container;
@@ -137,25 +140,21 @@ class GraphManager {
       networkOptions
     );
 
-    // Add click event handler for nodes
+    // Add click event handler for nodes and edges
     this.network.on('click', (params) => {
       const clickedNodeId = params.nodes.length > 0 ? params.nodes[0] : null;
+      const clickedEdgeId = params.edges.length > 0 ? params.edges[0] : null;
       const previousSelectedNodeId = this.selectedNodeId;
-      const clickEvent = params.event?.center || { x: 0, y: 0 };
+      const clickEvent = params.event?.center || { x: 0, y: 0 }; // DOM click coordinates
+
+      // Always hide any existing popups (node or edge) first
+      this.hidePopup(); // This is the existing node tooltip popup
+      this.hideEdgeInfoPopover(); // New method for edge popover
 
       if (clickedNodeId) {
         // A node was clicked
-        if (clickedNodeId === previousSelectedNodeId) {
-          // Clicked on the SAME already selected node.
-          // Re-show/re-position the tooltip. showTokenInfo handles hide/show and doc listener.
-          const tokenData = this.getTokenData(clickedNodeId);
-          this.showTokenInfo(clickedNodeId, tokenData, clickEvent);
-        } else {
-          // Clicked on a NEW (different) node.
-          this.hidePopup(); // Hide any existing popup (and removes doc listener)
-
-          // Revert style of the previously selected node (if any)
-          if (previousSelectedNodeId) {
+        // Revert style of the previously selected node (if any)
+        if (previousSelectedNodeId && previousSelectedNodeId !== clickedNodeId) {
             this.nodesDataset?.update({
               id: previousSelectedNodeId,
               borderWidth: networkOptions.nodes.borderWidth,
@@ -166,35 +165,54 @@ class GraphManager {
               }
             });
           }
-
-          // Apply selected style to the new node.
+        
+        // Apply selected style to the new node if it's not already selected or re-clicked
+        if (clickedNodeId !== previousSelectedNodeId) {
           this.nodesDataset?.update({
             id: clickedNodeId,
-            borderWidth: 2,
+            borderWidth: 2, // Selected border width
             color: {
-              border: '#FF3366',
-              background: networkOptions.nodes.color.background,
-              highlight: {
+              border: '#FF3366', // Selected border color
+              background: networkOptions.nodes.color.background, // Keep original background
+              highlight: { // Keep highlight consistent or adjust if needed
                 border: '#FF3366',
                 background: networkOptions.nodes.color.highlight.background
               }
             }
           });
-          this.selectedNodeId = clickedNodeId;
-
-          // Show tooltip for the new node.
-          // Using setTimeout for consistent behavior.
-          setTimeout(() => {
-            if (this.selectedNodeId === clickedNodeId) {
-              const tokenData = this.getTokenData(clickedNodeId);
-              this.showTokenInfo(clickedNodeId, tokenData, clickEvent); // This will add the doc listener
-            }
-          }, 50);
         }
-      } else {
-        // Clicked on CANVAS (not a node).
-        this.hidePopup(); // Hide any existing popup (and removes doc listener)
+        this.selectedNodeId = clickedNodeId; // Update selected node ID
 
+        // Show tooltip for the new node.
+        // Using setTimeout for consistent behavior, especially if re-clicking the same node.
+        setTimeout(() => {
+          if (this.selectedNodeId === clickedNodeId) { // Check if still selected
+            const tokenData = this.getTokenData(clickedNodeId);
+            this.showTokenInfo(clickedNodeId, tokenData, clickEvent); // This will add the doc listener
+          }
+        }, 50);
+
+      } else if (clickedEdgeId) {
+        // An edge was clicked
+        // Deselect any currently selected node
+        if (previousSelectedNodeId) {
+          this.nodesDataset?.update({
+            id: previousSelectedNodeId,
+            borderWidth: networkOptions.nodes.borderWidth,
+            color: {
+              border: networkOptions.nodes.color.border,
+              background: networkOptions.nodes.color.background,
+              highlight: networkOptions.nodes.color.highlight
+            }
+          });
+        }
+        this.selectedNodeId = null; 
+        
+        // Show edge popover
+        this.showEdgeInfoPopover(clickedEdgeId, clickEvent.x, clickEvent.y);
+
+      } else {
+        // Clicked on CANVAS (not a node or edge)
         // Deselect any currently selected node
         if (previousSelectedNodeId) {
           this.nodesDataset?.update({
@@ -211,38 +229,37 @@ class GraphManager {
       }
     });
 
-    // Add zoom handler to hide popup when zooming
+    // Add zoom handler to hide popups when zooming
     this.network.on('zoom', () => {
       this.hidePopup();
+      this.hideEdgeInfoPopover();
     });
 
-    // Add drag handler to hide popup when dragging
+    // Add drag handler to hide popups when dragging
     this.network.on('dragStart', () => {
       this.hidePopup();
+      this.hideEdgeInfoPopover();
     });
-
 
     this.initialized = true;
   }
 
+  // Fetches token data for node tooltips
   getTokenData(nodeId: string) {
-    // Use rawPoolsData to count pools
     if (!this.rawPoolsData) return { poolCount: 0, address: nodeId };
-
     let poolCount = 0;
-    for (const poolId in this.rawPoolsData) {
-      const pool = this.rawPoolsData[poolId];
+    // Ensure this.rawPoolsData is Record<string, PoolType>
+    const poolsTyped = this.rawPoolsData as Record<string, PoolType>;
+    for (const poolId in poolsTyped) {
+      const pool = poolsTyped[poolId];
       if (pool.tokens.some(token => token.address === nodeId)) {
         poolCount++;
       }
     }
-
-    return {
-      poolCount: poolCount,
-      address: nodeId
-    };
+    return { poolCount, address: nodeId };
   }
 
+  // Displays the node tooltip
   showPopup(nodeId: string, content: string, options: { position: { x: number, y: number }, direction: string }) {
     if (!this.network || !this.container) return;
 
@@ -260,6 +277,28 @@ class GraphManager {
 
     // Add content to popup
     this.popupDiv.innerHTML = content;
+
+    // Add event listener for the copy button for node address
+    const copyNodeAddressButton = this.popupDiv.querySelector('#copy-node-address-button');
+    if (copyNodeAddressButton) {
+      copyNodeAddressButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent the click from closing the tooltip or triggering other graph events
+        const addressToCopy = copyNodeAddressButton.getAttribute('data-address-to-copy');
+        if (addressToCopy) {
+          navigator.clipboard.writeText(addressToCopy)
+            .then(() => {
+              copyNodeAddressButton.textContent = 'Copied!';
+              setTimeout(() => { 
+                // Check if button still exists before trying to change text
+                if (copyNodeAddressButton) copyNodeAddressButton.textContent = 'Copy'; 
+              }, 1500);
+            })
+            .catch(err => {
+              console.error('Failed to copy node address: ', err);
+            });
+        }
+      });
+    }
 
     // Display the popup so we can calculate its height
     this.popupDiv.style.display = 'block';
@@ -283,9 +322,21 @@ class GraphManager {
   }
 
   private handleDocumentMousedown(event: MouseEvent) {
-    if (this.popupDiv && !this.popupDiv.contains(event.target as Node)) {
-      // Clicked outside the popup
-      this.hidePopup();
+    let clickedInsideANodePopup = false;
+    if (this.popupDiv && this.popupDiv.contains(event.target as Node)) {
+      clickedInsideANodePopup = true;
+    }
+
+    let clickedInsideAnEdgePopup = false;
+    if (this.currentEdgePopover && this.currentEdgePopover.element.contains(event.target as Node)) {
+      clickedInsideAnEdgePopup = true;
+    }
+
+    if (!clickedInsideANodePopup && !clickedInsideAnEdgePopup) {
+      // Clicked outside of any active popups
+      this.hidePopup(); // Hide node popup
+      this.hideEdgeInfoPopover(); // Hide edge popup
+
       if (this.selectedNodeId) {
         // Revert previously selected node to default styling
         this.nodesDataset?.update({
@@ -302,6 +353,7 @@ class GraphManager {
     }
   }
 
+  // Hides the node tooltip
   hidePopup() {
     if (this.activeTimeout) {
       clearTimeout(this.activeTimeout);
@@ -324,7 +376,7 @@ class GraphManager {
   showTokenInfo(nodeId: string, data: { poolCount: number, address: string }, clickEvent?: { x: number, y: number }) {
     if (!this.network) return;
 
-    // Clear any existing timeout
+    // Clear any existing timeout for node tooltips
     if (this.activeTimeout) {
       clearTimeout(this.activeTimeout);
       this.activeTimeout = null;
@@ -362,12 +414,19 @@ class GraphManager {
           <span id="tooltip-pool-count" style="color: #FFF4E0;">${data.poolCount}</span>
         </div>
         
-        <div>
-          <span style="color: rgba(255, 244, 224, 0.64);">Address: </span>
-          <a href="https://etherscan.io/token/${data.address}" 
-             target="_blank" 
-             rel="noopener noreferrer"
-             style="color: rgba(255, 244, 224, 0.64); text-decoration: underline; word-break: break-all;">${shortAddress}</a>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="color: rgba(255, 244, 224, 0.64);">Address: </span>
+            <a href="https://etherscan.io/token/${data.address}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               style="color: rgba(255, 244, 224, 0.64); text-decoration: underline; word-break: break-all;">${shortAddress}</a>
+          </div>
+          <button id="copy-node-address-button" 
+                  data-address-to-copy="${data.address}"
+                  style="margin-left: 8px; padding: 2px 6px; font-size: 10px; color: rgba(255, 244, 224, 0.64); background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 244, 224, 0.2); border-radius: 4px; cursor: pointer;">
+            Copy
+          </button>
         </div>
       </div>
     `;
@@ -396,9 +455,9 @@ class GraphManager {
   }
 
   destroy() {
-    // Clean up popup
-    this.hidePopup(); // This will also remove the document listener if active
-    // No need to explicitly remove this.popupDiv from container, hidePopup handles it.
+    // Clean up popups
+    this.hidePopup(); // This will also remove the document listener if active for node popup
+    this.hideEdgeInfoPopover(); // Clean up edge popup
 
     if (this.network) {
       this.network.destroy();
@@ -412,7 +471,154 @@ class GraphManager {
   isInitialized(): boolean {
     return this.initialized;
   }
-}
+
+  // Method to display information for a clicked edge
+  private showEdgeInfoPopover(poolId: string, clickX: number, clickY: number) {
+    if (!this.network || !this.container || !this.rawPoolsData) return;
+
+    const pool = this.rawPoolsData[poolId];
+    if (!pool) {
+      console.warn(`Pool data not found for ID: ${poolId}`);
+      return;
+    }
+
+    // Clean up any existing edge popover first
+    this.hideEdgeInfoPopover();
+
+    const poolAddress = pool.id; // Define poolAddress, which is the pool.id
+    const protocolName = pool.protocol_system;
+    const lastUpdateBlockNumber = pool.lastUpdatedAtBlock;
+    const feeRatePercent = parsePoolFee(pool); // Uses the imported function
+    const formattedFee = `${feeRatePercent.toFixed(4)}%`; // Adjust precision as needed
+    
+    // Use getExternalLink, fallback to Etherscan
+    const poolLink = getExternalLink(pool) || `https://etherscan.io/address/${poolAddress}`;
+    const displayPoolId = renderHexId(pool.id);
+    const fullPoolIdToCopy = pool.id; // For the copy button
+
+    const content = `
+      <div style="
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        padding: 16px; 
+        background-color: rgba(255, 244, 224, 0.04); 
+        color: #FFF4E0; 
+        border-radius: 8px; 
+        border: 1px solid rgba(255, 244, 224, 0.2); 
+        box-shadow: 0px 4px 16px 0px rgba(37, 0, 63, 0.2);
+        backdrop-filter: blur(10.4px);
+        -webkit-backdrop-filter: blur(10.4px);
+        min-width: 240px; /* Adjusted min-width */
+        pointer-events: auto; /* Allow clicks on links inside */
+      ">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <span style="color: rgba(255, 244, 224, 0.64);">Pool ID: </span>
+          <a href="${poolLink}" target="_blank" rel="noopener noreferrer"
+             style="color: rgba(255, 244, 224, 0.64); text-decoration: underline; word-break: break-all;">
+            ${displayPoolId}
+          </a>
+        </div>
+        <button id="copy-edge-pool-id-button" 
+                data-pool-id-to-copy="${fullPoolIdToCopy}"
+                style="margin-left: 8px; padding: 2px 6px; font-size: 10px; color: rgba(255, 244, 224, 0.64); background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 244, 224, 0.2); border-radius: 4px; cursor: pointer;">
+          Copy
+        </button>
+      </div>
+        <div style="margin-bottom: 8px;">
+          <span style="color: rgba(255, 244, 224, 0.64);">Protocol: </span>
+          <span style="color: #FFF4E0;">${protocolName}</span>
+        </div>
+        <div style="margin-bottom: 8px;">
+          <span style="color: rgba(255, 244, 224, 0.64);">Fee: </span>
+          <span style="color: #FFF4E0;">${formattedFee}</span>
+        </div>
+        <div>
+          <span style="color: rgba(255, 244, 224, 0.64);">Last Block Update: </span>
+          <span style="color: #FFF4E0;">${lastUpdateBlockNumber ? lastUpdateBlockNumber : "None"}</span>
+        </div>
+      </div>
+    `;
+
+    const popoverDiv = document.createElement('div');
+    popoverDiv.style.position = 'fixed';
+    popoverDiv.style.zIndex = '1001'; // Ensure it's above node tooltips if any overlap
+    popoverDiv.innerHTML = content;
+
+    // Add event listener for the new copy button in the edge popover
+    const copyEdgeButton = popoverDiv.querySelector('#copy-edge-pool-id-button');
+    if (copyEdgeButton) {
+      copyEdgeButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent graph click event
+        const idToCopy = copyEdgeButton.getAttribute('data-pool-id-to-copy');
+        if (idToCopy) {
+          navigator.clipboard.writeText(idToCopy)
+            .then(() => {
+              copyEdgeButton.textContent = 'Copied!';
+              setTimeout(() => { 
+                if (copyEdgeButton) copyEdgeButton.textContent = 'Copy';
+              }, 1500);
+            })
+            .catch(err => console.error('Failed to copy pool ID: ', err));
+        }
+      });
+    }
+    
+    // Stop propagation for clicks inside the popover itself
+    popoverDiv.addEventListener('click', (e) => e.stopPropagation());
+    popoverDiv.addEventListener('mousedown', (e) => e.stopPropagation()); // Also for mousedown
+
+    document.body.appendChild(popoverDiv);
+    this.currentEdgePopover = { element: popoverDiv, poolId: poolId };
+
+    // Position the popup
+    const popupHeight = popoverDiv.offsetHeight;
+    const popupWidth = popoverDiv.offsetWidth;
+    
+    // Position relative to the click, similar to node tooltips
+    // Adjustments might be needed based on where the edge click is registered
+    let left = clickX - (popupWidth / 2);
+    let top = clickY - popupHeight - 20; // 20px above the click
+
+    // Boundary checks (simple version)
+    if (left < 0) left = 0;
+    if (top < 0) top = 0;
+    if (left + popupWidth > window.innerWidth) left = window.innerWidth - popupWidth;
+    if (top + popupHeight > window.innerHeight) top = window.innerHeight - popupHeight;
+
+    popoverDiv.style.left = `${left}px`;
+    popoverDiv.style.top = `${top}px`;
+    popoverDiv.style.display = 'block';
+
+    // Ensure document mousedown listener is active for outside clicks
+    if (this.boundHandleDocumentMousedown && !this.popupDiv && !this.currentEdgePopover?.element.parentNode) { // Logic might need refinement
+        // This check is tricky. The listener should be active if ANY popup is shown.
+        // The existing handleDocumentMousedown should handle both.
+        // Let's assume showPopup and this method ensure the listener is active.
+        // If not already added by showPopup (node tooltip), add it.
+        // This part of the logic for adding/removing the listener needs to be robust.
+        // For now, we rely on showPopup to manage the main listener if a node tooltip is also involved.
+        // If only an edge popover is shown, we might need to explicitly add it here.
+        // The current `handleDocumentMousedown` is designed to hide both.
+    }
+     if (this.boundHandleDocumentMousedown) {
+      // Remove first to avoid duplicates, then add.
+      // This ensures it's active if this is the only popup.
+      document.removeEventListener('mousedown', this.boundHandleDocumentMousedown, true);
+      document.addEventListener('mousedown', this.boundHandleDocumentMousedown, true);
+    }
+  }
+
+  // Method to hide the edge information popover
+  private hideEdgeInfoPopover() {
+    if (this.currentEdgePopover) {
+      if (this.currentEdgePopover.element.parentNode) {
+        this.currentEdgePopover.element.parentNode.removeChild(this.currentEdgePopover.element);
+      }
+      this.currentEdgePopover = null;
+    }
+  }
+} // End of GraphManager class
 
 // Main component
 const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsData }) => {
@@ -447,12 +653,12 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
       const manager = graphManagerRef.current;
       // Pass rawPoolsData to updateData if it needs to be updated,
       // or ensure manager.rawPoolsData is updated if it changes.
-      // For now, assuming rawPoolsData is primarily for initialization's getTokenData.
-      manager.rawPoolsData = rawPoolsData; // Update manager's 
-      manager.updateData(tokenNodes, poolEdges);
-      manager.refreshCurrentTooltipData(); // Refresh tooltip if open
-    }
-  }, [tokenNodes, poolEdges, rawPoolsData]); // Add rawPoolsData to dependency array
+      // Ensure the manager's internal rawPoolsData is correctly typed and updated
+    manager.rawPoolsData = rawPoolsData as Record<string, PoolType>; 
+    manager.updateData(tokenNodes, poolEdges);
+    manager.refreshCurrentTooltipData(); // Refresh tooltip if open
+  }
+  }, [tokenNodes, poolEdges, rawPoolsData]);
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */ }
 };

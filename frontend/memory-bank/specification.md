@@ -120,3 +120,7 @@ https://www.figma.com/design/f0WDvjnB7zph0s0VJPAaWV/ph-website-v1?node-id=7673-6
 ## Token and protocol popovers 
 
 https://www.figma.com/design/f0WDvjnB7zph0s0VJPAaWV/ph-website-v1?node-id=7673-6973&m=dev
+
+# Domain concepts
+
+* There is only pool ID, pool adderss doesn't exist. For example, uniswap v4 uses ID to find pool data, a pool doesn't have its own address.

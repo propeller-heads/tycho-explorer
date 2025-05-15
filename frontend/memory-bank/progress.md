@@ -46,17 +46,25 @@ This document outlines the current implementation status and planned work for th
         *   Default: Thin (`1px`), subtle light color (`rgba(255,244,224,0.07)` or neutral gray `#848484` if no protocol selected), straight lines (or fanned for parallel).
         *   Conditional Styling: Protocol-specific colors applied if a protocol filter is active. Edges updated in the current block are highlighted with increased width (orange, 2px - color part might need verification, width is primary).
         *   **Corrected logic in `useGraphData.ts` to ensure edges are gray if no protocol filter is active.**
-    *   **Tooltip Styling & Content (`GraphView.tsx`):**
-        *   Container: Styled per Figma (bg, border, blur, shadow).
-        *   **Pool Count**: Now accurately displays the number of pools the token participates in, calculated from raw pool data.
-        *   **Real-time Update**: The pool count in an active tooltip updates in real-time when new block data arrives.
-        *   Clickable Address: Token address in tooltip is a styled Etherscan link.
-        *   **Token Address URL:** Styled with gray color (`rgba(255, 244, 224, 0.64)`) to match popover.
-        *   **Tooltip Dismissal:** Tooltip now hides on any click outside the tooltip popup itself or selected node.
+        *   **Tooltip Styling & Content (`GraphView.tsx`):**
+            *   **Node Tooltip (Token Address)**:
+                *   Container: Styled per Figma (bg, border, blur, shadow).
+                *   Pool Count: Accurately displays the number of pools the token participates in (from raw data), updates in real-time.
+                *   Token Address: Displayed (formatted with `renderHexId`), linked to Etherscan, styled gray, and **is now copyable via a "Copy" button**.
+                *   Dismissal: Hides on clicks outside the tooltip/selected node.
+            *   **Edge Tooltip (Pool ID)**:
+                *   Implemented to show on edge click.
+                *   Displays Pool ID (formatted with `renderHexId`), Protocol, Fee (from `parsePoolFee`), and Last Update Block.
+                *   Pool ID is linked via `getExternalLink` (or Etherscan fallback) and **is now copyable via a "Copy" button**.
+                *   Dismissal: Hides on other graph interactions or outside clicks.
 
 ### Header Components (`src/components/dexscan/header/`):
 *   **`HeaderActions.tsx`**:
     *   WebSocket Connection popover card styled with blur, transparency, and other styles to match filter popovers.
+
+### Utility Functions:
+*   **`src/lib/utils.ts`**: `formatPoolId` was renamed to `renderHexId`.
+*   **`src/lib/poolUtils.ts` (New)**: Centralized `parsePoolFee` and `parseFeeHexValue` functions.
 
 ### Data Types (`types.ts`):
 *   `WebSocketPool` and `Pool` interfaces defined.
@@ -134,7 +142,15 @@ This document outlines the current implementation status and planned work for th
             *   **Root Cause**: Logic in `useGraphData.ts` incorrectly applied protocol-specific colors when `selectedProtocols.length === 0`.
             *   **Solution**: Modified `useGraphData.ts` to set edge color to a neutral gray (`#848484`) if `selectedProtocols.length === 0`. If protocols are selected, matching edges get their protocol color, and non-matching edges are gray.
         *   **Status**: Zoom preservation and correct edge coloring (for no protocol selected scenario) implemented.
-    *   **Graph Tooltip Enhancement (Completed May 15, 2025):**
-        *   **Pool Count Accuracy**: Tooltip now correctly calculates and displays the number of pools a token participates in, using raw pool data.
-        *   **Real-time Updates**: The pool count in an active tooltip updates automatically when new block data arrives.
-        *   **Implementation Details**: Involved changes in `useGraphData.ts` (exposing raw data), `GraphViewContent.tsx` (passing data), and `GraphView.tsx` (logic in `GraphManager` for calculation and DOM update for real-time refresh).
+    *   **Graph Tooltip Enhancements (Completed May 15, 2025):**
+        *   **Node Tooltip (Token Address)**:
+            *   Pool Count Accuracy: Correctly calculates and displays the number of pools a token participates in, using raw pool data. Updates in real-time.
+            *   **Copy Functionality**: Added a "Copy" button for the token address.
+        *   **Edge Tooltip (Pool ID)**:
+            *   **New Feature**: Implemented a popover on edge click to display pool ID, protocol, fee, and last update block.
+            *   **Display & Linking**: Pool ID is formatted using `renderHexId` and linked via `getExternalLink` (or Etherscan).
+            *   **Copy Functionality**: Added a "Copy" button for the pool ID.
+        *   **Implementation Details**: Involved changes in `GraphView.tsx` (`GraphManager` for event handling, popover creation, copy logic), `useGraphData.ts` (ensuring data availability), and `src/lib/utils.ts` (using `renderHexId`). Fee parsing uses `src/lib/poolUtils.ts`.
+    *   **Utility Function Refactoring (Completed May 15, 2025):**
+        *   Renamed `formatPoolId` to `renderHexId` in `src/lib/utils.ts`.
+        *   Moved fee parsing functions (`parsePoolFee`, `parseFeeHexValue`) to a new `src/lib/poolUtils.ts` file and updated `ListView.tsx` and `GraphView.tsx` to use them.

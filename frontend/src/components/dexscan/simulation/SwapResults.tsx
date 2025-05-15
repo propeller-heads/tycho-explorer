@@ -13,8 +13,7 @@ interface SwapResultsProps {
   poolId: string;
 }
 
-// Import the fee parsing function from ListView
-import { parsePoolFee, parseFeeHexValue } from '../ListView';
+import { parsePoolFee } from '@/lib/poolUtils';
 
 // Using the shared utility functions from ListView
 // parsePoolFee - parses pool fee based on protocol type

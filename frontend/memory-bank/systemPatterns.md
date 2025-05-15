@@ -33,7 +33,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
         *   `SwapSimulator.tsx`: Allows users to simulate swaps on the selected pool.
     *   Handles sorting by various columns (ID, Tokens, Protocol, Fee, Spot Price, Dates, Block Number).
     *   Handles filtering by tokens, protocol, and pool ID.
-    *   Contains logic for parsing pool fees (`parsePoolFee`, `parseFeeHexValue`), which varies by protocol.
+    *   Uses centralized fee parsing logic from `src/lib/poolUtils.ts`.
 
 5.  **`GraphViewContent.tsx` (within `graph/`)**:
     *   Responsible for rendering the market graph visualization.
@@ -82,9 +82,15 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   `DexScanContent` conditionally displays `ListView` or `GraphViewContent`.
     *   `ListView` conditionally displays pool details or a "select a pool" message.
 *   **URL-Driven State**: The active tab (`graph` or `pools`) is synchronized with the URL's `tab` query parameter in `DexScanContent.tsx`.
-*   **Utility Functions**: `src/lib/utils.ts` likely contains common helper functions (e.g., `formatPoolId`, `getExternalLink`, `cn` for class names).
+*   **Utility Functions**: 
+    *   `src/lib/utils.ts` contains helper functions like `renderHexId` (renamed from `formatPoolId`), `getExternalLink`, and `cn`.
+    *   `src/lib/poolUtils.ts` centralizes fee parsing logic (`parsePoolFee`, `parseFeeHexValue`).
 *   **Type Definitions**: `src/components/dexscan/types.ts` centralizes data structure definitions (e.g., `Pool`, `WebSocketPool`).
-*   **Real-time Tooltip Updates**: The graph view tooltip for token nodes dynamically calculates and updates the "pool count" (number of pools a token participates in) in real-time as new block data arrives. This involves `useGraphData` exposing raw pool data, `GraphViewContent` passing it to `GraphView`, and `GraphView`'s `GraphManager` using this data for calculation and DOM manipulation to update an open tooltip.
+*   **Graph Tooltips & Interactions (`GraphView.tsx` / `GraphManager`)**:
+    *   **Node Tooltip (Token)**: Displays token address (formatted with `renderHexId`, linked to Etherscan, and copyable) and real-time pool count.
+    *   **Edge Tooltip (Pool)**: Displays pool ID (formatted with `renderHexId`, linked via `getExternalLink` or Etherscan, and copyable), protocol, fee (via `parsePoolFee`), and last update block.
+    *   Tooltips are dismissed on other graph interactions.
+    *   Real-time pool count updates for node tooltips are handled via `useGraphData` exposing raw data and `GraphManager` updating the DOM.
 
 ## Modularity and Dependencies
 

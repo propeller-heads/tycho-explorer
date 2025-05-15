@@ -36,7 +36,7 @@ The Pool Explorer is designed to cater to various user needs:
 
 2.  **As a Protocol – Understand Liquidity Health**:
     *   **Goal**: Get an overview of liquidity tradable for the protocol's token.
-    *   **Features**: List of all pools (with DEX name, TVL, tokens, pool address, depth at 0.5%, 1%, 2%), graph view, simulation of routed swaps to see token's position on optimal paths.
+    *   **Features**: List of all pools (with DEX name, TVL, tokens, pool ID, depth at 0.5%, 1%, 2%), graph view, simulation of routed swaps to see token's position on optimal paths.
 
 3.  **As a Trader – Understand Liquidity**:
     *   **Goal**: Get a detailed view of TVL and liquidity distribution (list view) and an intuitive understanding of market structure (graph view).
