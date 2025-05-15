@@ -42,9 +42,10 @@ This document outlines the current implementation status and planned work for th
         *   Shape: "circle", default size 25.
         *   Default Style: Dark background, light cream border/text. Text-only (no logos).
         *   Selected Style: `2px solid #FF3366` border correctly applied.
-    *   **Edge Styling (`GraphView.tsx`, `GraphViewContent.tsx`):**
-        *   Default: Thin (`1px`), subtle light color (`rgba(255,244,224,0.07)`), straight lines.
-        *   Conditional Styling: updated in current block" (orange, 2px).
+    *   **Edge Styling (`GraphView.tsx`, `useGraphData.ts`):**
+        *   Default: Thin (`1px`), subtle light color (`rgba(255,244,224,0.07)` or neutral gray `#848484` if no protocol selected), straight lines (or fanned for parallel).
+        *   Conditional Styling: Protocol-specific colors applied if a protocol filter is active. Edges updated in the current block are highlighted with increased width (orange, 2px - color part might need verification, width is primary).
+        *   **Corrected logic in `useGraphData.ts` to ensure edges are gray if no protocol filter is active.**
     *   **Tooltip Styling & Content (`GraphView.tsx`):**
         *   Container: Styled per Figma (bg, border, blur, shadow).
         *   Interim Content: Symbol, Pool Count, clickable Address.
@@ -60,9 +61,9 @@ This document outlines the current implementation status and planned work for th
 
 ## What's Left to Build / Verify
 
-* Edge coloring by protocol
-* Multiple edges between tokens, one per protocol
-* The graph layout should be less rigid, now there is a hub and spoke style by default
+*   **Edge coloring by protocol (Verified & Corrected)**: Edges now correctly show protocol-specific colors when a protocol filter is active, and default to gray if no protocol filter is active.
+*   Multiple edges between tokens, one per protocol
+*   The graph layout should be less rigid
 * When a pool updates, flashing the pool edge, making it fat until the next block update comes in.
 * Verify if the "Websocket config UI should match that of TC styling" is fully complete now that the popover card and select dropdown are styled.
 
@@ -71,9 +72,10 @@ This document outlines the current implementation status and planned work for th
 *   Foundational UI, navigation, and WebSocket data handling are in place.
 *   Pool List view is largely functional.
 *   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (Etherscan link styling, dismissal behavior).
-*   **Graph rendering and interaction issues (token deselection, zoom reset) have been investigated and resolved.**
+*   **Graph rendering and interaction issues (token deselection, zoom reset, incorrect edge coloring) have been investigated and resolved.**
     *   The graph correctly re-renders upon token deselection; its disappearance is expected if no valid graph remains.
     *   User zoom level is now preserved on new block data updates by setting `physics.stabilization.fit: false` in `GraphView.tsx`.
+    *   **Edge coloring logic in `useGraphData.ts` was corrected: when no protocol is selected in filters, edges now correctly display as gray instead of their individual protocol colors.**
 *   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
 *   **The previous focus on diagnosing edge stacking has been completed.** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`. Current focus is on ongoing layout tuning by the user.
 
@@ -126,4 +128,7 @@ This document outlines the current implementation status and planned work for th
         *   **Problem 2**: User's zoom level reset on new block data.
             *   **Root Cause**: `vis-network` defaults `physics.stabilization.fit` to `true`, causing a re-fit on `network.setData()` calls triggered by new block data.
             *   **Solution**: Explicitly added `physics.stabilization: { fit: false }` to `networkOptions` in `GraphView.tsx` to preserve user zoom. A comment was added explaining this.
-        *   **Status**: Zoom preservation implemented. User to continue exploring and tuning `networkOptions` in `GraphView.tsx` (physics) and fanning parameters in `useGraphData.ts` for optimal visual results.
+        *   **Problem 3**: Graph edges were colored by protocol even when no protocol was selected in the filter.
+            *   **Root Cause**: Logic in `useGraphData.ts` incorrectly applied protocol-specific colors when `selectedProtocols.length === 0`.
+            *   **Solution**: Modified `useGraphData.ts` to set edge color to a neutral gray (`#848484`) if `selectedProtocols.length === 0`. If protocols are selected, matching edges get their protocol color, and non-matching edges are gray.
+        *   **Status**: Zoom preservation and correct edge coloring (for no protocol selected scenario) implemented.

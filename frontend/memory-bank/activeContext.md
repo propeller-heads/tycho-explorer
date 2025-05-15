@@ -8,6 +8,9 @@
 *   **Primary Issue 2 (Resolved)**: User's zoom level being reset when new block data arrives.
     *   **Root Cause Analysis**: Identified that `vis-network`'s default behavior for `physics.stabilization.fit` is `true`. When `network.setData()` is called on new block data, this default causes the graph to re-fit to the viewport, resetting zoom.
     *   **Solution**: Explicitly set `physics.stabilization.fit: false` in `networkOptions` in `GraphView.tsx`.
+*   **Primary Issue 3 (Resolved)**: Graph edges were colored by protocol even when no protocol was selected in the filter popover. Expected behavior was for edges to be gray.
+    *   **Root Cause Analysis**: The logic in `useGraphData.ts` treated `selectedProtocols.length === 0` as a condition to show all protocols with their specific colors, rather than applying a default gray.
+    *   **Solution**: Modified `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`.
 *   **Current Step**: Finalizing documentation of these findings and solutions.
 
 ## Recent Changes
@@ -42,6 +45,7 @@ The following changes were implemented to refactor the Graph View and related co
 *   **`useGraphData.ts`:**
     *   Updated to pass through `lastBlockTimestamp` and `estimatedBlockDuration` from the context.
     *   **Implemented `applyParallelEdgeSmoothness` function:** This function processes edges to identify parallel connections (multiple edges between the same two nodes). For such groups, it dynamically assigns `smooth.type` (alternating 'curvedCW' and 'curvedCCW') and incrementally increasing `smooth.roundness` values to create a fanned-out visual effect, ensuring all parallel edges are distinguishable. Single edges receive a default, nearly straight curve. This addresses the issue of parallel edges stacking on top of each other.
+    *   **Corrected Edge Coloring Logic**: Modified the logic to ensure that if no protocols are selected in the filter (`selectedProtocols.length === 0`), all edges connecting selected tokens are rendered in a neutral gray (`#848484`). If specific protocols are selected, only edges belonging to those protocols receive their specific colors, while other non-matching edges are gray. Highlighting of edges updated in the current block (by width) is preserved in both scenarios.
 *   **`GraphView.tsx`:**
     *   **Nodes:** Default shape changed to "circle" with updated default styling (colors, font size). Selected nodes now correctly display a `2px solid #FF3366` border, managed by updating the node's data in the `DataSet`.
     *   **Edges:** Default styling (color, width, nearly straight lines via `smooth: {type: 'continuous', roundness: 0.05}`) defined in `networkOptions`. Parallel edge curving is now handled dynamically in `useGraphData.ts`.
@@ -71,6 +75,10 @@ The following changes were implemented to refactor the Graph View and related co
 *   **Edge Stacking (Previously Addressed)**:
     *   **Root Cause**: Default `smooth: { type: 'continuous' }` without differentiation for parallel edges.
     *   **Solution**: Dynamic assignment of `smooth.type` and `smooth.roundness` in `useGraphData.ts` via `applyParallelEdgeSmoothness`.
+*   **Edge Coloring When No Protocol is Selected**:
+    *   **Observation**: Edges were colored by their specific protocol even if no protocol filter was active.
+    *   **Root Cause**: The condition `selectedProtocols.length === 0` in `useGraphData.ts` was incorrectly interpreted as "show all protocols with their colors" instead of "no protocol filter active, so use default gray".
+    *   **Solution**: Updated `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`. If protocols *are* selected, matching edges get protocol colors, and non-matching edges get the neutral gray.
 *   **`vis-network` Configuration Strategy**:
     *   **Global (`GraphView.tsx`)**:
         *   `layout.hierarchical.enabled: false`.
@@ -79,7 +87,7 @@ The following changes were implemented to refactor the Graph View and related co
         *   Default node/edge styles.
     *   **Dynamic Per-Edge (`useGraphData.ts`)**:
         *   `applyParallelEdgeSmoothness` for fanning parallel edges.
-        *   Protocol-based coloring and update-based width logic.
+        *   Protocol-based coloring (now correctly handling the "no protocol selected" case) and update-based width logic.
 
 ## Important Patterns and Preferences
 
