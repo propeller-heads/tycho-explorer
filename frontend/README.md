@@ -1,28 +1,31 @@
-# Quick start
+# Pool Explorer
 
-chmod +x start.sh
+![Graph View of the application](./graphview.png "Title")
 
-./start.sh --parallel
+Pool Explorer is a local user interface designed to explore Decentralized Exchange (DEX) pools. It provides low-latency access to comprehensive and trustlessly reliable data, making on-chain liquidity easy to observe and explore. With Pool Explorer, you can filter for specific pools and visually explore the entire set of DEX pools, enabling better decision-making for traders, DEXs, and protocols.
 
-# Logic organization for src/components/dexscan
+# Quick Start
 
-1. Root Component Structure:
-- DexScanContent (root) wraps DexScanContentMain with PoolDataProvider
-- Uses React Context for state management and data sharing
-2. Data Management:
-- PoolDataContext provides centralized state for pool data
-- Manages WebSocket connections for real-time data
-- Includes fallback to mock data when disconnected
-- Handles reconnection logic with configurable attempts
-3. View Components:
-- ListView displays pool data in a tabular format
-- PoolTable handles sorting, filtering, and pagination
-- ViewSelector toggles between view modes
-4. Pool Details:
-- SwapSimulator provides trading simulation
-- Uses specialized components (SwapControls, SwapResults)
-5. Connection Management:
-- WebSocketConfig allows users to configure connection settings
-- Visual indicators for connection status
+To get started with Pool Explorer, follow these steps:
 
-Data management is centrally managed in the context while UI components focus on rendering and user interactions.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/ex9-fyi/swift-price-oracle.git
+    ```
+2.  **Navigate into the project directory:**
+    ```bash
+    cd swift-price-oracle
+    ```
+3.  **Checkout the `graph_view_wt1` branch (the development branch):**
+    ```bash
+    git checkout graph_view_wt1
+    ```
+4.  **Make the startup script executable:**
+    ```bash
+    chmod +x start.sh
+    ```
+5.  **Run the application:**
+    ```bash
+    ./start.sh --parallel
+    ```
+This will start the application.
