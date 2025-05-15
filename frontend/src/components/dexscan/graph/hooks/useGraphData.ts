@@ -9,6 +9,94 @@ import { protocolColors } from '../protocolColors'; // Import color definitions
 //   return JSON.stringify(a) === JSON.stringify(b);
 // };
 
+// Interface for Vis.js edges, including the optional smooth property
+interface VisEdge {
+  id: string;
+  from: string;
+  to: string;
+  protocol: string;
+  lastUpdatedAtBlock: number;
+  color: string;
+  width: number;
+  smooth?: {
+    enabled: boolean;
+    type: string;
+    roundness: number;
+  };
+  // Add any other custom properties your edges might have
+}
+
+/**
+ * Processes an array of Vis.js edges to apply specific smoothness options
+ * for fanning out parallel edges (multiple edges connecting the same two nodes).
+ * Single edges between a pair of nodes are given a default, nearly straight curve.
+ * Parallel edges are assigned alternating 'curvedCW' (clockwise) and 'curvedCCW'
+ * (counter-clockwise) types with incrementally increasing roundness to create a
+ * visual fanning effect, making all edges visible.
+ *
+ * @param edges - An array of VisEdge objects that have been filtered and styled
+ *                but do not yet have specific smoothness for parallel fanning.
+ * @returns A new array of VisEdge objects with appropriate `smooth` properties applied,
+ *          especially for fanning out parallel edges.
+ */
+function applyParallelEdgeSmoothness(edges: VisEdge[]): VisEdge[] {
+  const edgesByPair = new Map<string, VisEdge[]>();
+
+  // Group edges by the pair of nodes they connect
+  edges.forEach(edge => {
+    const pairKey = [edge.from, edge.to].sort().join('-');
+    if (!edgesByPair.has(pairKey)) {
+      edgesByPair.set(pairKey, []);
+    }
+    edgesByPair.get(pairKey)!.push(edge);
+  });
+
+  const processedEdges: VisEdge[] = [];
+  edgesByPair.forEach(pairGroup => {
+    const numEdgesInGroup = pairGroup.length;
+
+    if (numEdgesInGroup <= 1) {
+      // Single edge, add it with default (or slightly curved) smoothness
+      pairGroup.forEach(edge => {
+        processedEdges.push({
+          ...edge,
+          smooth: {
+            enabled: true,
+            type: 'continuous', 
+            roundness: 0.05 // Nearly straight, allows global options to potentially override if more specific
+          }
+        });
+      });
+    } else {
+      // Multiple (parallel) edges, apply fanning logic
+      // Sort by a consistent criteria (e.g., edge.id) for stable CW/CCW assignment
+      pairGroup.sort((a, b) => a.id.localeCompare(b.id));
+
+      const baseRoundness = 0.05; // Initial roundness for the first curve pair
+      const roundnessIncrement = 0.15; // How much to increase for subsequent curve pairs
+      const maxRoundness = 0.80; // Maximum roundness to prevent overly wide fans
+
+      pairGroup.forEach((edge, index) => {
+        const type = (index % 2 === 0) ? 'curvedCW' : 'curvedCCW';
+        const roundnessTier = Math.floor(index / 2);
+        const currentRoundness = Math.min(maxRoundness, baseRoundness + (roundnessTier * roundnessIncrement));
+
+        processedEdges.push({
+          ...edge,
+          smooth: {
+            enabled: true,
+            type: type,
+            roundness: currentRoundness
+          }
+        });
+      });
+    }
+  });
+
+  return processedEdges;
+}
+
+
 export function useGraphData(
   selectedTokens: string[],
   selectedProtocols: string[]
@@ -63,7 +151,7 @@ export function useGraphData(
     const finalNodeIdsSet = new Set(finalNodes.map(node => node.id));
 
     // 3. Generate, Filter, and Style Edges
-    const finalEdges = [];
+    const tempFinalEdges: VisEdge[] = []; // Changed to VisEdge[] and temp name
     for (const pool of Object.values(pools)) {
       if (pool.tokens.length < 2) continue;
 
@@ -94,11 +182,9 @@ export function useGraphData(
 
       let determinedColor;
       const defaultEdgeWidth = 1;
-      const updatedEdgeWidth = 15;
+      const updatedEdgeWidth = 10; 
       let determinedWidth;
       
-      const determinedLabel = undefined; // No label at any time
-
       if (isProtocolSelected) {
         const colorKey = currentPoolEdge.protocol.toLowerCase(); // Ensure consistency with keys in protocolColors
         determinedColor = protocolColors[colorKey] || '#CCCCCC'; // Protocol color, fallback to light gray
@@ -109,21 +195,19 @@ export function useGraphData(
         determinedWidth = defaultEdgeWidth; // Always default width if protocol not selected
       }
 
-      finalEdges.push({
+      tempFinalEdges.push({ // Push to tempFinalEdges
         ...currentPoolEdge,
         color: determinedColor,
         width: determinedWidth,
-        label: determinedLabel,
-        // Add default vis-network edge properties if not already present or to override
-        smooth: { enabled: true, type: 'continuous' }, // Example default
-        // arrows: { to: { enabled: true, scaleFactor: 0.7 } } // Example if arrows are desired
       });
     }
+
+    // Apply smoothness for parallel edges
+    const finalEdgesWithSmoothness = applyParallelEdgeSmoothness(tempFinalEdges);
     
-    // console.log("DEBUG: Generated final graph data", { finalNodes, finalEdges });
     return {
       nodes: finalNodes,
-      edges: finalEdges,
+      edges: finalEdgesWithSmoothness, // Use the processed edges
       currentBlockNumber,
       lastBlockTimestamp,
       estimatedBlockDuration

@@ -3,95 +3,82 @@ import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 
 // Define the network options
-// const networkOptions = {
-//   nodes: {
-//     shape: "circle", // Changed from "box" to "circle"
-//     size: 25, // Default size (radius) for circle nodes, adjust as needed
-//     color: {
-//       border: "#FFF4E0", 
-//       background: "#232323", 
-//       highlight: { 
-//         border: "#FFFFFF", 
-//         background: "rgba(255, 244, 224, 0.1)" 
-//       }
-//     },
-//     borderWidth: 1, 
-//     font: { 
-//       size: 14, 
-//       color: "#FFF4E0" 
-//     },
-//     // widthConstraint and heightConstraint.valign are less relevant for circles, 
-//     // label fitting is managed by node size and font margin.
-//     margin: { top: 8, right: 8, bottom: 8, left: 8 }, // Adjust margin for label inside circle
-//     fixed: {
-//       // This can be used later if specific nodes need to be fixed
-//     }
-//   },
-//   edges: {
-//     smooth: {
-//       enabled: true, 
-//       type: "continuous", 
-//       roundness: 0 // Add roundness to satisfy TypeScript, 0 for straighter lines
-//     },
-//     color: {
-//       color: "rgba(255, 244, 224, 0.07)", // Default subtle edge color from Figma
-//       highlight: "rgba(255, 244, 224, 0.2)", // Brighter on hover
-//       hover: "rgba(255, 244, 224, 0.2)",
-//     },
-//     width: 1, // Default edge width from Figma
-//     hoverWidth: 1.5, // Slightly thicker on hover
-//   },
-//   physics: {
-//     barnesHut: {
-//       springLength: 800,
-//       gravitationalConstant: -2000,
-//     },
-//     solver: "repulsion",
-//     repulsion: {
-//       nodeDistance: 600 // Put more distance between the nodes.
-//     }
-//   },
-//   layout: {
-//     randomSeed: 42,
-//     improvedLayout: false
-//   }
-// };
-
 const networkOptions = {
-  // autoResize: false,
+  autoResize: true,
   nodes: {
     shape: "circle",
+    size: 25, // Adjust based on visual preference and if icons/images are used
     color: {
-      border: "#ffffff",
-      background: "#232323",
+      border: "rgba(255, 244, 224, 0.2)", // Subtle light border
+      background: "rgba(10, 10, 20, 0.8)", // Very dark background
       highlight: {
-        border: "#000000",
-        background: "#F66733",
+        border: "#FF3366", // Folly Red for selection, as per activeContext
+        background: "rgba(30, 30, 40, 0.9)",
+      },
+      hover: {
+        border: "rgba(255, 244, 224, 0.5)",
+        background: "rgba(30, 30, 40, 0.9)",
       }
     },
     borderWidth: 1,
-    borderWidthSelected: 3,
+    // borderWidthSelected is handled programmatically in GraphManager for #FF3366
     font: {
-      size: 10,
-      color: "#ffffff",
-      face: "monospace",
+      size: 11,
+      color: "#FFF4E0", // Light cream/off-white for text on dark nodes
+      face: "Inter, Arial, sans-serif",
+      vadjust: 0, // Adjust if text isn't centered well
     },
-    size: 20,
+    // mass: 1, // Default
+    physics: true, // Default
+  },
+  edges: {
+    width: 1,
+    color: {
+      color: "rgba(255, 244, 224, 0.15)", // Very subtle default edge
+      highlight: "rgba(255, 244, 224, 0.4)",
+      hover: "rgba(255, 244, 224, 0.4)",
+      inherit: false, // Assuming dynamic coloring for protocols etc.
+    },
+    smooth: {
+      enabled: true,
+      type: "continuous", // For straighter default lines; parallel curves handled elsewhere
+      roundness: 0.05     // Very slight curve, almost straight
+    },
+    // physics: true, // Default
   },
   physics: {
-    // solver: "repulsion",
-    // repulsion: {
-    //     nodeDistance: 70,
-    // }
+    enabled: true,
+    solver: 'barnesHut', // Default, generally good for non-hierarchical
     barnesHut: {
-      springLength: 800,
-      gravitationalConstant: -2000,
-    }
+      gravitationalConstant: -25000, // Increased repulsion
+      centralGravity: 0.1,           // Reduced pull to center
+      springLength: 300,             // Increased for more node separation
+      springConstant: 0.03,          // Might need slight reduction with longer springs
+      damping: 0.09,                 // Standard
+      avoidOverlap: 0.7              // Increased to prevent node overlap
+    },
+    stabilization: { // Defaults are usually fine, can be tweaked if needed
+      enabled: true,
+      iterations: 1000,
+      fit: true
+    },
+    adaptiveTimestep: true // Default
   },
-    layout: {
-      randomSeed: 42,
+  layout: {
+    randomSeed: undefined, // Or a specific seed once a good layout is found
+    hierarchical: {
+      enabled: false // TC Design is not hierarchical
+    },
+    // improvedLayout: true, // Default
+  },
+  interaction: {
+    hover: true, // To see hover effects
+    tooltipDelay: 200, // Default 300
+    // Other interaction defaults are usually fine
   }
 };
+
+
 // Props interface
 interface GraphViewProps {
   tokenNodes: Array<{ id: string; label: string; symbol?: string }>;

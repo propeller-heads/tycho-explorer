@@ -38,9 +38,10 @@ The following changes were implemented to refactor the Graph View and related co
     *   Enhanced to track `lastBlockTimestamp` and `estimatedBlockDuration` to support the animated block progress icon.
 *   **`useGraphData.ts`:**
     *   Updated to pass through `lastBlockTimestamp` and `estimatedBlockDuration` from the context.
+    *   **Implemented `applyParallelEdgeSmoothness` function:** This function processes edges to identify parallel connections (multiple edges between the same two nodes). For such groups, it dynamically assigns `smooth.type` (alternating 'curvedCW' and 'curvedCCW') and incrementally increasing `smooth.roundness` values to create a fanned-out visual effect, ensuring all parallel edges are distinguishable. Single edges receive a default, nearly straight curve. This addresses the issue of parallel edges stacking on top of each other.
 *   **`GraphView.tsx`:**
     *   **Nodes:** Default shape changed to "circle" with updated default styling (colors, font size). Selected nodes now correctly display a `2px solid #FF3366` border, managed by updating the node's data in the `DataSet`.
-    *   **Edges:** Default styling (color, width, straight lines) defined in `networkOptions`.
+    *   **Edges:** Default styling (color, width, nearly straight lines via `smooth: {type: 'continuous', roundness: 0.05}`) defined in `networkOptions`. Parallel edge curving is now handled dynamically in `useGraphData.ts`.
     *   **Tooltip:**
         *   HTML content styled to match Figma design (bg, border, blur, shadow, text styles). Content is interim (Symbol, Pool Count, Address).
         *   **Token address URL in tooltip now styled with a gray color (`rgba(255, 244, 224, 0.64)`) to match popover.**
@@ -51,28 +52,23 @@ The following changes were implemented to refactor the Graph View and related co
 
 ## Next Steps
 
-1.  **User Exploration**: User to experiment with the updated global `networkOptions` in `GraphView.tsx` to achieve a satisfactory base node layout.
-2.  **Implement Edge Fanning Logic**: Modify `useGraphData.ts` to:
-    *   Group pools by the pair of tokens they connect.
-    *   For parallel edges, dynamically assign `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` to create a fanned-out effect.
-3.  **Iterative Tuning**: Collaboratively tune `roundness` values and physics parameters to match the Figma design aesthetic.
-4.  Verify that edge coloring by protocol and width changes for updated pools remain correct with the new layout logic.
+1.  **User Exploration & Iterative Tuning**: User to experiment with the updated global `networkOptions` in `GraphView.tsx` (especially physics parameters like `gravitationalConstant`, `centralGravity`, `springLength`, `avoidOverlap`) and the `applyParallelEdgeSmoothness` function parameters (`baseRoundness`, `roundnessIncrement`) in `useGraphData.ts` to achieve a satisfactory graph layout that matches the Figma design aesthetic.
+2.  **Verification**: Verify that edge coloring by protocol and width changes for updated pools remain correct with the new layout logic.
 
 ## Active Decisions and Considerations (Graph Layout Focus)
 
-*   **Root Cause of Edge Stacking**: Confirmed to be the default `smooth: { type: 'continuous' }` applied to all edges in `useGraphData.ts` without differentiation for parallel edges.
+*   **Root Cause of Edge Stacking**: Default `smooth: { type: 'continuous' }` without differentiation for parallel edges.
+*   **Solution for Edge Stacking**: Implemented dynamic assignment of `smooth.type` (alternating `'curvedCW'`/`'curvedCCW'`) and incremental `smooth.roundness` for parallel edges within `useGraphData.ts` via the `applyParallelEdgeSmoothness` function. This ensures parallel edges fan out visually.
 *   **Target Layout (Figma `node-id=7903-5193`)**: Organic, force-directed node placement with clearly fanned-out, gently curved parallel edges.
 *   **`vis-network` Configuration Strategy**:
     *   **Global (`GraphView.tsx`)**:
         *   `layout.hierarchical.enabled: false`.
-        *   `physics.enabled: true` with `barnesHut` solver. Key parameters to tune: `gravitationalConstant`, `centralGravity`, `springLength`, `avoidOverlap`.
-        *   Default node and edge styles (shape, base colors, base width, no arrows).
+        *   `physics.enabled: true` with `barnesHut` solver. Tuned parameters: `gravitationalConstant: -25000`, `centralGravity: 0.1`, `springLength: 300`, `avoidOverlap: 0.7`.
+        *   Default node styles (dark, subtle borders) and edge styles (thin, very subtle, nearly straight default curve via `smooth: {type: 'continuous', roundness: 0.05}`).
     *   **Dynamic Per-Edge (`useGraphData.ts`)**:
-        *   Logic to identify parallel edges.
-        *   Assign alternating `smooth.type: 'curvedCW'/'curvedCCW'` to parallel edges.
-        *   Assign varying `smooth.roundness` to parallel edges to control the fanning spread.
-        *   Continue applying protocol-based color and update-based width.
-*   **Initial `networkOptions` in `GraphView.tsx`**: Updated with settings to promote an organic layout (e.g., `gravitationalConstant: -15000`, `springLength: 150`, `avoidOverlap: 0.2`, `hierarchical.enabled: false`).
+        *   The `applyParallelEdgeSmoothness` function now handles the identification of parallel edges and assigns specific `smooth` properties for fanning.
+        *   Protocol-based coloring and update-based width logic remains in place.
+*   **Initial `networkOptions` in `GraphView.tsx`**: Tuned to promote a more spread-out, organic layout as a baseline.
 
 ## Important Patterns and Preferences
 

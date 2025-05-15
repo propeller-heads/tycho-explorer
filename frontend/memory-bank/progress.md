@@ -72,7 +72,7 @@ This document outlines the current implementation status and planned work for th
 *   Pool List view is largely functional.
 *   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (Etherscan link styling, dismissal behavior).
 *   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
-*   **The current focus is on diagnosing and resolving graph layout issues, specifically the stacking of parallel edges, to align with the Figma design (`node-id=7903-5193`).** This involves tuning global `networkOptions` in `GraphView.tsx` and planning dynamic edge styling in `useGraphData.ts`.
+*   **The current focus is on diagnosing and resolving graph layout issues, specifically the stacking of parallel edges, to align with the Figma design (`node-id=7903-5193`).** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`.
 
 ## Evolution of Project Decisions
 
@@ -110,7 +110,9 @@ This document outlines the current implementation status and planned work for th
                 *   Set `layout.hierarchical.enabled: false`.
                 *   Enable and tune `physics.barnesHut` solver (e.g., `gravitationalConstant`, `springLength`, `avoidOverlap`).
                 *   (Initial options applied: `gravitationalConstant: -15000`, `springLength: 150`, `avoidOverlap: 0.2`).
-            2.  Modify `useGraphData.ts`:
-                *   Implement logic to identify parallel edges.
-                *   Dynamically assign `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` to these edges.
-        *   **Status**: User is currently exploring and tuning the updated global `networkOptions` in `GraphView.tsx`. Next step is to implement the dynamic edge fanning logic in `useGraphData.ts`.
+            2.  **Modified `useGraphData.ts` (Completed May 15, 2025):**
+                *   Implemented `applyParallelEdgeSmoothness` helper function.
+                *   This function groups edges by the pair of nodes they connect.
+                *   For parallel edges, it dynamically assigns `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` with incrementally increasing `roundness` values to create a fanned-out effect, ensuring all parallel edges are distinguishable.
+                *   Single edges between a pair receive a default, nearly straight curve.
+        *   **Status**: Edge fanning logic implemented. User to explore and tune `networkOptions` in `GraphView.tsx` (physics) and fanning parameters (`baseRoundness`, `roundnessIncrement` in `applyParallelEdgeSmoothness` within `useGraphData.ts`) for optimal visual results.
