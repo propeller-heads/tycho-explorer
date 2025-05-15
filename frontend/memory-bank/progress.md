@@ -71,8 +71,11 @@ This document outlines the current implementation status and planned work for th
 *   Foundational UI, navigation, and WebSocket data handling are in place.
 *   Pool List view is largely functional.
 *   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (Etherscan link styling, dismissal behavior).
+*   **Graph rendering and interaction issues (token deselection, zoom reset) have been investigated and resolved.**
+    *   The graph correctly re-renders upon token deselection; its disappearance is expected if no valid graph remains.
+    *   User zoom level is now preserved on new block data updates by setting `physics.stabilization.fit: false` in `GraphView.tsx`.
 *   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
-*   **The current focus is on diagnosing and resolving graph layout issues, specifically the stacking of parallel edges, to align with the Figma design (`node-id=7903-5193`).** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`.
+*   **The previous focus on diagnosing edge stacking has been completed.** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`. Current focus is on ongoing layout tuning by the user.
 
 ## Evolution of Project Decisions
 
@@ -115,4 +118,12 @@ This document outlines the current implementation status and planned work for th
                 *   This function groups edges by the pair of nodes they connect.
                 *   For parallel edges, it dynamically assigns `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` with incrementally increasing `roundness` values to create a fanned-out effect, ensuring all parallel edges are distinguishable.
                 *   Single edges between a pair receive a default, nearly straight curve.
-        *   **Status**: Edge fanning logic implemented. User to explore and tune `networkOptions` in `GraphView.tsx` (physics) and fanning parameters (`baseRoundness`, `roundnessIncrement` in `applyParallelEdgeSmoothness` within `useGraphData.ts`) for optimal visual results.
+        *   **Status**: Edge fanning logic implemented.
+    *   **Graph Rendering and Interaction Refinements (May 15, 2025):**
+        *   **Problem 1**: Graph not re-rendering as expected on token deselection.
+            *   **Analysis**: Determined this was expected behavior. The graph disappears if conditional rendering logic in `GraphViewContent.tsx` determines no valid graph to show (no selected tokens or no resulting nodes).
+            *   **Outcome**: No code change needed; behavior clarified.
+        *   **Problem 2**: User's zoom level reset on new block data.
+            *   **Root Cause**: `vis-network` defaults `physics.stabilization.fit` to `true`, causing a re-fit on `network.setData()` calls triggered by new block data.
+            *   **Solution**: Explicitly added `physics.stabilization: { fit: false }` to `networkOptions` in `GraphView.tsx` to preserve user zoom. A comment was added explaining this.
+        *   **Status**: Zoom preservation implemented. User to continue exploring and tuning `networkOptions` in `GraphView.tsx` (physics) and fanning parameters in `useGraphData.ts` for optimal visual results.

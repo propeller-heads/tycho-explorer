@@ -2,10 +2,13 @@
 
 ## Current Work Focus
 
-**Diagnosing and resolving graph layout issues in the Pool Explorer's Graph View.**
-*   **Primary Issue**: Multiple edges between the same two token nodes are stacking on top of each other, appearing as a single edge, instead of fanning out as depicted in the Figma design.
-*   **Goal**: Achieve an organic, force-directed layout where parallel edges are visually distinct and gently curved, closely matching the Figma reference (`node-id=7903-5193`).
-*   **Current Step**: Refining global `networkOptions` in `GraphView.tsx` (physics, layout defaults) and planning modifications to `useGraphData.ts` to implement dynamic `smooth.type` and `smooth.roundness` for parallel edges.
+**Investigating and resolving graph rendering behaviors in the Pool Explorer's Graph View.**
+*   **Primary Issue 1 (Resolved)**: Graph not re-rendering as expected upon token deselection.
+    *   **Root Cause Analysis**: Determined that the graph *does* re-render. Its disappearance is due to conditional rendering in `GraphViewContent.tsx` which hides `GraphView` if `selectedTokens.length === 0` or if `useGraphData` returns no `graphDisplayNodes`. This is considered expected behavior.
+*   **Primary Issue 2 (Resolved)**: User's zoom level being reset when new block data arrives.
+    *   **Root Cause Analysis**: Identified that `vis-network`'s default behavior for `physics.stabilization.fit` is `true`. When `network.setData()` is called on new block data, this default causes the graph to re-fit to the viewport, resetting zoom.
+    *   **Solution**: Explicitly set `physics.stabilization.fit: false` in `networkOptions` in `GraphView.tsx`.
+*   **Current Step**: Finalizing documentation of these findings and solutions.
 
 ## Recent Changes
 
@@ -42,6 +45,7 @@ The following changes were implemented to refactor the Graph View and related co
 *   **`GraphView.tsx`:**
     *   **Nodes:** Default shape changed to "circle" with updated default styling (colors, font size). Selected nodes now correctly display a `2px solid #FF3366` border, managed by updating the node's data in the `DataSet`.
     *   **Edges:** Default styling (color, width, nearly straight lines via `smooth: {type: 'continuous', roundness: 0.05}`) defined in `networkOptions`. Parallel edge curving is now handled dynamically in `useGraphData.ts`.
+    *   **`networkOptions` Update**: Explicitly set `physics.stabilization.fit: false` to prevent zoom reset on data updates. Added a comment explaining this.
     *   **Tooltip:**
         *   HTML content styled to match Figma design (bg, border, blur, shadow, text styles). Content is interim (Symbol, Pool Count, Address).
         *   **Token address URL in tooltip now styled with a gray color (`rgba(255, 244, 224, 0.64)`) to match popover.**
@@ -52,32 +56,40 @@ The following changes were implemented to refactor the Graph View and related co
 
 ## Next Steps
 
-1.  **User Exploration & Iterative Tuning**: User to experiment with the updated global `networkOptions` in `GraphView.tsx` (especially physics parameters like `gravitationalConstant`, `centralGravity`, `springLength`, `avoidOverlap`) and the `applyParallelEdgeSmoothness` function parameters (`baseRoundness`, `roundnessIncrement`) in `useGraphData.ts` to achieve a satisfactory graph layout that matches the Figma design aesthetic.
-2.  **Verification**: Verify that edge coloring by protocol and width changes for updated pools remain correct with the new layout logic.
+1.  **Monitor Graph Behavior**: Observe graph rendering and zoom behavior with the new `fit: false` setting to ensure stability.
+2.  **User Exploration & Iterative Tuning (Ongoing)**: User to continue experimenting with global `networkOptions` in `GraphView.tsx` (physics parameters) and `applyParallelEdgeSmoothness` function parameters in `useGraphData.ts` for optimal graph layout.
+3.  **Verification (Ongoing)**: Continue to verify that edge coloring by protocol and width changes for updated pools remain correct.
 
-## Active Decisions and Considerations (Graph Layout Focus)
+## Active Decisions and Considerations (Graph Rendering & Interaction)
 
-*   **Root Cause of Edge Stacking**: Default `smooth: { type: 'continuous' }` without differentiation for parallel edges.
-*   **Solution for Edge Stacking**: Implemented dynamic assignment of `smooth.type` (alternating `'curvedCW'`/`'curvedCCW'`) and incremental `smooth.roundness` for parallel edges within `useGraphData.ts` via the `applyParallelEdgeSmoothness` function. This ensures parallel edges fan out visually.
-*   **Target Layout (Figma `node-id=7903-5193`)**: Organic, force-directed node placement with clearly fanned-out, gently curved parallel edges.
+*   **Graph Re-rendering on Token Deselection**:
+    *   **Observation**: Graph disappears if deselection leads to no displayable tokens/edges.
+    *   **Conclusion**: This is expected behavior due to conditional rendering in `GraphViewContent.tsx` (`selectedTokens.length > 0 && graphDisplayNodes.length > 0`) and data filtering in `useGraphData.ts`. No code change required for this aspect.
+*   **Zoom Reset on New Block Data**:
+    *   **Root Cause**: `vis-network` defaults `physics.stabilization.fit` to `true`. When `network.setData()` is called (due to new block data updating graph props), this default causes the graph to re-fit the viewport.
+    *   **Solution**: Explicitly set `physics.stabilization.fit: false` in `networkOptions` within `GraphView.tsx`. This prevents the automatic re-fitting and preserves user zoom/pan.
+*   **Edge Stacking (Previously Addressed)**:
+    *   **Root Cause**: Default `smooth: { type: 'continuous' }` without differentiation for parallel edges.
+    *   **Solution**: Dynamic assignment of `smooth.type` and `smooth.roundness` in `useGraphData.ts` via `applyParallelEdgeSmoothness`.
 *   **`vis-network` Configuration Strategy**:
     *   **Global (`GraphView.tsx`)**:
         *   `layout.hierarchical.enabled: false`.
         *   `physics.enabled: true` with `barnesHut` solver. Tuned parameters: `gravitationalConstant: -25000`, `centralGravity: 0.1`, `springLength: 300`, `avoidOverlap: 0.7`.
-        *   Default node styles (dark, subtle borders) and edge styles (thin, very subtle, nearly straight default curve via `smooth: {type: 'continuous', roundness: 0.05}`).
+        *   **`physics.stabilization.fit: false` added to preserve user zoom.**
+        *   Default node/edge styles.
     *   **Dynamic Per-Edge (`useGraphData.ts`)**:
-        *   The `applyParallelEdgeSmoothness` function now handles the identification of parallel edges and assigns specific `smooth` properties for fanning.
-        *   Protocol-based coloring and update-based width logic remains in place.
-*   **Initial `networkOptions` in `GraphView.tsx`**: Tuned to promote a more spread-out, organic layout as a baseline.
+        *   `applyParallelEdgeSmoothness` for fanning parallel edges.
+        *   Protocol-based coloring and update-based width logic.
 
 ## Important Patterns and Preferences
 
 *   Adherence to `.clinerules` maintained.
-*   Iterative refinement based on user feedback is key, especially for visual tuning of the graph.
+*   Iterative refinement based on user feedback is key.
+*   Understanding `vis-network` default options is crucial for predictable behavior.
 
 ## Learnings and Project Insights
 
-*   Understanding `vis-network`'s `smooth.type` and `smooth.roundness` properties is critical for controlling the appearance of parallel edges.
-*   Achieving a specific aesthetic (like the Figma design) often requires a combination of global physics/layout settings and dynamic per-element styling.
-*   The default behavior of `smooth: { type: 'continuous' }` for multiple edges between the same nodes leads to visual stacking if not further differentiated.
-*   (Previous learnings regarding UI component translation and feedback cycles remain relevant).
+*   **Conditional Rendering Impact**: The interplay between data processing in hooks (`useGraphData`) and conditional rendering logic in components (`GraphViewContent`) directly determines UI visibility.
+*   **`vis-network` Defaults**: `vis-network` often has sensible defaults, but for specific behaviors like preserving zoom on data updates, explicit configuration (e.g., `stabilization.fit: false`) is necessary. Relying on defaults without verification can lead to unexpected outcomes.
+*   **`DataSet.update()` vs. `DataSet.clear()`/`add()` vs. `network.setData()`**: Understanding how `vis-network` and `vis-data` handle data updates is key. `network.setData()` (or `clear`/`add` on datasets) signals a more significant change that can trigger layout and fit recalculations based on network options.
+*   (Previous learnings regarding `smooth.type`/`roundness`, UI alignment, etc., remain relevant).
