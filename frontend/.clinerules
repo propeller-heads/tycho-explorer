@@ -46,7 +46,9 @@ Articulate the examples as tests and ensure that the function passes all. Doing 
 
 * Use as little abstraction as possible
 
-# Memory bank instructions
+# Dependencies
+
+In this app, we use a number of dependencies e.g. vis-network. When you're told to bring yourself up on context, read all of deps/ content.
 
 # Cline's Memory Bank
 
