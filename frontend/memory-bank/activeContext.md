@@ -11,7 +11,18 @@
 *   **Primary Issue 3 (Resolved)**: Graph edges were colored by protocol even when no protocol was selected in the filter popover. Expected behavior was for edges to be gray.
     *   **Root Cause Analysis**: The logic in `useGraphData.ts` treated `selectedProtocols.length === 0` as a condition to show all protocols with their specific colors, rather than applying a default gray.
     *   **Solution**: Modified `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`.
-*   **Current Step**: Finalizing documentation of these findings and solutions.
+*   **Graph Tooltip Enhancement (Completed)**:
+    *   **Requirement**: Tooltip's "Pool Count" for a token node should display the actual number of pools the token participates in. This count should update in real-time if the tooltip is open when new block data arrives.
+    *   **Solution**:
+        1.  `useGraphData.ts` was modified to expose the raw `pools` data (as `rawPoolsData`) from `PoolDataContext`.
+        2.  `GraphViewContent.tsx` was updated to pass `rawPoolsData` to `GraphView.tsx`.
+        3.  `GraphView.tsx` (`GraphManager` class) was updated:
+            *   It now stores `rawPoolsData`.
+            *   `getTokenData()` method now calculates `poolCount` by iterating through `rawPoolsData`.
+            *   `showTokenInfo()` method now adds an ID (`tooltip-pool-count`) to the pool count `<span>` in the tooltip HTML.
+            *   A new method `refreshCurrentTooltipData()` was added to find the `tooltip-pool-count` span in an active tooltip and update its content with a fresh count from `getTokenData()`.
+            *   The `useEffect` hook (reacting to `rawPoolsData` changes) now calls `refreshCurrentTooltipData()` to ensure live updates.
+*   **Current Step**: Finalizing documentation of all recent graph view enhancements, including the tooltip update.
 
 ## Recent Changes
 
@@ -46,12 +57,21 @@ The following changes were implemented to refactor the Graph View and related co
     *   Updated to pass through `lastBlockTimestamp` and `estimatedBlockDuration` from the context.
     *   **Implemented `applyParallelEdgeSmoothness` function:** This function processes edges to identify parallel connections (multiple edges between the same two nodes). For such groups, it dynamically assigns `smooth.type` (alternating 'curvedCW' and 'curvedCCW') and incrementally increasing `smooth.roundness` values to create a fanned-out visual effect, ensuring all parallel edges are distinguishable. Single edges receive a default, nearly straight curve. This addresses the issue of parallel edges stacking on top of each other.
     *   **Corrected Edge Coloring Logic**: Modified the logic to ensure that if no protocols are selected in the filter (`selectedProtocols.length === 0`), all edges connecting selected tokens are rendered in a neutral gray (`#848484`). If specific protocols are selected, only edges belonging to those protocols receive their specific colors, while other non-matching edges are gray. Highlighting of edges updated in the current block (by width) is preserved in both scenarios.
+    *   **Exposed Raw Pool Data**: Modified to return the raw `pools` object from `PoolDataContext` as `rawPoolsData` to be used for accurate tooltip calculations.
+*   **`GraphViewContent.tsx` (Updates for Tooltip Data):**
+    *   Now receives `rawPoolsData` from `useGraphData` hook.
+    *   Passes `rawPoolsData` as a prop to the `GraphView` component.
 *   **`GraphView.tsx`:**
     *   **Nodes:** Default shape changed to "circle" with updated default styling (colors, font size). Selected nodes now correctly display a `2px solid #FF3366` border, managed by updating the node's data in the `DataSet`.
     *   **Edges:** Default styling (color, width, nearly straight lines via `smooth: {type: 'continuous', roundness: 0.05}`) defined in `networkOptions`. Parallel edge curving is now handled dynamically in `useGraphData.ts`.
     *   **`networkOptions` Update**: Explicitly set `physics.stabilization.fit: false` to prevent zoom reset on data updates. Added a comment explaining this.
     *   **Tooltip:**
-        *   HTML content styled to match Figma design (bg, border, blur, shadow, text styles). Content is interim (Symbol, Pool Count, Address).
+        *   HTML content styled to match Figma design (bg, border, blur, shadow, text styles).
+        *   **Pool Count Calculation**: The `getTokenData` method in `GraphManager` now calculates "Pool Count" by iterating through the `rawPoolsData` (passed from `GraphViewContent`) to count how many pools the token participates in.
+        *   **Real-time Pool Count Update**: The pool count in an active tooltip now updates in real-time when new block data arrives. This is achieved by:
+            *   Adding an ID to the pool count `<span>` in the tooltip's HTML.
+            *   A new `refreshCurrentTooltipData()` method in `GraphManager` updates this `<span>`'s content.
+            *   The main component's `useEffect` (reacting to `rawPoolsData` changes) calls `refreshCurrentTooltipData()`.
         *   **Token address URL in tooltip now styled with a gray color (`rgba(255, 244, 224, 0.64)`) to match popover.**
         *   **Tooltip now disappears on any click outside the tooltip popup itself or the selected node (including clicks outside the graph area).**
 *   **New Component (`BlockProgressIcon.tsx`):** Created for the animated block progress display.
@@ -60,7 +80,7 @@ The following changes were implemented to refactor the Graph View and related co
 
 ## Next Steps
 
-1.  **Monitor Graph Behavior**: Observe graph rendering and zoom behavior with the new `fit: false` setting to ensure stability.
+1.  **Monitor Graph Behavior**: Observe graph rendering, zoom behavior, and tooltip real-time updates to ensure stability and correctness.
 2.  **User Exploration & Iterative Tuning (Ongoing)**: User to continue experimenting with global `networkOptions` in `GraphView.tsx` (physics parameters) and `applyParallelEdgeSmoothness` function parameters in `useGraphData.ts` for optimal graph layout.
 3.  **Verification (Ongoing)**: Continue to verify that edge coloring by protocol and width changes for updated pools remain correct.
 
@@ -79,6 +99,14 @@ The following changes were implemented to refactor the Graph View and related co
     *   **Observation**: Edges were colored by their specific protocol even if no protocol filter was active.
     *   **Root Cause**: The condition `selectedProtocols.length === 0` in `useGraphData.ts` was incorrectly interpreted as "show all protocols with their colors" instead of "no protocol filter active, so use default gray".
     *   **Solution**: Updated `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`. If protocols *are* selected, matching edges get protocol colors, and non-matching edges get the neutral gray.
+*   **Graph Tooltip Pool Count**:
+    *   **Requirement**: Display the actual number of pools a token participates in.
+    *   **Decision**: Calculate this by iterating through the raw pool data provided to the `GraphView` component, rather than relying solely on the rendered edges (which might be filtered).
+    *   **Implementation**: `useGraphData` exposes raw `pools` data; `GraphView`'s `GraphManager` uses this for `getTokenData`.
+*   **Real-time Tooltip Updates**:
+    *   **Requirement**: If a tooltip is open, its pool count should update when new block data changes the underlying pool participation.
+    *   **Decision**: Implement a mechanism to directly update the DOM content of the visible tooltip.
+    *   **Implementation**: Added an ID to the tooltip's pool count span. A new `refreshCurrentTooltipData` method in `GraphManager` re-calculates and updates this span. This method is triggered by `useEffect` in `GraphView` when `rawPoolsData` changes.
 *   **`vis-network` Configuration Strategy**:
     *   **Global (`GraphView.tsx`)**:
         *   `layout.hierarchical.enabled: false`.
@@ -100,4 +128,6 @@ The following changes were implemented to refactor the Graph View and related co
 *   **Conditional Rendering Impact**: The interplay between data processing in hooks (`useGraphData`) and conditional rendering logic in components (`GraphViewContent`) directly determines UI visibility.
 *   **`vis-network` Defaults**: `vis-network` often has sensible defaults, but for specific behaviors like preserving zoom on data updates, explicit configuration (e.g., `stabilization.fit: false`) is necessary. Relying on defaults without verification can lead to unexpected outcomes.
 *   **`DataSet.update()` vs. `DataSet.clear()`/`add()` vs. `network.setData()`**: Understanding how `vis-network` and `vis-data` handle data updates is key. `network.setData()` (or `clear`/`add` on datasets) signals a more significant change that can trigger layout and fit recalculations based on network options.
+*   **Tooltip Data Sourcing**: For accurate data like pool participation count, it's more reliable to use the complete raw dataset (`rawPoolsData`) rather than deriving from potentially filtered graph elements (like `edgesDataset` in `GraphManager`).
+*   **DOM Manipulation for Live Updates**: For highly dynamic elements within a third-party library's generated DOM (like a `vis-network` tooltip), direct DOM manipulation (e.g., `querySelector` and updating `textContent`) can be an effective way to achieve real-time updates without forcing a full re-render of the library's component.
 *   (Previous learnings regarding `smooth.type`/`roundness`, UI alignment, etc., remain relevant).

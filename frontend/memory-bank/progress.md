@@ -48,9 +48,11 @@ This document outlines the current implementation status and planned work for th
         *   **Corrected logic in `useGraphData.ts` to ensure edges are gray if no protocol filter is active.**
     *   **Tooltip Styling & Content (`GraphView.tsx`):**
         *   Container: Styled per Figma (bg, border, blur, shadow).
-        *   Interim Content: Symbol, Pool Count, clickable Address.
+        *   **Pool Count**: Now accurately displays the number of pools the token participates in, calculated from raw pool data.
+        *   **Real-time Update**: The pool count in an active tooltip updates in real-time when new block data arrives.
+        *   Clickable Address: Token address in tooltip is a styled Etherscan link.
         *   **Token Address URL:** Styled with gray color (`rgba(255, 244, 224, 0.64)`) to match popover.
-        *   **Tooltip Dismissal:** Tooltip now hides on any click outside the tooltip popup itself or volunteelected node.
+        *   **Tooltip Dismissal:** Tooltip now hides on any click outside the tooltip popup itself or selected node.
 
 ### Header Components (`src/components/dexscan/header/`):
 *   **`HeaderActions.tsx`**:
@@ -71,7 +73,7 @@ This document outlines the current implementation status and planned work for th
 
 *   Foundational UI, navigation, and WebSocket data handling are in place.
 *   Pool List view is largely functional.
-*   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (Etherscan link styling, dismissal behavior).
+*   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (accurate, real-time pool count, Etherscan link styling, dismissal behavior).
 *   **Graph rendering and interaction issues (token deselection, zoom reset, incorrect edge coloring) have been investigated and resolved.**
     *   The graph correctly re-renders upon token deselection; its disappearance is expected if no valid graph remains.
     *   User zoom level is now preserved on new block data updates by setting `physics.stabilization.fit: false` in `GraphView.tsx`.
@@ -132,3 +134,7 @@ This document outlines the current implementation status and planned work for th
             *   **Root Cause**: Logic in `useGraphData.ts` incorrectly applied protocol-specific colors when `selectedProtocols.length === 0`.
             *   **Solution**: Modified `useGraphData.ts` to set edge color to a neutral gray (`#848484`) if `selectedProtocols.length === 0`. If protocols are selected, matching edges get their protocol color, and non-matching edges are gray.
         *   **Status**: Zoom preservation and correct edge coloring (for no protocol selected scenario) implemented.
+    *   **Graph Tooltip Enhancement (Completed May 15, 2025):**
+        *   **Pool Count Accuracy**: Tooltip now correctly calculates and displays the number of pools a token participates in, using raw pool data.
+        *   **Real-time Updates**: The pool count in an active tooltip updates automatically when new block data arrives.
+        *   **Implementation Details**: Involved changes in `useGraphData.ts` (exposing raw data), `GraphViewContent.tsx` (passing data), and `GraphView.tsx` (logic in `GraphManager` for calculation and DOM update for real-time refresh).

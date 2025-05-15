@@ -65,7 +65,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 4.  **Consumption**:
     *   `DexScanContent.tsx` consumes data from `PoolDataContext`.
     *   `ListView.tsx` receives `poolsArray`, `highlightedPoolId`, etc., to display the pool list and details.
-    *   `GraphViewContent.tsx` (presumably) consumes `poolsArray` to render the graph.
+    *   `GraphViewContent.tsx` consumes `poolsArray` (via `useGraphData` which also gets raw `pools` object) to render the graph and provide raw data for tooltips.
     *   `DexScanHeader.tsx` (indirectly, if it needs block number or connection status) might consume context data.
 5.  **User Interaction**:
     *   `ViewSelector.tsx` updates `activeTab` in `DexScanContent.tsx`, changing which view is visible.
@@ -84,6 +84,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 *   **URL-Driven State**: The active tab (`graph` or `pools`) is synchronized with the URL's `tab` query parameter in `DexScanContent.tsx`.
 *   **Utility Functions**: `src/lib/utils.ts` likely contains common helper functions (e.g., `formatPoolId`, `getExternalLink`, `cn` for class names).
 *   **Type Definitions**: `src/components/dexscan/types.ts` centralizes data structure definitions (e.g., `Pool`, `WebSocketPool`).
+*   **Real-time Tooltip Updates**: The graph view tooltip for token nodes dynamically calculates and updates the "pool count" (number of pools a token participates in) in real-time as new block data arrives. This involves `useGraphData` exposing raw pool data, `GraphViewContent` passing it to `GraphView`, and `GraphView`'s `GraphManager` using this data for calculation and DOM manipulation to update an open tooltip.
 
 ## Modularity and Dependencies
 
