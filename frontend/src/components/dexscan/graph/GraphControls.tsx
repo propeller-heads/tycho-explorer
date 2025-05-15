@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 // Badge and X (lucide-react) might be used by new filter displays later, keep for now.
 // import { Badge } from '@/components/ui/badge';
 import { Search, X as LucideX } from 'lucide-react'; // Import X as LucideX
+import { protocolColors } from './protocolColors'; // Import protocolColors
 
 // Import icons
 import IconDropdownArrow from '@/assets/figma_generated/icon_dropdown_arrow.svg';
@@ -16,9 +17,9 @@ import BlockProgressIcon from './BlockProgressIcon'; // Import the new component
 // Now returns JSX for differential styling
 const formatTokenWithAddress = (symbol: string, address: string): React.ReactNode => {
   if (!address || address.length < (2 + 4 * 2)) { // Ensure address is long enough for 0x + 4 + ... + 4
-    return symbol; 
+    return symbol;
   }
-  const prefix = address.slice(0,2);
+  const prefix = address.slice(0, 2);
   if (prefix.toLowerCase() !== '0x') return symbol; // Only format if it looks like a hex address
 
   const startChars = address.slice(2, 2 + 4);
@@ -49,7 +50,7 @@ const formatTokenWithAddress = (symbol: string, address: string): React.ReactNod
 };
 
 interface GraphControlsProps {
-  tokenList: Array<{id: string, label: string}>;
+  tokenList: Array<{ id: string, label: string }>;
   protocols: string[];
   selectedTokens: string[];
   selectedProtocols: string[];
@@ -57,21 +58,21 @@ interface GraphControlsProps {
   onSelectProtocols: (protocols: string[]) => void;
   // onRender: () => void; // Will be removed when auto-render is fully implemented
   onReset: () => void;
-  currentBlockNumber: number; 
+  currentBlockNumber: number;
   lastBlockTimestamp: number | null;
   estimatedBlockDuration: number;
 }
 
 // Custom virtualized list component for tokens - keep as it's used by Popover
 const VirtualizedTokenList: React.FC<{
-  tokens: Array<{id: string, label: string}>;
+  tokens: Array<{ id: string, label: string }>;
   selectedTokens: string[];
   toggleToken: (id: string) => void;
 }> = ({ tokens, selectedTokens, toggleToken }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
   const itemHeight = 34;
-  
+
   useEffect(() => {
     const updateVisibleRange = () => {
       if (!containerRef.current) return;
@@ -90,13 +91,13 @@ const VirtualizedTokenList: React.FC<{
       return () => container.removeEventListener('scroll', updateVisibleRange);
     }
   }, [tokens.length, itemHeight]);
-  
+
   if (tokens.length === 0) {
     return <div className="p-4 text-sm text-muted-foreground text-center">No tokens found</div>;
   }
   const totalHeight = tokens.length * itemHeight;
   const visibleItems = tokens.slice(visibleRange.start, visibleRange.end);
-  
+
   // Item styling based on Figma: row padding 0px 8px, inner content padding 10px.
   // Hover background: rgba(255, 244, 224, 0.06)
   return (
@@ -110,17 +111,17 @@ const VirtualizedTokenList: React.FC<{
               {/* Inner div for styling (padding, hover) - now the label itself is the main clickable item */}
               <label // Changed div to label, it will be the main clickable item
                 htmlFor={`token-${token.id}`} // Connects to checkbox for accessibility
-                className="flex items-center h-full hover:bg-[rgba(255,244,224,0.06)] rounded-md w-full cursor-pointer" 
-                style={{ padding: "0px 10px"}} 
-                // onClick={() => toggleToken(token.id)} // onClick on label can be redundant if htmlFor works well with onCheckedChange
+                className="flex items-center h-full hover:bg-[rgba(255,244,224,0.06)] rounded-md w-full cursor-pointer"
+                style={{ padding: "0px 10px" }}
+              // onClick={() => toggleToken(token.id)} // onClick on label can be redundant if htmlFor works well with onCheckedChange
               >
-                <Checkbox 
-                  id={`token-${token.id}`} 
-                  checked={selectedTokens.includes(token.id)} 
+                <Checkbox
+                  id={`token-${token.id}`}
+                  checked={selectedTokens.includes(token.id)}
                   onCheckedChange={() => toggleToken(token.id)} // This should be the primary way to toggle
                   className="h-4 w-4 shrink-0 rounded-[4px] border-2 border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:text-white data-[state=checked]:border-[#FF3366]"
                 />
-                <span className="ml-2 text-sm flex-grow" style={{color: "#FFF4E0"}}> {/* Changed label to span */}
+                <span className="ml-2 text-sm flex-grow" style={{ color: "#FFF4E0" }}> {/* Changed label to span */}
                   {formatTokenWithAddress(token.label, token.id)}
                 </span>
               </label>
@@ -156,7 +157,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null); // Ref for auto-focus
   const [isSearchFocused, setIsSearchFocused] = useState(false); // State for search input focus
-  
+
   // localStorage effect - keep
   useEffect(() => {
     if (tokenList.length === 0 || protocols.length === 0 || hasLoadedFromStorage) return;
@@ -182,7 +183,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
       setTimeout(() => searchInputRef.current?.focus(), 50); // Small delay for popover animation
     }
   }, [tokenSearchOpen]);
-  
+
   // Memoized sorted/filtered lists - keep for popovers
   const sortedTokens = React.useMemo(() => {
     return [...tokenList].sort((a, b) => {
@@ -221,14 +222,15 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
     onReset(); // This prop will call setSelectedTokens([]), setSelectedProtocols([]), setRenderCounter(0) in parent
   };
 
+
   // Main layout changed to a single horizontal row
   // Removed outer border and p-3, mb-4 as these are now on GraphViewContent's frame
   // Added responsive flex classes: flex-col on small screens, md:flex-row on medium and up.
   // md:items-center to ensure vertical alignment in row mode.
   // items-start on small screens (column mode) to align items to the left.
   return (
-    <div 
-      className="flex flex-col md:flex-row md:items-center md:justify-between items-start gap-4 p-4" 
+    <div
+      className="flex flex-col md:flex-row md:items-center md:justify-between items-start gap-4 p-4"
       style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', marginBottom: '16px' /* Spacing before graph area */ }}
     >
       {/* Left section for filters - allow wrapping on small screens */}
@@ -250,9 +252,9 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <span className="truncate">
                 {selectedTokens.length > 0
                   ? selectedTokens.map(id => {
-                      const token = tokenList.find(t => t.id === id);
-                      return token?.label || 'Unknown'; // Use the label directly
-                    }).join(', ')
+                    const token = tokenList.find(t => t.id === id);
+                    return token?.label || 'Unknown'; // Use the label directly
+                  }).join(', ')
                   : "Select tokens"}
               </span>
               {selectedTokens.length > 0 && (
@@ -268,20 +270,19 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <img
                 src={IconDropdownArrow}
                 alt="select"
-                className={`h-4 w-4 opacity-70 transition-transform duration-200 ${
-                  tokenSearchOpen ? 'rotate-180' : ''
-                }`}
+                className={`h-4 w-4 opacity-70 transition-transform duration-200 ${tokenSearchOpen ? 'rotate-180' : ''
+                  }`}
               />
             </button>
           </PopoverTrigger>
-          <PopoverContent 
+          <PopoverContent
             className="w-[300px] p-0 flex flex-col" // Added flex flex-col
             align="start"
             style={{
               // Max height for the popover itself, allowing internal scroll for the list
               // Viewport height - some margin (e.g., 50px top/bottom)
               // This ensures the popover itself doesn't get an outer scrollbar easily.
-              maxHeight: "calc(100vh - 100px)", 
+              maxHeight: "calc(100vh - 100px)",
               // The children will define the actual height up to this max.
               // If content is shorter, popover will be shorter.
               // If content is taller, the inner ScrollArea handles it.
@@ -294,12 +295,12 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             }}
           >
             {/* Styled Search Field Area */}
-            <div className="p-3 border-b" style={{ borderColor: "rgba(255, 244, 224, 0.1)"}}> {/* Figma: padding 12px (p-3), then search field inside */}
-              <div 
-                className="flex items-center" 
-                style={{ 
-                  backgroundColor: "rgba(255, 244, 224, 0.02)", 
-                  borderRadius: "8px", 
+            <div className="p-3 border-b" style={{ borderColor: "rgba(255, 244, 224, 0.1)" }}> {/* Figma: padding 12px (p-3), then search field inside */}
+              <div
+                className="flex items-center"
+                style={{
+                  backgroundColor: "rgba(255, 244, 224, 0.02)",
+                  borderRadius: "8px",
                   borderStyle: "solid",
                   borderWidth: isSearchFocused ? "2px" : "1px",
                   borderColor: isSearchFocused ? '#FF3366' : 'rgba(255, 244, 224, 0.2)',
@@ -307,7 +308,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   transition: "border-color 0.2s ease-in-out, border-width 0.2s ease-in-out"
                 }}
               >
-                <Search className="mr-2 h-4 w-4 shrink-0" style={{color: "rgba(255, 244, 224, 0.4)"}} />
+                <Search className="mr-2 h-4 w-4 shrink-0" style={{ color: "rgba(255, 244, 224, 0.4)" }} />
                 <Input
                   ref={searchInputRef}
                   placeholder="Search by name or address"
@@ -317,21 +318,21 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                   onChange={(e) => setTokenSearchQuery(e.target.value)}
                   onFocus={() => setIsSearchFocused(true)}
                   onBlur={() => setIsSearchFocused(false)}
-                 />
+                />
               </div>
             </div>
             {/* ScrollArea should grow to fill available space in the flex-col PopoverContent */}
-            <ScrollArea className="max-h-[260px] overflow-y-auto flex-grow" style={{padding: "8px 0px"}}> 
-              <VirtualizedTokenList 
-                tokens={filteredTokens} 
-                selectedTokens={selectedTokens} 
-                toggleToken={toggleToken} 
+            <ScrollArea className="max-h-[260px] overflow-y-auto flex-grow" style={{ padding: "8px 0px" }}>
+              <VirtualizedTokenList
+                tokens={filteredTokens}
+                selectedTokens={selectedTokens}
+                toggleToken={toggleToken}
               />
             </ScrollArea>
             {/* Done button footer removed as per plan */}
           </PopoverContent>
         </Popover>
-        
+
         {/* Protocol Filter Display */}
         <Popover open={protocolSearchOpen} onOpenChange={setProtocolSearchOpen}>
           <PopoverTrigger asChild>
@@ -355,13 +356,12 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
               <img
                 src={IconDropdownArrow}
                 alt="select"
-                className={`h-4 w-4 opacity-70 transition-transform duration-200 ${
-                  protocolSearchOpen ? 'rotate-180' : ''
-                }`}
+                className={`h-4 w-4 opacity-70 transition-transform duration-200 ${protocolSearchOpen ? 'rotate-180' : ''
+                  }`}
               />
             </button>
           </PopoverTrigger>
-          <PopoverContent 
+          <PopoverContent
             className="w-[300px] p-0 flex flex-col"  // Added flex flex-col
             align="start"
             style={{
@@ -375,29 +375,41 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             }}
           >
             {/* No search input for protocols in current design, can be added if needed */}
-            <ScrollArea className="max-h-[240px] overflow-y-auto px-2 flex-grow" style={{paddingTop: "8px", paddingBottom: "8px"}}> 
-              {sortedProtocols.map(protocol => (
-                <div key={protocol} className="h-[34px]"> {/* Outer div for key, height matches itemHeight */}
-                  <label // Label wraps checkbox and text for full clickability
-                    htmlFor={`protocol-${protocol}`}
-                    className="flex items-center h-full hover:bg-[rgba(255,244,224,0.06)] rounded-md w-full cursor-pointer"
-                    style={{ padding: "0px 10px"}}
-                  >
-                    <Checkbox 
-                      id={`protocol-${protocol}`}
-                      checked={selectedProtocols.includes(protocol)}
-                      onCheckedChange={() => toggleProtocol(protocol)} 
-                      className="h-4 w-4 shrink-0 rounded-[4px] border-2 border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:text-white data-[state=checked]:border-[#FF3366]"
-                    />
-                    <span 
-                      className="ml-2 text-sm flex-grow"
-                      style={{color: "#FFF4E0"}}
+            <ScrollArea className="max-h-[240px] overflow-y-auto px-2 flex-grow" style={{ paddingTop: "8px", paddingBottom: "8px" }}>
+              {sortedProtocols.map(protocol => {
+                return (
+                  <div key={protocol} className="h-[34px]"> {/* Outer div for key, height matches itemHeight */}
+                    <label // Label wraps checkbox and text for full clickability
+                      htmlFor={`protocol-${protocol}`}
+                      className="flex items-center h-full hover:bg-[rgba(255,244,224,0.06)] rounded-md w-full cursor-pointer"
+                      style={{ padding: "0px 10px" }}
                     >
-                      {protocol}
-                    </span>
-                  </label>
-                </div>
-              ))}
+                      <Checkbox
+                        id={`protocol-${protocol}`}
+                        checked={selectedProtocols.includes(protocol)}
+                        onCheckedChange={() => toggleProtocol(protocol)}
+                        className="h-4 w-4 shrink-0 rounded-[4px] border-2 border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:text-white data-[state=checked]:border-[#FF3366]"
+                      />
+                      <span
+                        className="ml-2 text-sm flex-grow flex items-center" // Added flex items-center
+                        style={{ color: "#FFF4E0" }}
+                      >
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            backgroundColor: protocolColors[protocol.toLowerCase()] || '#848484', // Use protocol color
+                            marginRight: '8px',
+                          }}
+                        ></span>
+                        {protocol}
+                      </span>
+                    </label>
+                  </div>
+                )
+              })}
               {sortedProtocols.length === 0 && (
                 <div className="p-4 text-sm text-muted-foreground text-center">No protocols found</div>
               )}
@@ -417,7 +429,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 
       {/* Right section for reset and block number - ensure it doesn't shrink excessively and aligns well in column mode */}
       {/* This div now only contains the block number display */}
-      <div className="flex items-center gap-3 mt-4 md:mt-0 flex-shrink-0"> 
+      <div className="flex items-center gap-3 mt-4 md:mt-0 flex-shrink-0">
         {/* Block Number Display */}
         <div className="flex items-center gap-2">
           <BlockProgressIcon
