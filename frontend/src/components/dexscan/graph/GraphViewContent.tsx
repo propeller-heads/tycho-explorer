@@ -85,18 +85,7 @@ const PoolGraphView: React.FC = () => {
     setSelectedProtocols([]);
     // setShowGraph will be updated by the useEffect above
   };
-  
-  // Statistics for rendered graph
-  const graphStats = useMemo(() => {
-    // Show stats only if there are selected tokens and nodes to display
-    if (selectedTokens.length === 0 || graphDisplayNodes.length === 0) return null; 
-    
-    return {
-      nodeCount: graphDisplayNodes.length,
-      edgeCount: graphDisplayEdges.length,
-    };
-  }, [selectedTokens, graphDisplayNodes, graphDisplayEdges]); // Dependency on selectedTokens
-  
+
   return (
     <div 
       className="flex flex-col h-full p-6 rounded-xl"

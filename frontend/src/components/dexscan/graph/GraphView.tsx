@@ -57,15 +57,21 @@ const networkOptions = {
       damping: 0.09,                 // Standard
       avoidOverlap: 0.7              // Increased to prevent node overlap
     },
-    stabilization: { // Defaults are usually fine, can be tweaked if needed
-      enabled: true,
-      iterations: 1000,
-      fit: true
-    },
-    adaptiveTimestep: true // Default
+    adaptiveTimestep: true, // Default
+    // Stabilization options:
+    // fit: false is crucial to prevent the graph from resetting user's zoom/pan
+    // on data updates (e.g., new block). Vis-network defaults fit to true,
+    // which causes the view to re-center and re-zoom to fit all nodes.
+    stabilization: { 
+      enabled: true, // Or false if you don't want initial stabilization iterations
+      iterations: 1000, // Default, adjust if needed
+      fit: false,       // Prevents auto-fitting the graph on data changes / initial load
+      // updateInterval: 50, // Default
+      // iterationsPerUpdate: 10 // Default
+    }
   },
   layout: {
-    randomSeed: undefined, // Or a specific seed once a good layout is found
+    randomSeed: 42, // Or a specific seed once a good layout is found
     hierarchical: {
       enabled: false // TC Design is not hierarchical
     },
@@ -357,14 +363,12 @@ class GraphManager {
   }
 
   updateData(nodes: any[], edges: any[]) {
-    // Keep physics disabled, just update properties
-    this.nodesDataset.update(nodes);
-    this.edgesDataset.update(edges);
+    if (!this.nodesDataset || !this.edgesDataset) return;
+
+    this.network.setData({nodes, edges});
   }
 
   destroy() {
-    console.log('DEBUG: GraphManager.destroy');
-
     // Clean up popup
     this.hidePopup(); // This will also remove the document listener if active
     // No need to explicitly remove this.popupDiv from container, hidePopup handles it.
@@ -410,19 +414,16 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges }) => {
     };
   }, []); // Empty dependency array = only run on mount/unmount
 
-  // Handle data updates separately
-  useEffect(() => {
-    if (containerRef.current && tokenNodes.length > 0 && poolEdges.length > 0) {
-      const manager = graphManagerRef.current;
-      if (manager) {
-        if (!manager.isInitialized()) {
-          manager.initialize(containerRef.current, tokenNodes, poolEdges);
-        } else {
-          manager.updateData(tokenNodes, poolEdges);
-        }
+  if (containerRef.current) {
+    const manager = graphManagerRef.current;
+    if (manager) {
+      if (!manager.isInitialized()) {
+        manager.initialize(containerRef.current, tokenNodes, poolEdges);
+      } else {
+        manager.updateData(tokenNodes, poolEdges);
       }
     }
-  }, [tokenNodes, poolEdges]);
+  }
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */ }
 };
