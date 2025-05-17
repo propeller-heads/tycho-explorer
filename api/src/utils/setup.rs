@@ -1,5 +1,5 @@
 use std::sync::Once;
-use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use tycho_simulation::tycho_core::models::Chain;
 
 static INIT: Once = Once::new();
@@ -19,6 +19,7 @@ pub fn get_default_url(chain: &Chain) -> Option<String> {
     match chain {
         Chain::Ethereum => Some("tycho-beta.propellerheads.xyz".to_string()),
         Chain::Base => Some("tycho-base-beta.propellerheads.xyz".to_string()),
+        Chain::Unichain => Some("tycho-unichain-beta.propellerheads.xyz".to_string()),
         Chain::ZkSync => None,
         Chain::Starknet => None,
         Chain::Arbitrum => None,
