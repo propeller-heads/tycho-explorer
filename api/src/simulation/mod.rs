@@ -11,7 +11,10 @@ use tycho_simulation::{
             uniswap_v2::state::UniswapV2State,
             uniswap_v3::state::UniswapV3State,
             uniswap_v4::state::UniswapV4State,
+            pancakeswap_v2::state::PancakeswapV2State,
+            ekubo::state::EkuboState,
             vm::state::EVMPoolState,
+            filters::{curve_pool_filter}
         },
         stream::ProtocolStreamBuilder,
     },
@@ -24,15 +27,23 @@ use tycho_simulation::{
 use self::state::SimulationState;
 
 fn register_exchanges(
-    mut builder: ProtocolStreamBuilder,
+    mut protocol_stream: ProtocolStreamBuilder,
     chain: &Chain,
     tvl_filter: ComponentFilter,
 ) -> ProtocolStreamBuilder {
     match chain {
         Chain::Ethereum => {
-            builder = builder
+            protocol_stream = protocol_stream
                 .exchange::<UniswapV2State>("uniswap_v2", tvl_filter.clone(), None)
+                .exchange::<UniswapV2State>("sushiswap_v2", tvl_filter.clone(), None)
+                .exchange::<PancakeswapV2State>("pancakeswap_v2", tvl_filter.clone(), None)
                 .exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
+                .exchange::<UniswapV3State>("pancakeswap_v3", tvl_filter.clone(), None)
+                .exchange::<EVMPoolState<PreCachedDB>>(
+                    "vm:curve",
+                    tvl_filter.clone(),
+                    Some(curve_pool_filter),
+                )
                 .exchange::<EVMPoolState<PreCachedDB>>(
                     "vm:balancer_v2",
                     tvl_filter.clone(),
@@ -42,10 +53,11 @@ fn register_exchanges(
                     "uniswap_v4",
                     tvl_filter.clone(),
                     Some(uniswap_v4_pool_with_hook_filter),
-                );
+                )
+                .exchange::<EkuboState>("ekubo_v2", tvl_filter.clone(), None);
         }
         Chain::Base => {
-            builder = builder
+            protocol_stream = protocol_stream
                 .exchange::<UniswapV2State>("uniswap_v2", tvl_filter.clone(), None)
                 .exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
                 .exchange::<UniswapV4State>(
@@ -55,7 +67,7 @@ fn register_exchanges(
                 )
         }
         Chain::Unichain => {
-            builder = builder
+            protocol_stream = protocol_stream
                 .exchange::<UniswapV2State>("uniswap_v2", tvl_filter.clone(), None)
                 .exchange::<UniswapV3State>("uniswap_v3", tvl_filter.clone(), None)
                 .exchange::<UniswapV4State>(
@@ -66,7 +78,7 @@ fn register_exchanges(
         }
         _ => {}
     }
-    builder
+    protocol_stream
 }
 
 #[allow(clippy::too_many_arguments)]
