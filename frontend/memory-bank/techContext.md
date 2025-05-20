@@ -31,6 +31,7 @@ Based on `package.json` and `vite.config.ts`:
 
 *   **Package Manager**: Implied by `package.json` (likely npm or yarn, bun.lockb suggests bun).
 *   **Development Server**: `vite dev` (runs on `localhost:8080` by default as per `vite.config.ts`).
+    *   Includes a proxy configuration for the CoinGecko API (`/api/coingecko`) to handle CORS during development.
 *   **Build Commands**:
     *   `vite build` (production build)
     *   `vite build --mode development` (development build)
@@ -55,6 +56,13 @@ Based on `package.json` and `vite.config.ts`:
     *   The WebSocket URL is configurable.
     *   Chain selection is available (currently defaulting to Ethereum).
 *   **Tycho**: The specification mentions building "an uncompromising UI on Tycho" and using "Tycho Simulation". This suggests Tycho is the underlying data source or simulation engine, likely accessed via the WebSocket.
+*   **CoinGecko API**: Used to fetch token metadata, specifically logos for the graph view.
+    *   Accessed client-side via `src/lib/coingecko.ts`.
+    *   Requests are proxied through the Vite dev server.
+    *   Responses (coin list and individual image URLs) are cached using `localStorage` and in-memory caches to reduce API calls.
+
+## Browser Features Utilized
+*   **`localStorage`**: Used for persistent client-side caching of CoinGecko API responses.
 
 ## Coding Conventions & Custom Rules (.clinerules)
 

@@ -63,7 +63,7 @@ This document outlines the current implementation status and planned work for th
     *   WebSocket Connection popover card styled with blur, transparency, and other styles to match filter popovers.
 
 ### Utility Functions:
-*   **`src/lib/utils.ts`**: `formatPoolId` was renamed to `renderHexId`.
+*   **`src/lib/utils.ts`**: `formatPoolId` was renamed to `renderHexId`. `getExternalLink` was updated to include PancakeSwap v2/v3 support.
 *   **`src/lib/poolUtils.ts` (New)**: Centralized `parsePoolFee` and `parseFeeHexValue` functions.
 
 ### Data Types (`types.ts`):
@@ -152,5 +152,8 @@ This document outlines the current implementation status and planned work for th
             *   **Copy Functionality**: Added a "Copy" button for the pool ID.
         *   **Implementation Details**: Involved changes in `GraphView.tsx` (`GraphManager` for event handling, popover creation, copy logic), `useGraphData.ts` (ensuring data availability), and `src/lib/utils.ts` (using `renderHexId`). Fee parsing uses `src/lib/poolUtils.ts`.
     *   **Utility Function Refactoring (Completed May 15, 2025):**
-        *   Renamed `formatPoolId` to `renderHexId` in `src/lib/utils.ts`.
-        *   Moved fee parsing functions (`parsePoolFee`, `parseFeeHexValue`) to a new `src/lib/poolUtils.ts` file and updated `ListView.tsx` and `GraphView.tsx` to use them.
+    *   Renamed `formatPoolId` to `renderHexId` in `src/lib/utils.ts`.
+    *   Moved fee parsing functions (`parsePoolFee`, `parseFeeHexValue`) to a new `src/lib/poolUtils.ts` file and updated `ListView.tsx` and `GraphView.tsx` to use them.
+    *   **Utility Function Enhancement & Documentation (May 19, 2025):**
+        *   Updated `getExternalLink` in `src/lib/utils.ts` to include support for PancakeSwap v2 and v3 protocols.
+        *   Initiated and completed a full Memory Bank review and update to reflect this change and ensure all documentation is current.

@@ -1,7 +1,8 @@
 // src/components/dexscan/graph/hooks/useGraphData.ts
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
 import { protocolColors } from '../protocolColors'; // Import color definitions
+import { getCoinId, getCoinImageURL } from '../../../../lib/coingecko';
 
 // // Compare objects by JSON stringifying them (deep equality) - No longer needed with refined memo dependencies
 // const deepEqual = (a: any, b: any) => {
@@ -101,15 +102,86 @@ export function useGraphData(
   selectedTokens: string[],
   selectedProtocols: string[]
 ) {
-  const { 
-    pools, 
+  const {
+    pools,
     blockNumber: currentBlockNumber, // Renamed for clarity within this hook
-    lastBlockTimestamp, 
-    estimatedBlockDuration 
+    lastBlockTimestamp,
+    estimatedBlockDuration,
   } = usePoolData();
-  
+
+  // State to store fetched image URLs: Map<tokenId, imageUrl | null>
+  const [tokenImageUrls, setTokenImageUrls] = useState<Map<string, string | null>>(new Map());
+
+  // Effect to fetch token images when selectedTokens or pools change
+  useEffect(() => {
+    // Create a unique set of token IDs that are currently selected and present in pools
+    const relevantTokenIds = new Set<string>();
+    if (selectedTokens.length > 0) {
+      Object.values(pools).forEach(pool => {
+        pool.tokens.forEach(token => {
+          if (selectedTokens.includes(token.address)) {
+            relevantTokenIds.add(token.address);
+          }
+        });
+      });
+    }
+
+    // Use a for...of loop to handle async operations sequentially with delays
+    const processTokenIds = async () => {
+      for (const tokenId of relevantTokenIds) {
+        // Fetch only if not already fetched or being fetched
+        if (tokenImageUrls.has(tokenId) && tokenImageUrls.get(tokenId) !== undefined) {
+          continue; // Already processed or successfully fetched
+        }
+        if (tokenImageUrls.get(tokenId) === undefined && tokenImageUrls.has(tokenId)) {
+            // Already fetching, skip
+            continue;
+        }
+
+
+        // Placeholder to prevent re-fetching while in progress
+        setTokenImageUrls(prev => new Map(prev).set(tokenId, undefined)); // 'undefined' means "fetching"
+        
+        // Introduce a delay before this token's fetch sequence
+        // Commenting out for now as /coins/list is the main issue, can be re-enabled if needed for individual image calls
+        // await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+
+        // Find the symbol for this tokenId (needed for getCoinId if it expects symbol)
+        // This assumes token symbols are relatively stable for a given address in `pools`
+        let tokenSymbol: string | undefined;
+        for (const pool of Object.values(pools)) {
+          const foundToken = pool.tokens.find(t => t.address === tokenId);
+          if (foundToken) {
+            tokenSymbol = foundToken.symbol;
+            break;
+          }
+        }
+
+        if (tokenSymbol) {
+          const coingeckoId = await getCoinId(tokenSymbol); // This is the call to /coins/list (potentially cached)
+          if (coingeckoId) {
+            // Add a small delay before fetching the actual image to not burst CoinGecko for images
+            await new Promise(resolve => setTimeout(resolve, 250)); // 250ms delay before image URL fetch
+            const imageUrl = await getCoinImageURL(coingeckoId);
+            setTokenImageUrls(prev => new Map(prev).set(tokenId, imageUrl));
+          } else {
+            setTokenImageUrls(prev => new Map(prev).set(tokenId, null)); // Not found on CoinGecko
+          }
+        } else {
+          setTokenImageUrls(prev => new Map(prev).set(tokenId, null)); // Symbol not found in pools
+        }
+      }
+    };
+
+    if (relevantTokenIds.size > 0) {
+      processTokenIds();
+    }
+
+  }, [pools, selectedTokens]); // Rerun when pools or selectedTokens change
+
+
   return useMemo(() => {
-    // console.log("DEBUG: useGraphData running memoization", { selectedTokens, selectedProtocols, currentBlockNumber });
+    // console.log("DEBUG: useGraphData running memoization", { selectedTokens, selectedProtocols, currentBlockNumber, tokenImageUrls });
 
     // Early Exit: If no tokens are selected, return empty graph structure.
     if (selectedTokens.length === 0) {
@@ -145,10 +217,32 @@ export function useGraphData(
         }
       });
     });
-    const allTokenNodes = Array.from(tokenMap.values());
+    const allTokenNodesInitial = Array.from(tokenMap.values());
 
-    // 2. Filter tokenNodes based on selectedTokens
-    const finalNodes = allTokenNodes.filter(node => selectedTokens.includes(node.id));
+    // 2. Filter tokenNodes based on selectedTokens and add image data
+    const finalNodes = allTokenNodesInitial
+      .filter(node => selectedTokens.includes(node.id))
+      .map(node => {
+        const imageUrl = tokenImageUrls.get(node.id);
+        
+        // If imageUrl is a valid string, use circularImage
+        if (typeof imageUrl === 'string' && imageUrl) {
+          return {
+            ...node, // Spread existing node properties (like id, symbol, address, formattedLabel)
+            shape: 'circularImage',
+            image: imageUrl,
+            label: node.symbol, // The text symbol will be the label
+          };
+        } else { 
+          // Fallback for when imageUrl is null (fetch failed/no image) or undefined (still fetching)
+          return {
+            ...node,
+            shape: 'circle', // Default shape
+            label: node.symbol, // Text label
+          };
+        }
+      });
+
     const finalNodeIdsSet = new Set(finalNodes.map(node => node.id));
 
     // 3. Generate, Filter, and Style Edges
@@ -213,5 +307,5 @@ export function useGraphData(
       lastBlockTimestamp,
       estimatedBlockDuration
     };
-  }, [pools, selectedTokens, selectedProtocols, currentBlockNumber, lastBlockTimestamp, estimatedBlockDuration]);
+  }, [pools, selectedTokens, selectedProtocols, currentBlockNumber, lastBlockTimestamp, estimatedBlockDuration, tokenImageUrls]);
 }

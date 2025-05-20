@@ -9,13 +9,13 @@ import { getExternalLink, renderHexId } from '@/lib/utils'; // Import getExterna
 const networkOptions = {
   autoResize: true,
   nodes: {
-    shape: "circle",
-    size: 25, // Adjust based on visual preference and if icons/images are used
+    shape: "circle", // Default shape, will be overridden by 'circularImage' for nodes with images
+    size: 32, // Default size for nodes, including circularImage
     color: {
-      border: "rgba(255, 244, 224, 0.2)", // Subtle light border
-      background: "rgba(10, 10, 20, 0.8)", // Very dark background
+      border: "rgba(255, 244, 224, 0.2)", // Subtle light border for fallback circle
+      background: "rgba(10, 10, 20, 0.8)", // Very dark background for fallback circle
       highlight: {
-        border: "#FF3366", // Folly Red for selection, as per activeContext
+        border: "#FF3366", // Folly Red for selection
         background: "rgba(30, 30, 40, 0.9)",
       },
       hover: {
@@ -23,13 +23,13 @@ const networkOptions = {
         background: "rgba(30, 30, 40, 0.9)",
       }
     },
-    borderWidth: 1,
+    borderWidth: 6,
     // borderWidthSelected is handled programmatically in GraphManager for #FF3366
     font: {
-      size: 11,
-      color: "#FFF4E0", // Light cream/off-white for text on dark nodes
+      size: 25, // px
+      color: "#EAEAEA", 
       face: "Inter, Arial, sans-serif",
-      vadjust: 0, // Adjust if text isn't centered well
+      vadjust: 0,
     },
     // mass: 1, // Default
     physics: true, // Default

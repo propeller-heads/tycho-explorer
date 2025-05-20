@@ -1,0 +1,26 @@
+# CoinGecko API Learnings
+
+This document summarizes how the CoinGecko API is utilized within the Pool Explorer project.
+
+## Purpose
+- The CoinGecko API is primarily used to fetch token metadata, with a specific focus on retrieving token logos for display in the graph view.
+
+## Access and Implementation
+- Client-Side Access: API calls are made from the client-side, managed by the `src/lib/coingecko.ts` module.
+- Proxy for Development: To overcome Cross-Origin Resource Sharing (CORS) issues during local development, API requests to CoinGecko are proxied through the Vite development server. The proxy is configured at the path `/api/coingecko`.
+- Integration with Graph: The `src/components/dexscan/graph/hooks/useGraphData.ts` hook utilizes `src/lib/coingecko.ts` to fetch these logo URLs for tokens that are part of the current graph selection.
+
+## Caching Strategy
+- To optimize performance and minimize redundant API calls, a two-tiered caching mechanism is implemented:
+    1.  In-Memory Cache: Recently fetched data is stored in memory for quick access during the current session.
+    2.  localStorage: Data is also persisted in `localStorage` for caching across sessions.
+- This caching applies to both the general coin list (used for mapping token symbols/names to CoinGecko IDs) and individual token image URLs.
+
+## Usage in Visualization
+- Token Logos: Fetched logo URLs are used in the graph view (`GraphView.tsx`) to render nodes with the `shape: 'circularImage'` option, displaying the respective token's logo.
+- Fallback: If a logo cannot be fetched or is unavailable, the graph nodes will fall back to a default `shape: 'circle'` with a text label.
+
+## Key Files
+- `src/lib/coingecko.ts`: Centralizes all logic related to CoinGecko API interaction, including fetching and caching.
+- `src/components/dexscan/graph/hooks/useGraphData.ts`: Consumes the CoinGecko service to get data for graph rendering.
+- `vite.config.ts`: Contains the proxy configuration for development.

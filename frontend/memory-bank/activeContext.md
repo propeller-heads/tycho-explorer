@@ -1,38 +1,11 @@
-# Active Context: Pool Explorer - Graph View Refactoring Review
+# Active Context: Pool Explorer - Memory Bank Update
 
 ## Current Work Focus
 
-**Investigating and resolving graph rendering behaviors in the Pool Explorer's Graph View.**
-*   **Primary Issue 1 (Resolved)**: Graph not re-rendering as expected upon token deselection.
-    *   **Root Cause Analysis**: Determined that the graph *does* re-render. Its disappearance is due to conditional rendering in `GraphViewContent.tsx` which hides `GraphView` if `selectedTokens.length === 0` or if `useGraphData` returns no `graphDisplayNodes`. This is considered expected behavior.
-*   **Primary Issue 2 (Resolved)**: User's zoom level being reset when new block data arrives.
-    *   **Root Cause Analysis**: Identified that `vis-network`'s default behavior for `physics.stabilization.fit` is `true`. When `network.setData()` is called on new block data, this default causes the graph to re-fit to the viewport, resetting zoom.
-    *   **Solution**: Explicitly set `physics.stabilization.fit: false` in `networkOptions` in `GraphView.tsx`.
-*   **Primary Issue 3 (Resolved)**: Graph edges were colored by protocol even when no protocol was selected in the filter popover. Expected behavior was for edges to be gray.
-    *   **Root Cause Analysis**: The logic in `useGraphData.ts` treated `selectedProtocols.length === 0` as a condition to show all protocols with their specific colors, rather than applying a default gray.
-    *   **Solution**: Modified `useGraphData.ts` to explicitly set edge color to a neutral gray (`#848484`) when `selectedProtocols.length === 0`.
-*   **Graph Tooltip Enhancements (Completed)**:
-    *   **Node Tooltip (Token Address)**:
-        *   **Requirement**: Tooltip's "Pool Count" for a token node should display the actual number of pools the token participates in. This count should update in real-time if the tooltip is open when new block data arrives.
-        *   **Solution**:
-            1.  `useGraphData.ts` was modified to expose the raw `pools` data (as `rawPoolsData`) from `PoolDataContext`.
-            2.  `GraphViewContent.tsx` was updated to pass `rawPoolsData` to `GraphView.tsx`.
-            3.  `GraphView.tsx` (`GraphManager` class) was updated:
-                *   It now stores `rawPoolsData`.
-                *   `getTokenData()` method now calculates `poolCount` by iterating through `rawPoolsData`.
-                *   `showTokenInfo()` method now adds an ID (`tooltip-pool-count`) to the pool count `<span>` in the tooltip HTML.
-                *   A new method `refreshCurrentTooltipData()` was added to find the `tooltip-pool-count` span in an active tooltip and update its content with a fresh count from `getTokenData()`.
-                *   The `useEffect` hook (reacting to `rawPoolsData` changes) now calls `refreshCurrentTooltipData()` to ensure live updates.
-        *   **Copy Functionality**: Added a "Copy" button to the node tooltip to allow copying the full token address.
-    *   **Edge Tooltip (Pool ID)**:
-        *   **Requirement**: Display pool ID, protocol, fee, and last update block when an edge is clicked. The pool ID should be copyable.
-        *   **Solution**:
-            1.  Implemented `showEdgeInfoPopover` and `hideEdgeInfoPopover` methods in `GraphManager` (`GraphView.tsx`).
-            2.  The `click` event handler in `GraphManager` now detects edge clicks and calls `showEdgeInfoPopover`.
-            3.  Popover displays formatted pool ID (using `renderHexId`), protocol, fee (using `parsePoolFee`), and last update block.
-            4.  Pool ID is linked using `getExternalLink` (fallback to Etherscan).
-            5.  Added a "Copy" button to the edge tooltip to allow copying the full pool ID.
-*   **Current Step**: Finalizing documentation of all recent graph view enhancements, including tooltip updates and copy functionalities.
+**Updating Memory Bank after adding PancakeSwap support to `getExternalLink` utility function.**
+*   **Task**: Add PancakeSwap v2 and v3 URLs to the `getExternalLink` function in `src/lib/utils.ts`.
+    *   **Status**: Completed.
+*   **Current Step**: Updating all relevant Memory Bank files to reflect the addition of PancakeSwap support in `getExternalLink` and to correctly document the current project state.
 
 ## Recent Changes
 
@@ -96,12 +69,12 @@ The following changes were implemented to refactor the Graph View and related co
 *   **Utility Functions (`src/lib/utils.ts`, `src/lib/poolUtils.ts`):**
     *   Renamed `formatPoolId` to `renderHexId` in `utils.ts` for clarity.
     *   Centralized `parsePoolFee` and `parseFeeHexValue` into `poolUtils.ts`.
+    *   `getExternalLink` in `utils.ts` updated to support PancakeSwap v2 and v3 protocols.
 
 ## Next Steps
 
-1.  **Monitor Graph Behavior**: Observe graph rendering, zoom behavior, and tooltip real-time updates to ensure stability and correctness.
-2.  **User Exploration & Iterative Tuning (Ongoing)**: User to continue experimenting with global `networkOptions` in `GraphView.tsx` (physics parameters) and `applyParallelEdgeSmoothness` function parameters in `useGraphData.ts` for optimal graph layout.
-3.  **Verification (Ongoing)**: Continue to verify that edge coloring by protocol and width changes for updated pools remain correct.
+1.  Complete Memory Bank update.
+2.  Await next task from the user.
 
 ## Active Decisions and Considerations (Graph Rendering & Interaction)
 

@@ -65,9 +65,13 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 4.  **Consumption**:
     *   `DexScanContent.tsx` consumes data from `PoolDataContext`.
     *   `ListView.tsx` receives `poolsArray`, `highlightedPoolId`, etc., to display the pool list and details.
-    *   `GraphViewContent.tsx` consumes `poolsArray` (via `useGraphData` which also gets raw `pools` object) to render the graph and provide raw data for tooltips.
+    *   `GraphViewContent.tsx` consumes data from `useGraphData` (which includes processed node/edge data derived from `poolsArray` and potentially external image URLs from CoinGecko) to render the graph.
     *   `DexScanHeader.tsx` (indirectly, if it needs block number or connection status) might consume context data.
-5.  **User Interaction**:
+5.  **External Data Fetching (for Graph Node Logos)**:
+    *   `useGraphData.ts` (via `src/lib/coingecko.ts`) fetches token logo URLs from the CoinGecko API for selected tokens.
+    *   These calls are proxied through the Vite dev server to handle CORS.
+    *   Fetched data (coin list and image URLs) is cached (in-memory and localStorage) to minimize API calls.
+6.  **User Interaction**:
     *   `ViewSelector.tsx` updates `activeTab` in `DexScanContent.tsx`, changing which view is visible.
     *   Filters and sorting in `ListView.tsx` modify the displayed subset of `poolsArray`.
     *   Clicking a pool in `ListView.tsx` updates `selectedPool` and potentially `highlightedPoolId` (via `onPoolSelect` prop).
@@ -83,20 +87,27 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   `ListView` conditionally displays pool details or a "select a pool" message.
 *   **URL-Driven State**: The active tab (`graph` or `pools`) is synchronized with the URL's `tab` query parameter in `DexScanContent.tsx`.
 *   **Utility Functions**: 
-    *   `src/lib/utils.ts` contains helper functions like `renderHexId` (renamed from `formatPoolId`), `getExternalLink`, and `cn`.
+    *   `src/lib/utils.ts` contains helper functions like `renderHexId` (renamed from `formatPoolId`), `getExternalLink` (supports Uniswap, Balancer, and PancakeSwap protocols), and `cn`.
     *   `src/lib/poolUtils.ts` centralizes fee parsing logic (`parsePoolFee`, `parseFeeHexValue`).
+    *   `src/lib/coingecko.ts` (new) centralizes logic for fetching data from the CoinGecko API, including caching.
 *   **Type Definitions**: `src/components/dexscan/types.ts` centralizes data structure definitions (e.g., `Pool`, `WebSocketPool`).
+*   **Graph Node Rendering (`GraphView.tsx` via `useGraphData.ts`)**:
+    *   Nodes can now be rendered as `shape: 'circularImage'` using URLs fetched from CoinGecko, with the token symbol as a label.
+    *   Fallback to `shape: 'circle'` with a text label if the image is unavailable.
 *   **Graph Tooltips & Interactions (`GraphView.tsx` / `GraphManager`)**:
     *   **Node Tooltip (Token)**: Displays token address (formatted with `renderHexId`, linked to Etherscan, and copyable) and real-time pool count.
     *   **Edge Tooltip (Pool)**: Displays pool ID (formatted with `renderHexId`, linked via `getExternalLink` or Etherscan, and copyable), protocol, fee (via `parsePoolFee`), and last update block.
     *   Tooltips are dismissed on other graph interactions.
     *   Real-time pool count updates for node tooltips are handled via `useGraphData` exposing raw data and `GraphManager` updating the DOM.
+*   **Development Server Proxy**: Vite dev server is configured to proxy CoinGecko API requests to bypass CORS issues during local development.
 
 ## Modularity and Dependencies
 
 *   The `dexscan` feature is largely self-contained within `src/components/dexscan/`.
 *   It relies on shared UI components from `src/components/ui/` and utilities from `src/lib/`.
-*   The primary external dependency is the WebSocket data source.
+*   External data dependencies now include:
+    *   The primary WebSocket data source (Tycho).
+    *   The CoinGecko API (for token logos), accessed via `src/lib/coingecko.ts` and a dev proxy.
 *   `.clinerules` emphasizes modularity and reduced dependencies.
 
 ## Source Files
