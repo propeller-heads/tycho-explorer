@@ -10,7 +10,7 @@ pub fn setup_tracing() {
             .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| {
                 "info,tower_http=debug,axum::rejection=trace,simulation_api=debug".into()
             }))
-            .with(tracing_subscriber::fmt::layer())
+            .with(tracing_subscriber::fmt::layer().with_ansi(false))
             .init();
     });
 }
