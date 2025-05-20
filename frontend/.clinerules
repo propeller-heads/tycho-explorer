@@ -50,6 +50,15 @@ Articulate the examples as tests and ensure that the function passes all. Doing 
 
 In this app, we use a number of dependencies e.g. vis-network. When you're told to bring yourself up on context, read all of deps/ content.
 
+# Timestamps
+
+When communicating with users the timestamp of the last change of something:
+
+* use "last x seconds ago" if the last change is less than 1 minute ago
+* use "last x minutes ago" if more than 1 minute ago
+* use "last x hours ago" if more than 1 hour ago
+* use "yyyy-mm-dd, hh:mm:ss" if more than 1 day ago
+
 # Cline's Memory Bank
 
 I am Cline, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.

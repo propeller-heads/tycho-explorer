@@ -3,7 +3,7 @@ import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 import { parsePoolFee } from '@/lib/poolUtils'; // Import for fee parsing
 import { Pool as PoolType } from '@/components/dexscan/types'; // Import Pool type
-import { getExternalLink, renderHexId } from '@/lib/utils'; // Import getExternalLink and renderHexId
+import { getExternalLink, renderHexId, formatTimeAgo } from '@/lib/utils'; // Import getExternalLink, renderHexId, and formatTimeAgo
 
 // Define the network options
 const networkOptions = {
@@ -584,6 +584,10 @@ class GraphManager {
     const poolAddress = pool.id; // Define poolAddress, which is the pool.id
     const protocolName = pool.protocol_system;
     const lastUpdateBlockNumber = pool.lastUpdatedAtBlock;
+    // Get the ISO timestamp string for when the pool data was last updated by the frontend
+    const lastUpdateTimeString = pool.updatedAt;
+    // Format this timestamp into a user-friendly "time ago" or absolute date string
+    const timeAgo = formatTimeAgo(lastUpdateTimeString);
     const feeRatePercent = parsePoolFee(pool); // Uses the imported function
     const formattedFee = `${feeRatePercent.toFixed(4)}%`; // Adjust precision as needed
     
@@ -622,16 +626,12 @@ class GraphManager {
         </button>
       </div>
         <div style="margin-bottom: 8px;">
-          <span style="color: rgba(255, 244, 224, 0.64);">Protocol: </span>
-          <span style="color: #FFF4E0;">${protocolName}</span>
-        </div>
-        <div style="margin-bottom: 8px;">
           <span style="color: rgba(255, 244, 224, 0.64);">Fee: </span>
           <span style="color: #FFF4E0;">${formattedFee}</span>
         </div>
         <div>
-          <span style="color: rgba(255, 244, 224, 0.64);">Last Block Update: </span>
-          <span style="color: #FFF4E0;">${lastUpdateBlockNumber ? lastUpdateBlockNumber : "None"}</span>
+          <span style="color: rgba(255, 244, 224, 0.64);">Last Update: </span>
+          <span style="color: #FFF4E0;">${timeAgo}</span>
         </div>
       </div>
     `;

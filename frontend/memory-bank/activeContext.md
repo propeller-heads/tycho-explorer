@@ -1,13 +1,16 @@
-# Active Context: Pool Explorer - Memory Bank Update
+# Active Context: Pool Explorer - System Functionality Confirmed
 
 ## Current Work Focus
 
-**Updating Memory Bank after adding PancakeSwap support to `getExternalLink` utility function.**
-*   **Task**: Add PancakeSwap v2 and v3 URLs to the `getExternalLink` function in `src/lib/utils.ts`.
-    *   **Status**: Completed.
-*   **Current Step**: Updating all relevant Memory Bank files to reflect the addition of PancakeSwap support in `getExternalLink` and to correctly document the current project state.
+**Updating Memory Bank after user confirmation that "everything works".**
+*   **Previous Task**: Investigated and clarified how `pool.updatedAt` is calculated/set.
+    *   **Finding**: `pool.updatedAt` is a client-side ISO timestamp string, set in `PoolDataContext.tsx` when new pool data is received or existing pool data (like spot price) is updated from the WebSocket. It reflects the time of frontend data processing.
+    *   **Status**: Investigation complete.
+*   **Current Step**: Updating all relevant Memory Bank files to reflect this understanding and the overall stability of the system.
 
 ## Recent Changes
+
+*   **Clarified `pool.updatedAt` Origin (May 19, 2025)**: Confirmed that `pool.updatedAt` is a client-side timestamp generated in `PoolDataContext.tsx` upon receiving and processing pool data or updates from the WebSocket. This timestamp is then used by `formatTimeAgo` for display.
 
 The following changes were implemented to refactor the Graph View and related components:
 
@@ -70,10 +73,18 @@ The following changes were implemented to refactor the Graph View and related co
     *   Renamed `formatPoolId` to `renderHexId` in `utils.ts` for clarity.
     *   Centralized `parsePoolFee` and `parseFeeHexValue` into `poolUtils.ts`.
     *   `getExternalLink` in `utils.ts` updated to support PancakeSwap v2 and v3 protocols.
+    *   **Timestamp Formatting Utility (`src/lib/utils.ts`):**
+        *   Added `formatTimeAgo` function to format ISO timestamps.
+        *   Displays "just now" for future timestamps.
+        *   For past timestamps: "last X second(s) ago" (<1m), "last X minute(s) ago" (<1h), "last X hour(s) ago" (<1d), or "yyyy-MM-dd, HH:mm:ss" (>=1d).
+        *   Uses `Math.abs()` for time differences.
+*   **`GraphView.tsx` (Edge Popover Update):**
+    *   The edge popover (in `GraphManager`) now exclusively displays "Last Update: [formatted time]" using the new `formatTimeAgo` utility.
+    *   The "Last Block Update: [block number]" line has been removed from the edge popover.
 
 ## Next Steps
 
-1.  Complete Memory Bank update.
+1.  Complete Memory Bank update (reflecting `pool.updatedAt` understanding and general system stability).
 2.  Await next task from the user.
 
 ## Active Decisions and Considerations (Graph Rendering & Interaction)
@@ -96,7 +107,7 @@ The following changes were implemented to refactor the Graph View and related co
     *   **Real-time Update**: Pool count updates in real-time with new block data.
     *   **Copy Functionality**: Token address is copyable.
 *   **Graph Edge Tooltip (Pool ID)**:
-    *   **Display**: Shows Pool ID (formatted, linked, and copyable), Protocol, Fee, and Last Update Block.
+    *   **Display**: Shows Pool ID (formatted, linked, and copyable), Protocol, Fee, and **Last Update (formatted time ago/absolute date)**. The raw block number for the last update is no longer displayed in this tooltip.
     *   **Dismissal**: Hides on other graph interactions.
 *   **`vis-network` Configuration Strategy**:
     *   **Global (`GraphView.tsx`)**:
@@ -121,4 +132,5 @@ The following changes were implemented to refactor the Graph View and related co
 *   **`DataSet.update()` vs. `DataSet.clear()`/`add()` vs. `network.setData()`**: Understanding how `vis-network` and `vis-data` handle data updates is key. `network.setData()` (or `clear`/`add` on datasets) signals a more significant change that can trigger layout and fit recalculations based on network options.
 *   **Tooltip Data Sourcing**: For accurate data like pool participation count, it's more reliable to use the complete raw dataset (`rawPoolsData`) rather than deriving from potentially filtered graph elements (like `edgesDataset` in `GraphManager`).
 *   **DOM Manipulation for Live Updates**: For highly dynamic elements within a third-party library's generated DOM (like a `vis-network` tooltip), direct DOM manipulation (e.g., `querySelector` and updating `textContent`) can be an effective way to achieve real-time updates without forcing a full re-render of the library's component.
+*   **Client-Side Timestamps**: Fields like `pool.updatedAt` are set on the client-side (`PoolDataContext.tsx`) upon processing WebSocket messages, reflecting when the frontend last handled data for a pool, rather than an on-chain event timestamp directly from the backend.
 *   (Previous learnings regarding `smooth.type`/`roundness`, UI alignment, etc., remain relevant).

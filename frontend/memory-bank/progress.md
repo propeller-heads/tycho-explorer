@@ -16,6 +16,7 @@ This document outlines the current implementation status and planned work for th
 *   **WebSocket Connection (`WebSocketConfig.tsx`, `PoolDataContext.tsx`)**:
     *   Functional.
     *   **Enhanced `PoolDataContext.tsx`** to track `lastBlockTimestamp` and `estimatedBlockDuration` for the animated block timer.
+    *   **`PoolDataContext.tsx` correctly sets a client-side `updatedAt` timestamp (ISO string)** on `Pool` objects when they are created or updated from WebSocket messages, reflecting the frontend's data processing time.
 
 ### Pool List View (`ListView.tsx`):
 *   Largely functional as per initial assessment. (No new changes in this phase).
@@ -54,7 +55,7 @@ This document outlines the current implementation status and planned work for th
                 *   Dismissal: Hides on clicks outside the tooltip/selected node.
             *   **Edge Tooltip (Pool ID)**:
                 *   Implemented to show on edge click.
-                *   Displays Pool ID (formatted with `renderHexId`), Protocol, Fee (from `parsePoolFee`), and Last Update Block.
+                *   Displays Pool ID (formatted with `renderHexId`), Protocol, Fee (from `parsePoolFee`), and **Last Update Time (using `formatTimeAgo` with the client-side `pool.updatedAt` timestamp)**.
                 *   Pool ID is linked via `getExternalLink` (or Etherscan fallback) and **is now copyable via a "Copy" button**.
                 *   Dismissal: Hides on other graph interactions or outside clicks.
 
@@ -87,7 +88,8 @@ This document outlines the current implementation status and planned work for th
     *   User zoom level is now preserved on new block data updates by setting `physics.stabilization.fit: false` in `GraphView.tsx`.
     *   **Edge coloring logic in `useGraphData.ts` was corrected: when no protocol is selected in filters, edges now correctly display as gray instead of their individual protocol colors.**
 *   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
-*   **The previous focus on diagnosing edge stacking has been completed.** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`. Current focus is on ongoing layout tuning by the user.
+*   **The previous focus on diagnosing edge stacking has been completed.** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`.
+*   **Overall System Stability (May 19, 2025)**: User has confirmed that "everything works," indicating a stable state for current features. The `pool.updatedAt` field's origin and usage (client-side timestamp for frontend processing, formatted for display) have been clarified.
 
 ## Evolution of Project Decisions
 
@@ -157,3 +159,8 @@ This document outlines the current implementation status and planned work for th
     *   **Utility Function Enhancement & Documentation (May 19, 2025):**
         *   Updated `getExternalLink` in `src/lib/utils.ts` to include support for PancakeSwap v2 and v3 protocols.
         *   Initiated and completed a full Memory Bank review and update to reflect this change and ensure all documentation is current.
+    *   **Clarification of `pool.updatedAt` and System Stability Confirmation (May 19, 2025):**
+        *   Investigated and confirmed that `pool.updatedAt` is a client-side ISO timestamp string set in `PoolDataContext.tsx` upon processing WebSocket messages. This timestamp reflects when the frontend last handled data for that pool.
+        *   The `formatTimeAgo` utility uses this `pool.updatedAt` for display in the Edge Tooltip.
+        *   User confirmed overall system functionality ("everything works").
+        *   Initiated a full Memory Bank update to reflect these findings and the current stable state.

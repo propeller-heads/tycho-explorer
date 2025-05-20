@@ -51,17 +51,17 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 
 8.  **`PoolDataContext.tsx` (within `context/`)**:
     *   A React Context Provider that manages the WebSocket connection and pool data.
-    *   Likely handles:
+    *   Handles:
         *   Establishing and maintaining the WebSocket connection.
-        *   Receiving, processing, and storing pool data updates.
-        *   Providing access to `poolsArray`, `blockNumber`, `isConnected` status, etc., to consumer components via the `usePoolData` hook.
+        *   Receiving, processing, and storing pool data updates. This includes setting a client-side `updatedAt` timestamp (ISO string) on `Pool` objects when they are created or updated from WebSocket messages.
+        *   Providing access to `poolsArray`, `blockNumber`, `isConnected` status, `updatedAt` (via Pool objects), etc., to consumer components via the `usePoolData` hook.
         *   Managing `highlightedPoolId` and `selectedChain`.
 
 ## Data Flow
 
 1.  **Connection**: `WebSocketConfig.tsx` (via `PoolDataContext`) establishes a WebSocket connection to a Tycho-based data source.
-2.  **Data Reception**: `PoolDataContext` receives real-time pool data and block updates.
-3.  **State Update**: `PoolDataContext` updates its internal state (e.g., `poolsArray`, `blockNumber`).
+2.  **Data Reception**: `PoolDataContext` receives real-time pool data and block updates from the WebSocket.
+3.  **State Update**: `PoolDataContext` processes this data, updates its internal state (e.g., `poolsArray`, `blockNumber`), and notably sets the `updatedAt` field on individual `Pool` objects to the current client-side timestamp upon creation or modification.
 4.  **Consumption**:
     *   `DexScanContent.tsx` consumes data from `PoolDataContext`.
     *   `ListView.tsx` receives `poolsArray`, `highlightedPoolId`, etc., to display the pool list and details.
@@ -96,7 +96,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Fallback to `shape: 'circle'` with a text label if the image is unavailable.
 *   **Graph Tooltips & Interactions (`GraphView.tsx` / `GraphManager`)**:
     *   **Node Tooltip (Token)**: Displays token address (formatted with `renderHexId`, linked to Etherscan, and copyable) and real-time pool count.
-    *   **Edge Tooltip (Pool)**: Displays pool ID (formatted with `renderHexId`, linked via `getExternalLink` or Etherscan, and copyable), protocol, fee (via `parsePoolFee`), and last update block.
+    *   **Edge Tooltip (Pool)**: Displays pool ID (formatted with `renderHexId`, linked via `getExternalLink` or Etherscan, and copyable), protocol, fee (via `parsePoolFee`), and the last update time (formatted from the client-side `pool.updatedAt` timestamp using `formatTimeAgo`).
     *   Tooltips are dismissed on other graph interactions.
     *   Real-time pool count updates for node tooltips are handled via `useGraphData` exposing raw data and `GraphManager` updating the DOM.
 *   **Development Server Proxy**: Vite dev server is configured to proxy CoinGecko API requests to bypass CORS issues during local development.
