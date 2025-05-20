@@ -10,7 +10,7 @@ const networkOptions = {
   autoResize: true,
   nodes: {
     shape: "circle", // Default shape, will be overridden by 'circularImage' for nodes with images
-    size: 32, // Default size for nodes, including circularImage
+    size: 24, // Default size for nodes, including circularImage
     color: {
       border: "rgba(255, 244, 224, 0.2)", // Subtle light border for fallback circle
       background: "rgba(10, 10, 20, 0.8)", // Very dark background for fallback circle
@@ -26,7 +26,7 @@ const networkOptions = {
     borderWidth: 6,
     // borderWidthSelected is handled programmatically in GraphManager for #FF3366
     font: {
-      size: 25, // px
+      size: 16, // px
       color: "#EAEAEA", 
       face: "Inter, Arial, sans-serif",
       vadjust: 0,
@@ -139,6 +139,15 @@ class GraphManager {
       { nodes: this.nodesDataset, edges: this.edgesDataset },
       networkOptions
     );
+
+    // Listen for initial stabilization to be done, then fit the network
+    // This ensures the graph is nicely framed on initial load.
+    // Subsequent zoom/pan by the user will be preserved due to `physics.stabilization.fit: false`.
+    this.network.once('stabilizationIterationsDone', () => {
+      if (this.network) { // Ensure network still exists
+        this.network.fit();
+      }
+    });
 
     // Add click event handler for nodes and edges
     this.network.on('click', (params) => {
@@ -438,10 +447,97 @@ class GraphManager {
     });
   }
 
-  updateData(nodes: any[], edges: any[]) {
-    if (!this.nodesDataset || !this.edgesDataset) return;
+  updateData(newNodesData: any[], newEdgesData: any[]) {
+    if (!this.nodesDataset || !this.edgesDataset || !this.network) return;
 
-    this.network.setData({nodes, edges});
+    // --- Nodes Diffing and Updating ---
+    // Get current nodes as a Map for efficient lookup
+    const currentNodesMap = new Map(this.nodesDataset.get({ returnType: 'Array' }).map(node => [node.id, node]));
+    // Create a Map of new nodes for efficient lookup
+    const newNodesMap = new Map(newNodesData.map(node => [node.id, node]));
+
+    const nodesToAdd = [];
+    const nodesToUpdate = []; // Payloads for nodes that exist and might have changed properties
+    const nodeIdsToRemove = [];
+
+    // Identify nodes to add or prepare for update
+    for (const newNode of newNodesData) {
+      if (currentNodesMap.has(newNode.id)) {
+        // Node exists, prepare an update payload.
+        // IMPORTANT: Exclude x and y coordinates from the update payload
+        // to allow vis-network's physics engine to preserve existing positions
+        // or adjust them smoothly, rather than resetting them.
+        const { x, y, ...updatePayload } = newNode;
+        // TODO: Implement a more sophisticated diff here if only specific property changes should trigger an update.
+        // For now, we assume any existing node passed in newNodesData might need an update.
+        nodesToUpdate.push(updatePayload);
+      } else {
+        // Node is new, add it.
+        nodesToAdd.push(newNode);
+      }
+    }
+
+    // Identify nodes to remove
+    currentNodesMap.forEach((_, nodeId) => {
+      if (!newNodesMap.has(nodeId)) {
+        nodeIdsToRemove.push(nodeId);
+      }
+    });
+
+    if (nodesToAdd.length > 0) {
+      this.nodesDataset.add(nodesToAdd);
+    }
+    if (nodesToUpdate.length > 0) {
+      // vis-data's update method handles matching by id and merging properties.
+      this.nodesDataset.update(nodesToUpdate);
+    }
+    if (nodeIdsToRemove.length > 0) {
+      this.nodesDataset.remove(nodeIdsToRemove);
+    }
+
+    // --- Edges Diffing and Updating ---
+    // Get current edges as a Map
+    const currentEdgesMap = new Map(this.edgesDataset.get({ returnType: 'Array' }).map(edge => [edge.id, edge]));
+    // Create a Map of new edges
+    const newEdgesMap = new Map(newEdgesData.map(edge => [edge.id, edge]));
+    
+    const edgesToAdd = [];
+    const edgesToUpdate = []; // Edges don't have x/y positions managed by physics in the same way nodes do.
+                              // Their appearance is determined by 'from' and 'to' nodes and 'smooth' options.
+    const edgeIdsToRemove = [];
+
+    // Identify edges to add or update
+    for (const newEdge of newEdgesData) {
+      if (currentEdgesMap.has(newEdge.id)) {
+        // Edge exists, prepare for update.
+        // TODO: Add diffing if only specific property changes should trigger an update.
+        edgesToUpdate.push(newEdge); 
+      } else {
+        // Edge is new, add it.
+        edgesToAdd.push(newEdge);
+      }
+    }
+
+    // Identify edges to remove
+    currentEdgesMap.forEach((_, edgeId) => {
+      if (!newEdgesMap.has(edgeId)) {
+        edgeIdsToRemove.push(edgeId);
+      }
+    });
+
+    if (edgesToAdd.length > 0) {
+      this.edgesDataset.add(edgesToAdd);
+    }
+    if (edgesToUpdate.length > 0) {
+      this.edgesDataset.update(edgesToUpdate);
+    }
+    if (edgeIdsToRemove.length > 0) {
+      this.edgesDataset.remove(edgeIdsToRemove);
+    }
+    
+    // After updating datasets, it might be necessary to explicitly tell the network to redraw
+    // if changes aren't automatically picked up for some reason, though typically DataSet events handle this.
+    // this.network.redraw(); // Usually not needed if DataSets are correctly linked.
   }
 
   refreshCurrentTooltipData() {

@@ -232,6 +232,8 @@ export function useGraphData(
             shape: 'circularImage',
             image: imageUrl,
             label: node.symbol, // The text symbol will be the label
+            size: 24, // Explicitly set size to ensure consistency
+            font: { size: 16 }, // Explicitly set font size
           };
         } else { 
           // Fallback for when imageUrl is null (fetch failed/no image) or undefined (still fetching)
@@ -239,6 +241,8 @@ export function useGraphData(
             ...node,
             shape: 'circle', // Default shape
             label: node.symbol, // Text label
+            size: 24, // Explicitly set size
+            font: { size: 16 }, // Explicitly set font size
           };
         }
       });
