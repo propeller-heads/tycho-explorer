@@ -1,225 +1,235 @@
-import React, { useEffect, useRef, memo } from 'react';
+import React, { useRef, useCallback, memo, useEffect, useState } from 'react'; // Added memo, useEffect, useState
 import { 
   Table, TableHeader, TableBody, TableRow, 
   TableHead, TableCell 
 } from '@/components/ui/table';
-import { ExternalLink, ChevronUp, ChevronDown, Search } from 'lucide-react';
-import { cn, renderHexId, getExternalLink } from '@/lib/utils';
-import { Pool } from '../types';
+import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'; // Added ChevronsUpDown
+import { cn, renderHexId, getExternalLink, formatTimeAgo } from '@/lib/utils';
+import { Pool, Token } from '../types';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // Import coingecko utils
+import TokenIcon from '../common/TokenIcon'; // Import the new TokenIcon component
+import ProtocolLogo from '../common/ProtocolLogo'; // Import the new ProtocolLogo component
+
+// --- StackedTokenIcons Component (uses imported TokenIcon) ---
+const StackedTokenIcons: React.FC<{ tokens: Token[] }> = ({ tokens }) => {
+  return (
+    <div className="flex -space-x-2">
+      {tokens.slice(0, 3).map((token) => (
+        <TokenIcon key={token.address || token.symbol} token={token} size={6} />
+      ))}
+      {tokens.length > 3 && (
+        <div className="w-6 h-6 rounded-full bg-gray-600 border-2 border-gray-800 flex items-center justify-center text-xs">
+          +{tokens.length - 3}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ProtocolLogo component is now imported.
 
 interface PoolTableProps {
-  paginatedPools: Pool[];
+  displayedPools: Pool[]; // Changed from paginatedPools
   highlightedPoolId?: string | null;
   selectedPoolId?: string | null;
   onPoolClick: (pool: Pool) => void;
   allVisibleColumns: Array<{ id: string; name: string; type: string }>;
-  renderTokens: (pool: Pool) => string;
-  renderFee: (pool: Pool) => string;
-  sortConfig?: { column: string; direction: 'asc' | 'desc' };
-  onSort?: (column: string) => void;
-  onFilter?: (key: string, value: string) => void;
-  filters?: { tokens: string; protocol_system: string; poolId: string };
+  renderTokensText: (pool: Pool) => string; // For text part of tokens cell
+  renderFee: (pool: Pool) => string; // Kept for consistency if needed, or direct parse
+  sortConfig: { column: string; direction: 'asc' | 'desc' }; // sortConfig is required now
+  onSort: (columnId: string) => void; // onSort is required
+  summaryData: { // New prop for summary row
+    totalPools: number;
+    totalUniqueTokens: number;
+    totalProtocols: number;
+  };
+  onLoadMore: () => void; // For infinite scroll
+  hasMorePools: boolean; // To know if more pools can be loaded
 }
 
 const PoolTable: React.FC<PoolTableProps> = ({ 
-  paginatedPools, 
+  displayedPools, 
   highlightedPoolId, 
   selectedPoolId, 
   onPoolClick,
   allVisibleColumns,
-  renderTokens,
+  renderTokensText, // Will be used alongside StackedTokenIcons
   renderFee,
-  sortConfig = { column: 'id', direction: 'asc' },
+  sortConfig,
   onSort,
-  onFilter,
-  filters = { tokens: '', protocol_system: '', poolId: '' }
+  summaryData,
+  onLoadMore,
+  hasMorePools
 }) => {
-  // Create ref for table container to scroll to highlighted row
-  const tableRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  
+  const sortableColumns = ['protocol_system', 'static_attributes.fee', 'spotPrice', 'updatedAt'];
+
+  // Effect for attaching scroll listener for infinite scroll
+  useEffect(() => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+
+    const handleScroll = () => {
+      if (!hasMorePools) return;
+      // Check if scrolled to near the bottom
+      if (viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 200) { // Threshold of 200px
+        onLoadMore();
+      }
+    };
+
+    viewport.addEventListener('scroll', handleScroll);
+    return () => viewport.removeEventListener('scroll', handleScroll);
+  }, [hasMorePools, onLoadMore]); // Rerun if these change
 
   return (
-    <div className="w-full space-y-2">
-      <div className="flex space-x-4">
-        <div className="relative flex-1">
-          <Input
-            placeholder="Filter by pool ID/address..."
-            value={filters.poolId}
-            onChange={(e) => onFilter && onFilter('poolId', e.target.value)}
-            className="pl-8"
-          />
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="relative flex-1">
-          <Input
-            placeholder="Filter by tokens..."
-            value={filters.tokens}
-            onChange={(e) => onFilter && onFilter('tokens', e.target.value)}
-            className="pl-8"
-          />
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="relative flex-1">
-          <Input
-            placeholder="Filter by protocol..."
-            value={filters.protocol_system}
-            onChange={(e) => onFilter && onFilter('protocol_system', e.target.value)}
-            className="pl-8"
-          />
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        </div>
-      </div>
+    <div className="w-full flex-grow flex flex-col overflow-hidden"> {/* Ensure table container can grow and scroll */}
+      {/* Filter inputs removed, now in PoolListFilterBar */}
       
       <ScrollArea 
-        className="w-full" 
-        style={{ height: 'min(60vh, 600px)', minHeight: '400px' }} 
-        ref={tableRef}
-        withHorizontalScrollbar={true}
+        className="w-full flex-grow" 
       >
-        <div className="w-full min-w-max">
-          <Table>
+        {/* The direct child of ScrollArea is the one that gets the scrollbar.
+            We need to attach the ref to this viewport element.
+            Shadcn's ScrollArea renders a div with data-radix-scroll-area-viewport=""
+            We will assign the ref to the outer div that we control.
+        */}
+        <div 
+          className="w-full min-w-max h-full" // Ensure this div takes up scrollable height
+          ref={scrollViewportRef} // Attach ref here
+          style={{ overflowY: 'auto' }} // Make this div itself scrollable if ScrollArea doesn't do it as expected
+        >
+          <Table className="table-fixed">
             <TableHeader>
-              <TableRow>
-                {allVisibleColumns.map((column) => (
-                  <TableHead 
-                    key={column.id}
-                    className={cn(
-                      "sticky top-0 bg-secondary/30 cursor-pointer p-3",
-                      column.id === 'id' && "min-w-[150px]",
-                      column.id === 'tokens' && "min-w-[250px]",
-                      column.id === 'protocol_system' && "min-w-[100px]",
-                      column.id === 'static_attributes.fee' && "min-w-[80px]",
-                      column.id === 'spotPrice' && "min-w-[100px]",
-                      column.id === 'created_at' && "min-w-[180px]",
-                      column.id === 'updatedAt' && "min-w-[180px]",
-                      column.id === 'lastUpdatedAtBlock' && "min-w-[120px]",
-                      column.type === 'number' && "text-right"
-                    )}
-                    onClick={() => onSort && onSort(column.id)}
-                  >
-                    <div className={cn(
-                      "flex items-center",
-                      column.type === 'number' ? "justify-end" : "justify-between"
-                    )}>
-                      <span>{column.name}</span>
-                      {sortConfig.column === column.id && (
-                        sortConfig.direction === 'asc' ? 
-                          <ChevronUp className="h-4 w-4 ml-1" /> : 
-                          <ChevronDown className="h-4 w-4 ml-1" />
+              <TableRow className="border-b border-white/10 sticky top-0 bg-neutral-900 z-10"> 
+                {allVisibleColumns.map((column) => {
+                  const isSortable = sortableColumns.includes(column.id);
+                  return (
+                    <TableHead 
+                      key={column.id}
+                      className={cn(
+                        "p-4 text-xs font-medium text-white/60", // TC Design: Inter, 500, 13px, rgba(255,244,224,0.64)
+                        isSortable && "cursor-pointer hover:text-white/80",
+                        // TODO: Apply specific column widths based on Figma
+                        column.id === 'tokens' ? "w-[250px]" : 
+                        column.id === 'id' ? "w-[180px]" :
+                        column.id === 'protocol_system' ? "w-[150px]" :
+                        column.id === 'static_attributes.fee' ? "w-[100px]" :
+                        column.id === 'spotPrice' ? "w-[150px]" :
+                        column.id === 'updatedAt' ? "w-[180px]" : "w-auto"
                       )}
-                    </div>
-                  </TableHead>
+                      onClick={() => isSortable && onSort(column.id)}
+                    >
+                      <div className="flex items-center gap-1">
+                        <span>{column.name}</span>
+                        {isSortable && (
+                          sortConfig.column === column.id ? (
+                            sortConfig.direction === 'asc' ? 
+                              <ChevronUp className="h-3 w-3" /> : 
+                              <ChevronDown className="h-3 w-3" />
+                          ) : (
+                            <ChevronsUpDown className="h-3 w-3 text-white/40" /> // Always visible for sortable
+                          )
+                        )}
+                      </div>
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+              {/* Summary Row */}
+              <TableRow className="border-b border-white/10 bg-white/5">
+                {allVisibleColumns.map(column => (
+                  <TableCell key={`summary-${column.id}`} className="p-2 px-4 text-sm font-semibold text-white"> {/* TC Design: Inter, 600, 16px, #FFF4E0, padding 8px 16px */}
+                    {column.id === 'tokens' && (
+                      <div className="flex flex-col">
+                        <span>Summary</span>
+                        <span className="text-xs font-normal text-white/70">{summaryData.totalUniqueTokens} Unique Tokens</span>
+                      </div>
+                    )}
+                    {column.id === 'id' && <span>{summaryData.totalPools} Pools</span>}
+                    {column.id === 'protocol_system' && <span>{summaryData.totalProtocols} Protocols</span>}
+                    {/* Other summary cells can be empty or show '-' */}
+                    {['static_attributes.fee', 'spotPrice', 'updatedAt'].includes(column.id) && <span>-</span>}
+                  </TableCell>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedPools.length > 0 ? (
-                paginatedPools.map((pool) => {
-                  // Determine if this row should be highlighted - only if it matches selectedPoolId
-                  // or if highlightedPoolId is set and selectedPoolId is not
-                  const isRowHighlighted = 
-                    pool.id === selectedPoolId || 
-                    (pool.id === highlightedPoolId && !selectedPoolId);
-                    
+              {displayedPools.length > 0 ? (
+                displayedPools.map((pool) => {
+                  const isRowSelected = pool.id === selectedPoolId;
+                  // Highlighted is for a different purpose, usually from graph interaction
+                  // const isRowHighlighted = pool.id === highlightedPoolId && !isRowSelected;
+
                   return (
                     <TableRow 
                       key={pool.id}
                       id={`pool-row-${pool.id}`}
                       className={cn(
-                        "cursor-pointer",
-                        isRowHighlighted ? 
-                        "bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/30" :
-                        "hover:bg-muted/50"
+                        "cursor-pointer border-b border-white/20", // TC Design border
+                        isRowSelected 
+                          ? "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-gray-200" // TC Design: whitish bg, black text
+                          : "hover:bg-white/5"
                       )}
                       onClick={() => onPoolClick(pool)}
                     >
                       {allVisibleColumns.map((column) => {
-                        // Get the correct value based on column id
-                        let value;
-                        let displayValue;
+                        let displayValue: React.ReactNode;
                         
-                        // Custom formatting for different column types
-                        if (column.id === 'id') {
-                          const linkUrl = getExternalLink(pool);
-                          
+                        if (column.id === 'tokens') {
                           displayValue = (
-                            <TooltipProvider delayDuration={150}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="font-mono text-xs flex items-center">
-                                    <span className="cursor-help">{renderHexId(pool.id)}</span>
-                                    {linkUrl && (
-                                      <a
-                                        href={linkUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="ml-1 text-blue-500 hover:text-blue-700 inline-flex items-center"
-                                        onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
-                                      >
-                                        <ExternalLink className="h-3 w-3" />
-                                      </a>
-                                    )}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <p className="font-mono flex items-center justify-between">
-                                    <span>{pool.id}</span>
-                                    <button 
-                                      className="ml-2 text-xs text-muted-foreground hover:text-primary"
-                                      onClick={() => {
-                                        navigator.clipboard.writeText(pool.id);
-                                      }}
-                                    >
-                                      Copy
-                                    </button>
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex items-center gap-2">
+                              <StackedTokenIcons tokens={pool.tokens} />
+                              <span className={cn("text-sm", isRowSelected ? "text-gray-800" : "text-white")}>{renderTokensText(pool)}</span>
+                            </div>
                           );
-                        } else if (column.id === 'tokens') {
-                          displayValue = renderTokens(pool);
-                        } else if (column.id === 'static_attributes.fee') {
-                          displayValue = renderFee(pool);
+                        } else if (column.id === 'id') {
+                          const linkUrl = getExternalLink(pool);
+                          displayValue = (
+                            <div className="flex items-center gap-1">
+                              <span className={cn("font-mono text-xs", isRowSelected ? "text-gray-700" : "text-white/80")}>{renderHexId(pool.id)}</span>
+                              {linkUrl && (
+                                <a
+                                  href={linkUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={cn("text-white/60 hover:text-white/80", isRowSelected && "text-gray-600 hover:text-gray-700")}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                            </div>
+                          );
                         } else if (column.id === 'protocol_system') {
-                          displayValue = pool.protocol_system;
-                        } else if (column.id === 'created_at') {
-                          displayValue = new Date(pool.created_at).toLocaleString() + ' UTC';
-                        } else if (column.id === 'updatedAt') {
-                          displayValue = new Date(pool.updatedAt).toLocaleString() + ' UTC';
-                        } else if (column.id === 'lastUpdatedAtBlock') {
-                          displayValue = pool.lastUpdatedAtBlock?.toLocaleString() || '-';
+                          displayValue = (
+                            <div className="flex items-center gap-2">
+                              <ProtocolLogo protocolName={pool.protocol_system} />
+                              <span className={cn("text-sm", isRowSelected ? "text-gray-800" : "text-white")}>{pool.protocol_system}</span>
+                            </div>
+                          );
+                        } else if (column.id === 'static_attributes.fee') {
+                          displayValue = <span className={cn("text-sm", isRowSelected ? "text-gray-800" : "text-white")}>{renderFee(pool)}</span>;
                         } else if (column.id === 'spotPrice') {
-                          displayValue = pool.spotPrice.toLocaleString(undefined, { 
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 18
-                          });
+                          displayValue = <span className={cn("text-sm", isRowSelected ? "text-gray-800" : "text-white")}>{pool.spotPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 18 }) ?? '-'}</span>;
+                        } else if (column.id === 'updatedAt') {
+                          displayValue = <span className={cn("text-sm", isRowSelected ? "text-gray-800" : "text-white/80")}>{formatTimeAgo(pool.updatedAt)}</span>;
                         } else {
-                          displayValue = value?.toString() || 'ERR';
+                          displayValue = '-';
                         }
                         
                         return (
                           <TableCell 
                             key={column.id} 
                             className={cn(
-                              "p-3",
-                              column.id === 'id' && "min-w-[150px]",
-                              column.id === 'tokens' && "min-w-[250px]",
-                              column.id === 'protocol_system' && "min-w-[100px]",
-                              column.id === 'static_attributes.fee' && "min-w-[80px]",
-                              column.id === 'spotPrice' && "min-w-[100px]",
-                              column.id === 'created_at' && "min-w-[180px]",
-                              column.id === 'updatedAt' && "min-w-[180px]",
-                              column.id === 'lastUpdatedAtBlock' && "min-w-[120px]",
+                              "p-4 text-sm", // TC Design: Inter, 400/500, 14px, #FFF4E0
                               column.type === 'number' && "text-right",
-                              isRowHighlighted && "font-medium text-black dark:text-white" // Ensure text is black in light mode and white in dark mode
+                              isRowSelected ? "text-gray-800" : "text-white"
                             )}
                           >
-                            <div className="break-words whitespace-normal">
-                              {displayValue}
-                            </div>
+                            {displayValue}
                           </TableCell>
                         );
                       })}
@@ -228,14 +238,16 @@ const PoolTable: React.FC<PoolTableProps> = ({
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={allVisibleColumns.length} className="h-24 text-center">
-                    No pools match your filter criteria
+                  <TableCell colSpan={allVisibleColumns.length} className="h-24 text-center text-white/60">
+                    No pools match your filter criteria.
                   </TableCell>
                 </TableRow>
               )}
+              {/* "Load More" button removed, relying on scroll detection */}
             </TableBody>
           </Table>
         </div>
+        <ScrollBar orientation="horizontal" />
       </ScrollArea>
     </div>
   );

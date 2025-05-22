@@ -1,166 +1,95 @@
-# Progress: Pool Explorer - Graph View Refactoring Largely Complete
+# Progress: Pool Explorer - Pool List View Refactor Nearing Completion
 
 This document outlines the current implementation status and planned work for the Pool Explorer project.
 
 ## What Works (Implemented Features based on `src/components/dexscan/`)
 
 ### Core UI & Navigation:
-*   **Main Layout (`DexScanContent.tsx`)**:
-    *   Primary content area, tab-based navigation, URL synchronization.
-    *   **Content area height adjusted** for better viewport fit (`calc(100vh - 104px)`).
-    *   **Horizontal margins adjusted** to `mx-6` (24px).
-*   **Global Background (`App.tsx`)**:
-    *   **Implemented TC Design's multi-layered background** (dark purple base, comets, rays, noise texture) app-wide.
-*   **Header (`DexScanHeader.tsx`, etc.)**:
-    *   Standard structure in place.
-*   **WebSocket Connection (`WebSocketConfig.tsx`, `PoolDataContext.tsx`)**:
-    *   Functional.
-    *   **Enhanced `PoolDataContext.tsx`** to track `lastBlockTimestamp` and `estimatedBlockDuration` for the animated block timer.
-    *   **`PoolDataContext.tsx` correctly sets a client-side `updatedAt` timestamp (ISO string)** on `Pool` objects when they are created or updated from WebSocket messages, reflecting the frontend's data processing time.
+*   **Main Layout (`DexScanContent.tsx`)**: Functional.
+*   **Global Background (`App.tsx`)**: TC Design multi-layered background implemented.
+*   **Header (`DexScanHeader.tsx`, etc.)**: Standard structure in place.
+*   **WebSocket Connection (`WebSocketConfig.tsx`, `PoolDataContext.tsx`)**: Functional.
 
-### Pool List View (`ListView.tsx`):
-*   Largely functional as per initial assessment. (No new changes in this phase).
+### Pool List View (`ListView.tsx` & Sub-components):
+*   **Current State (As of May 21, 2025 - Refactor Largely Complete)**:
+    *   **`types.ts`**: `Token` interface defined and exported, includes optional `name` and `logoURI`.
+    *   **`common/TokenIcon.tsx` (New Shared Component)**: Created. Fetches token images from CoinGecko. Uses inline styles for dynamic sizing.
+    *   **`common/ProtocolLogo.tsx` (New Shared Component)**: Created. Fetches protocol logos from CoinGecko via ID mapping. Uses inline styles for dynamic sizing.
+    *   **`PoolListFilterBar.tsx` (New & Implemented)**:
+        *   Structure and styling per TC Design. Props for `BlockProgressIcon` corrected. Uses imported `Token` type.
+        *   **Popover Content Implemented**: For Tokens (with search, list, checkboxes, `TokenIcon`), Protocols (list, checkboxes), and Pool IDs (search, list using `renderHexId`, checkboxes).
+    *   **`ListView.tsx` (Refactored)**:
+        *   Imports updated; uses imported `Token` type for filters.
+        *   `ListViewFilters` interface defined for `selectedTokens: Token[]`, `selectedProtocols: string[]`, `selectedPoolIds: string[]`.
+        *   `COLUMNS` constant updated: Tokens (non-sortable), Pool ID (non-sortable), Protocol (sortable), Fee Rate (sortable), Spot Price (sortable), Last Update (sortable). TVL/Depth columns removed.
+        *   State management for infinite scroll (`displayedPoolsCount`) and new filter structure implemented.
+        *   `usePoolData` hook integrated. Helper functions for populating filter lists created.
+        *   `sortPools` and `filterPools` logic updated. `summaryData` calculation added.
+        *   `handleFilterChange` and `handleResetFilters` implemented.
+        *   Render logic uses new components; main panel styled per TC Design (blur, border).
+    *   **`PoolDetailSidebar.tsx` (New & Styled)**:
+        *   Created and styled as an overlay panel per TC Design (using arbitrary Tailwind values for precise color/shadow matching).
+        *   Header implemented with pool info (multi-token aware) and close button.
+        *   "Quote simulation" tab styled as active. "Liquidity curve" tab omitted.
+        *   Refactored `SwapSimulator.tsx` integrated.
+    *   **`PoolTable.tsx` (Refactored)**:
+        *   Props updated for `displayedPools`, `summaryData`, infinite scroll. Old filter props removed.
+        *   `ScrollArea` adapted with `useEffect` for infinite scroll detection.
+        *   Table headers styled per TC Design; sort icons updated. Sticky header styling added.
+        *   New summary row implemented (Total Pools, Unique Tokens, Protocols).
+        *   Data row styling updated (border, hover/selected states: whitish background, black text).
+        *   Cell rendering updated: `StackedTokenIcons` (uses `TokenIcon`), `ProtocolLogo`, `renderHexId`, `getExternalLink`, `formatTimeAgo`.
+    *   **`SwapSimulator.tsx` (Refactored)**:
+        *   Restructured with `SwapCard` and `TokenDisplay` sub-components. `Tabs` removed. Styled for sidebar. Mock simulation logic and state management in place.
 
 ### Graph View (`graph/` components):
-*   **TC Design Alignment Substantially Completed:**
-    *   **Graph View Main Frame (`GraphViewContent.tsx`):** Styled with Figma-specified background color, texture, **border (`rgba(255,244,224,0.2)`)**, rounded corners, and backdrop-filter.
-    *   **`GraphControls.tsx` Overhaul:**
-        *   Layout: Single-row, responsive (stacks on small screens).
-        *   Filter Displays: Styled clickable boxes for token/protocol selection (text-based, "Select..." placeholders, comma-separated lists, icons, `max-w-xs`, popovers align start). **Dropdown arrows now rotate 180 degrees with transition.** Token clear 'x' icon styled.
-        *   "Render Graph" Button: Removed.
-        *   "Reset filters" Link: Styled text link, moved to left filter group.
-        *   Animated Block Number Display: Implemented with `BlockProgressIcon.tsx` (Folly red progress) and live block number.
-    *   **Filter Popover Content (`GraphControls.tsx`):**
-        *   Popover Frame: Styled per TC Design (bg, border, radius, shadow, backdrop-filter).
-        *   Token Search Bar: Styled per TC Design, auto-focuses, dynamic Folly red border (2px) on focus.
-        *   List Items: Styled rows (padding, hover bg). Token text shows symbol + smaller, lighter address summary. Entire rows are clickable.
-        *   **Token Address Summary:** Now a clickable Etherscan link, styled with underline and gray color (`rgba(255, 244, 224, 0.64)`).
-        *   **Token List Sorting:** Selected tokens appear first, then all tokens are sorted lexicographically.
-        *   Checkboxes: Styled with Tailwind to approximate Figma's red-filled checked state.
-        *   "Done" Button/Footer: Removed.
-    *   **Graph Auto-Rendering (`GraphViewContent.tsx`):** Implemented; graph updates on filter changes. "Displaying X tokens..." text removed.
-    *   **Node Styling (`GraphView.tsx`):**
-        *   Shape: "circle", default size 25.
-        *   Default Style: Dark background, light cream border/text. Text-only (no logos).
-        *   Selected Style: `2px solid #FF3366` border correctly applied.
-    *   **Edge Styling (`GraphView.tsx`, `useGraphData.ts`):**
-        *   Default: Thin (`1px`), subtle light color (`rgba(255,244,224,0.07)` or neutral gray `#848484` if no protocol selected), straight lines (or fanned for parallel).
-        *   Conditional Styling: Protocol-specific colors applied if a protocol filter is active. Edges updated in the current block are highlighted with increased width (orange, 2px - color part might need verification, width is primary).
-        *   **Corrected logic in `useGraphData.ts` to ensure edges are gray if no protocol filter is active.**
-        *   **Tooltip Styling & Content (`GraphView.tsx`):**
-            *   **Node Tooltip (Token Address)**:
-                *   Container: Styled per Figma (bg, border, blur, shadow).
-                *   Pool Count: Accurately displays the number of pools the token participates in (from raw data), updates in real-time.
-                *   Token Address: Displayed (formatted with `renderHexId`), linked to Etherscan, styled gray, and **is now copyable via a "Copy" button**.
-                *   Dismissal: Hides on clicks outside the tooltip/selected node.
-            *   **Edge Tooltip (Pool ID)**:
-                *   Implemented to show on edge click.
-                *   Displays Pool ID (formatted with `renderHexId`), Protocol, Fee (from `parsePoolFee`), and **Last Update Time (using `formatTimeAgo` with the client-side `pool.updatedAt` timestamp)**.
-                *   Pool ID is linked via `getExternalLink` (or Etherscan fallback) and **is now copyable via a "Copy" button**.
-                *   Dismissal: Hides on other graph interactions or outside clicks.
+*   **TC Design Alignment Substantially Completed (as of May 19, 2025)**: Stable.
 
 ### Header Components (`src/components/dexscan/header/`):
-*   **`HeaderActions.tsx`**:
-    *   WebSocket Connection popover card styled with blur, transparency, and other styles to match filter popovers.
+*   **`HeaderActions.tsx`**: WebSocket Connection popover styled per TC Design.
 
-### Utility Functions:
-*   **`src/lib/utils.ts`**: `formatPoolId` was renamed to `renderHexId`. `getExternalLink` was updated to include PancakeSwap v2/v3 support.
-*   **`src/lib/poolUtils.ts` (New)**: Centralized `parsePoolFee` and `parseFeeHexValue` functions.
+### Utility Functions & Data Types:
+*   `src/lib/utils.ts`: `renderHexId`, `getExternalLink`, `formatTimeAgo` stable. Helper `formatDisplayPoolIds` added for filter bar.
+*   `src/lib/poolUtils.ts`: Fee parsing stable.
+*   `src/lib/coingecko.ts`: `getCoinId` and `getCoinImageURL` stable.
 
-### Data Types (`types.ts`):
-*   `WebSocketPool` and `Pool` interfaces defined.
+## What's Left to Build / Verify (Pool List View Refactor - Final Polish)
 
-## What's Left to Build / Verify
+1.  **Styling Adjustments & Polish**:
+    *   Fine-tune paddings, margins, fonts, colors, borders, shadows across all refactored List View components for precise Figma alignment (e.g., `PoolDetailSidebar` shadow, `PoolTable` column widths).
+    *   Verify sticky header behavior in `PoolTable.tsx`.
+    *   Ensure `StackedTokenIcons` CSS provides correct visual overlap.
+2.  **Icon Component Robustness**:
+    *   Add more robust error handling/fallbacks for image fetching in `TokenIcon` and `ProtocolLogo` (e.g., consistent placeholder on network error).
+3.  **Thorough Testing**:
+    *   All filter functionalities (Tokens, Protocols, Pool IDs), including multi-select, search, clear, and reset.
+    *   Sorting for all designated columns.
+    *   Infinite scroll behavior (edge cases, performance with many items).
+    *   Row selection, sidebar display/dismissal.
+    *   Swap simulation functionality and UI in the sidebar.
+    *   Overall responsiveness and visual consistency.
+4.  **Address any remaining TS errors or warnings.**
 
-*   **Edge coloring by protocol (Verified & Corrected)**: Edges now correctly show protocol-specific colors when a protocol filter is active, and default to gray if no protocol filter is active.
-*   Multiple edges between tokens, one per protocol
-*   The graph layout should be less rigid
-* When a pool updates, flashing the pool edge, making it fat until the next block update comes in.
-* Verify if the "Websocket config UI should match that of TC styling" is fully complete now that the popover card and select dropdown are styled.
+## Current Status Summary (Overall System)
 
-## Current Status Summary
-
-*   Foundational UI, navigation, and WebSocket data handling are in place.
-*   Pool List view is largely functional.
-*   **Market Graph view has undergone a major refactoring effort and now substantially aligns with the TC Design's visual and interactive specifications for core elements.** This includes global background, graph panel framing (border updated), controls layout and styling (rotating popover arrows), filter popover design (sorting, Etherscan links), node/edge appearances, and tooltip (accurate, real-time pool count, Etherscan link styling, dismissal behavior).
-*   **Graph rendering and interaction issues (token deselection, zoom reset, incorrect edge coloring) have been investigated and resolved.**
-    *   The graph correctly re-renders upon token deselection; its disappearance is expected if no valid graph remains.
-    *   User zoom level is now preserved on new block data updates by setting `physics.stabilization.fit: false` in `GraphView.tsx`.
-    *   **Edge coloring logic in `useGraphData.ts` was corrected: when no protocol is selected in filters, edges now correctly display as gray instead of their individual protocol colors.**
-*   **Header components (WebSocket popover) have been styled for consistency with the TC Design's blur/transparency aesthetic.** (Note: Shared `Select` component changes were reverted by user).
-*   **The previous focus on diagnosing edge stacking has been completed.** This involved tuning global `networkOptions` in `GraphView.tsx` and implementing dynamic edge styling in `useGraphData.ts`.
-*   **Overall System Stability (May 19, 2025)**: User has confirmed that "everything works," indicating a stable state for current features. The `pool.updatedAt` field's origin and usage (client-side timestamp for frontend processing, formatted for display) have been clarified.
+*   Foundational UI, navigation, WebSocket data handling are stable.
+*   **Market Graph view is aligned with TC Design.**
+*   **Pool List view refactoring is nearly complete.** Core structural, functional, and major styling changes implemented. Focus is now on final polish, comprehensive testing, and minor refinements.
+*   Overall system stability confirmed by user prior to starting List View refactor planning.
 
 ## Evolution of Project Decisions
 
-*   **(Previous decisions regarding initial setup omitted for brevity)**
-*   **Graph View Refactoring (May 2025 - Current Phase):**
-    *   **Overall Goal:** Align current Graph View with TC Design (Figma) and refine UX based on feedback.
-    *   **Completed Sub-tasks:**
-        1.  Downloaded Figma assets (backgrounds, UI icons).
-        2.  Implemented app-wide multi-layered background.
-        3.  Styled Graph View main frame (bg, texture, border, blur, margins, height).
-        4.  Refactored `GraphControls.tsx`: single-row responsive layout, new styled filter display buttons (text-based, icons, rotating arrow, popover triggers), "Reset filters" text link, removed "Render Graph" button.
-        5.  Implemented animated block number display with `BlockProgressIcon.tsx`.
-        6.  Enabled graph auto-rendering on filter changes.
-        7.  Updated node styling (circle shape, text-only, default/selected styles including Folly red border).
-        8.  Updated edge styling (thin, light default, conditional highlights, straight lines).
-        9.  Updated tooltip (styled container, interim content).
-        10. Styled filter popover contents: frame, token search bar (styled, auto-focus, dynamic focus border), list items (padding, hover, styled address summary), approximated checkbox styles, removed "Done" buttons.
-        11. Addressed various UX fixes: popover item clickability, selected node border color.
-        12. **Updated token selection popover in `GraphControls.tsx`:**
-            *   Sorted token list: selected first, then lexicographically.
-            *   Made token address summary a clickable, underlined, gray Etherscan link.
-        13. **Updated graph tooltip in `GraphView.tsx`:**
-            *   Styled token address Etherscan link to be gray.
-            *   Implemented tooltip dismissal on any click outside the tooltip popup or its selected node.
-        14. **Updated `GraphControls.tsx` popover arrows to rotate with transition.**
-        15. **Updated WebSocket Connection popover in `HeaderActions.tsx` to use blur/transparency styling.**
-        16. **Updated `GraphViewContent.tsx` border to be `rgba(255,244,224,0.2)`.**
-    *   **Key Decisions during refactor (UI Alignment Phase):** Used Folly red for block timer dot; selected node border is Folly red; node content is text-only for now; tooltip content is interim; popover selections apply instantly (no "Done" button); address summary in token lists styled differently and links to Etherscan; tooltip dismissal is now more comprehensive; popover styling (blur, transparency, rotating arrows) applied to GraphControls and WebSocket popover. Shared Select component styling changes were reverted.
-    *   **Graph Layout Refinement (Current - May 15, 2025 onwards):**
-        *   **Problem Identified**: Parallel edges in the graph stack on top of each other instead of fanning out as per Figma design.
-        *   **Root Cause**: Default `smooth: { type: 'continuous' }` applied to all edges in `useGraphData.ts` without differentiation for parallel edges.
-        *   **Goal**: Achieve an organic, force-directed layout with fanned-out parallel edges.
-        *   **Strategy**:
-            1.  Update global `networkOptions` in `GraphView.tsx`:
-                *   Set `layout.hierarchical.enabled: false`.
-                *   Enable and tune `physics.barnesHut` solver (e.g., `gravitationalConstant`, `springLength`, `avoidOverlap`).
-                *   (Initial options applied: `gravitationalConstant: -15000`, `springLength: 150`, `avoidOverlap: 0.2`).
-            2.  **Modified `useGraphData.ts` (Completed May 15, 2025):**
-                *   Implemented `applyParallelEdgeSmoothness` helper function.
-                *   This function groups edges by the pair of nodes they connect.
-                *   For parallel edges, it dynamically assigns `smooth: { type: 'curvedCW'/'curvedCCW', roundness: ... }` with incrementally increasing `roundness` values to create a fanned-out effect, ensuring all parallel edges are distinguishable.
-                *   Single edges between a pair receive a default, nearly straight curve.
-        *   **Status**: Edge fanning logic implemented.
-    *   **Graph Rendering and Interaction Refinements (May 15, 2025):**
-        *   **Problem 1**: Graph not re-rendering as expected on token deselection.
-            *   **Analysis**: Determined this was expected behavior. The graph disappears if conditional rendering logic in `GraphViewContent.tsx` determines no valid graph to show (no selected tokens or no resulting nodes).
-            *   **Outcome**: No code change needed; behavior clarified.
-        *   **Problem 2**: User's zoom level reset on new block data.
-            *   **Root Cause**: `vis-network` defaults `physics.stabilization.fit` to `true`, causing a re-fit on `network.setData()` calls triggered by new block data.
-            *   **Solution**: Explicitly added `physics.stabilization: { fit: false }` to `networkOptions` in `GraphView.tsx` to preserve user zoom. A comment was added explaining this.
-        *   **Problem 3**: Graph edges were colored by protocol even when no protocol was selected in the filter.
-            *   **Root Cause**: Logic in `useGraphData.ts` incorrectly applied protocol-specific colors when `selectedProtocols.length === 0`.
-            *   **Solution**: Modified `useGraphData.ts` to set edge color to a neutral gray (`#848484`) if `selectedProtocols.length === 0`. If protocols are selected, matching edges get their protocol color, and non-matching edges are gray.
-        *   **Status**: Zoom preservation and correct edge coloring (for no protocol selected scenario) implemented.
-    *   **Graph Tooltip Enhancements (Completed May 15, 2025):**
-        *   **Node Tooltip (Token Address)**:
-            *   Pool Count Accuracy: Correctly calculates and displays the number of pools a token participates in, using raw pool data. Updates in real-time.
-            *   **Copy Functionality**: Added a "Copy" button for the token address.
-        *   **Edge Tooltip (Pool ID)**:
-            *   **New Feature**: Implemented a popover on edge click to display pool ID, protocol, fee, and last update block.
-            *   **Display & Linking**: Pool ID is formatted using `renderHexId` and linked via `getExternalLink` (or Etherscan).
-            *   **Copy Functionality**: Added a "Copy" button for the pool ID.
-        *   **Implementation Details**: Involved changes in `GraphView.tsx` (`GraphManager` for event handling, popover creation, copy logic), `useGraphData.ts` (ensuring data availability), and `src/lib/utils.ts` (using `renderHexId`). Fee parsing uses `src/lib/poolUtils.ts`.
-    *   **Utility Function Refactoring (Completed May 15, 2025):**
-    *   Renamed `formatPoolId` to `renderHexId` in `src/lib/utils.ts`.
-    *   Moved fee parsing functions (`parsePoolFee`, `parseFeeHexValue`) to a new `src/lib/poolUtils.ts` file and updated `ListView.tsx` and `GraphView.tsx` to use them.
-    *   **Utility Function Enhancement & Documentation (May 19, 2025):**
-        *   Updated `getExternalLink` in `src/lib/utils.ts` to include support for PancakeSwap v2 and v3 protocols.
-        *   Initiated and completed a full Memory Bank review and update to reflect this change and ensure all documentation is current.
-    *   **Clarification of `pool.updatedAt` and System Stability Confirmation (May 19, 2025):**
-        *   Investigated and confirmed that `pool.updatedAt` is a client-side ISO timestamp string set in `PoolDataContext.tsx` upon processing WebSocket messages. This timestamp reflects when the frontend last handled data for that pool.
-        *   The `formatTimeAgo` utility uses this `pool.updatedAt` for display in the Edge Tooltip.
-        *   User confirmed overall system functionality ("everything works").
-        *   Initiated a full Memory Bank update to reflect these findings and the current stable state.
+*   **(Graph View refactoring decisions from May 2025 detailed in previous versions - summarized above)**
+*   **Pool List View Refactoring (Finalized & Implemented - May 21, 2025):**
+    *   **Scope**: Comprehensive alignment of `ListView.tsx` and related components with Figma designs.
+    *   **Key Decisions & Features Implemented**:
+        *   Unified main panel with TC Design styling.
+        *   New `PoolListFilterBar.tsx` with fully implemented popover-based multi-select filters for Tokens, Protocols, and Pool IDs.
+        *   `MetricsCards.tsx` removed; metrics integrated into table summary row.
+        *   Table columns redefined; TVL & Depth info removed. Sortability updated.
+        *   Rich cell rendering with CoinGecko icons for tokens and protocols.
+        *   Infinite scroll replaces pagination.
+        *   Row hover/selected state: Whitish background, black text.
+        *   New `PoolDetailSidebar.tsx` as an overlay, styled per TC Design, housing a refactored `SwapSimulator.tsx`.
+        *   "Liquidity curve" tab in sidebar explicitly excluded.
+        *   Shared `TokenIcon` and `ProtocolLogo` components created.

@@ -1,18 +1,34 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn, renderHexId, getExternalLink } from '@/lib/utils'; // Changed formatPoolId to renderHexId
-import { Pool } from './types';
-import { parsePoolFee } from '@/lib/poolUtils'; // Import from the new utility file
-import SwapSimulator from './SwapSimulator';
-import MetricsCards from './pools/MetricsCards';
+import { cn, renderHexId, getExternalLink, formatTimeAgo } from '@/lib/utils';
+import { Pool, Token } from './types'; 
+import { parsePoolFee } from '@/lib/poolUtils';
+// SwapSimulator will be part of PoolDetailSidebar
+// import SwapSimulator from './SwapSimulator'; 
 import PoolTable from './pools/PoolTable';
-import TablePagination from './pools/TablePagination';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip';
+import PoolListFilterBar from './pools/PoolListFilterBar';
+import PoolDetailSidebar from './PoolDetailSidebar'; // This component will be created later
+import { usePoolData } from './context/PoolDataContext';
+
+// TokenForFilter interface is removed. Using 'Token' from './types' directly.
+
+interface ListViewFilters { // No export
+  selectedTokens: Token[]; // Use imported Token type
+  selectedProtocols: string[];
+  selectedPoolIds: string[];
+}
+
+// Updated COLUMNS definition based on plan
+const COLUMNS = [
+  { id: 'tokens', name: 'Tokens', type: 'tokens' }, // Non-sortable
+  { id: 'id', name: 'Pool ID', type: 'poolId' },     // Non-sortable
+  { id: 'protocol_system', name: 'Protocol', type: 'protocol' }, // Sortable
+  { id: 'static_attributes.fee', name: 'Fee rate', type: 'fee' },    // Sortable
+  { id: 'spotPrice', name: 'Spot Price', type: 'number' },  // Sortable
+  { id: 'updatedAt', name: 'Last update', type: 'time-ago' } // Sortable
+];
+
+const INITIAL_DISPLAY_COUNT = 30; // For infinite scroll batch size
+const POOL_LOAD_BATCH_SIZE = 20; // Number of additional pools to load
 
 interface PoolListViewProps {
   pools: Pool[];
@@ -20,150 +36,119 @@ interface PoolListViewProps {
   highlightedPoolId?: string | null;
   onPoolSelect?: (poolId: string | null) => void;
 }
-const renderTokens = (pool: Pool) => {
-  return pool.tokens.map(token => {
-    const address = token.address || '';
-    // Get first and last byte if address is available
-    const firstByte = address ? address.slice(2, 4) : '';
-    const lastByte = address ? address.slice(-2) : '';
-    
-    return `${token.symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
-  }).join(' / ');
+
+// Simplified renderTokens for text part, icons will be handled in PoolTable cell
+const renderTokensText = (pool: Pool) => {
+  return pool.tokens.map(token => token.symbol).join(' / ');
 };
 
-const POOLS_PER_PAGE = 10;
-
-const COLUMNS = [
-  { id: 'id', name: 'Pool address', type: 'string' },
-  { id: 'tokens', name: 'Tokens', type: 'tokens' },
-  { id: 'protocol_system', name: 'Protocol', type: 'string' },
-  { id: 'static_attributes.fee', name: 'Fee Rate', type: 'fee' },
-  { id: 'spotPrice', name: 'Spot Price', type: 'number' },
-  { id: 'created_at', name: 'Created At', type: 'date' },
-  { id: 'updatedAt', name: 'Updated At', type: 'date' },
-  { id: 'lastUpdatedAtBlock', name: 'Last Block Update', type: 'number' }
-];
-
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
-  const [currentPage, setCurrentPage] = useState(1);
+  const { blockNumber, lastBlockTimestamp, estimatedBlockDuration } = usePoolData();
+  
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [sortConfig, setSortConfig] = useState<{column: string, direction: 'asc' | 'desc'}>({
-    column: 'id',
+    column: 'protocol_system', // Default sort by a sortable column
     direction: 'asc'
   });
-  const [filters, setFilters] = useState({
-    tokens: '',
-    protocol_system: '',
-    poolId: ''
+  const [filters, setFilters] = useState<ListViewFilters>({
+    selectedTokens: [],
+    selectedProtocols: [],
+    selectedPoolIds: []
   });
+  const [displayedPoolsCount, setDisplayedPoolsCount] = useState(INITIAL_DISPLAY_COUNT);
 
-  const uniqueProtocols = useMemo(() =>
-    Array.from(new Set(pools.map(pool => pool.protocol_system))).filter(Boolean) as string[], [pools]
-  );
-
-  // Count unique tokens across all pools
-  const uniqueTokens = useMemo(() => {
-    const tokenAddresses = new Set<string>();
-
+  // Prepare data for filter popovers
+  const allTokensForFilter = useMemo((): Token[] => { // Changed to Token[]
+    const uniqueTokensMap = new Map<string, Token>(); // Changed to Token
     pools.forEach(pool => {
-      if (pool.tokens) {
-        pool.tokens.forEach(token => {
-          if (token.address) {
-            tokenAddresses.add(token.address);
-          }
-        });
-      }
+      pool.tokens.forEach(token => {
+        if (token.address && !uniqueTokensMap.has(token.address)) {
+          // Spread the token object, which conforms to the Token type
+          uniqueTokensMap.set(token.address, { ...token }); 
+        }
+      });
     });
-
-    return tokenAddresses.size;
+    return Array.from(uniqueTokensMap.values()).sort((a, b) => a.symbol.localeCompare(b.symbol));
   }, [pools]);
 
-  const overallMetrics = useMemo(() => ({
-    totalPools: pools.length,
-    totalProtocols: uniqueProtocols.length,
-    totalUniqueTokens: uniqueTokens,
-  }), [pools, uniqueProtocols, uniqueTokens]);
+  const allProtocolsForFilter = useMemo(() => 
+    Array.from(new Set(pools.map(pool => pool.protocol_system))).filter(Boolean).sort() as string[], 
+  [pools]);
 
-  // Sort function for pools
+  const allPoolIdsForFilter = useMemo(() => 
+    pools.map(pool => pool.id).sort(),
+  [pools]);
+
   const sortPools = useCallback((poolsToSort: Pool[]) => {
     return [...poolsToSort].sort((a, b) => {
-      let valueA, valueB;
+      let valueA: any, valueB: any;
       
-      // Extract values based on column id
-      if (sortConfig.column === 'id') {
-        valueA = a.id;
-        valueB = b.id;
-      } else if (sortConfig.column === 'tokens') {
-        valueA = a.tokens.map(t => t.symbol).join('-');
-        valueB = b.tokens.map(t => t.symbol).join('-');
-      } else if (sortConfig.column === 'protocol_system') {
-        valueA = a.protocol_system;
-        valueB = b.protocol_system;
-      } else if (sortConfig.column === 'static_attributes.fee') {
-        // Use the shared parsePoolFee function for consistent fee calculation
-        valueA = parsePoolFee(a);
-        valueB = parsePoolFee(b);
-      } else if (sortConfig.column === 'spotPrice') {
-        valueA = a.spotPrice || 0;
-        valueB = b.spotPrice || 0;
-      } else if (sortConfig.column === 'created_at') {
-        valueA = new Date(a.created_at).getTime();
-        valueB = new Date(b.created_at).getTime();
-      } else if (sortConfig.column === 'updatedAt') {
-        valueA = new Date(a.updatedAt).getTime();
-        valueB = new Date(b.updatedAt).getTime();
-      } else if (sortConfig.column === 'lastUpdatedAtBlock') {
-        valueA = a.lastUpdatedAtBlock || 0;
-        valueB = b.lastUpdatedAtBlock || 0;
-      } else {
-        valueA = a[sortConfig.column as keyof Pool];
-        valueB = b[sortConfig.column as keyof Pool];
+      switch (sortConfig.column) {
+        case 'protocol_system':
+          valueA = a.protocol_system || '';
+          valueB = b.protocol_system || '';
+          break;
+        case 'static_attributes.fee':
+          valueA = parsePoolFee(a);
+          valueB = parsePoolFee(b);
+          break;
+        case 'spotPrice':
+          valueA = a.spotPrice || 0;
+          valueB = b.spotPrice || 0;
+          break;
+        case 'updatedAt':
+          valueA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          valueB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          break;
+        default:
+          // Should not happen for non-sortable columns if UI prevents it
+          return 0;
       }
       
-      // Compare values
-      if (sortConfig.column === 'static_attributes.fee' || sortConfig.column === 'spotPrice' || sortConfig.column === 'lastUpdatedAtBlock') {
-        // Ensure numerical comparison for fee and spot price
-        const numA = typeof valueA === 'number' ? valueA : 0;
-        const numB = typeof valueB === 'number' ? valueB : 0;
-        return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
-      } else if (sortConfig.column === 'created_at' || sortConfig.column === 'updatedAt') {
-        // Already converted to timestamps above
-        return sortConfig.direction === 'asc' ? valueA - valueB : valueB - valueA;
-      } else if (typeof valueA === 'string' && typeof valueB === 'string') {
-        // Lexicographical comparison for strings
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
         const result = valueA.localeCompare(valueB);
         return sortConfig.direction === 'asc' ? result : -result;
-      } else {
-          throw new Error('ERR_BUG');
+      } else if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return sortConfig.direction === 'asc' ? valueA - valueB : valueB - valueA;
       }
+      return 0;
     });
   }, [sortConfig]);
 
-  // Filter function for pools
   const filterPools = useCallback((poolsToFilter: Pool[]) => {
     return poolsToFilter.filter(pool => {
-      // Filter by tokens using the same rendered format as display
-      const tokenMatch = !filters.tokens || 
-        renderTokens(pool).toLowerCase().includes(filters.tokens.toLowerCase());
+      const tokenMatch = filters.selectedTokens.length === 0 ||
+        filters.selectedTokens.some(st => pool.tokens.some(pt => pt.address === st.address));
       
-      // Filter by protocol
-      const protocolMatch = !filters.protocol_system || 
-        pool.protocol_system.toLowerCase().includes(filters.protocol_system.toLowerCase());
+      const protocolMatch = filters.selectedProtocols.length === 0 ||
+        filters.selectedProtocols.includes(pool.protocol_system);
       
-      // Filter by pool ID/address
-      const poolIdMatch = !filters.poolId || 
-        pool.id.toLowerCase().includes(filters.poolId.toLowerCase());
+      const poolIdMatch = filters.selectedPoolIds.length === 0 ||
+        filters.selectedPoolIds.includes(pool.id);
       
       return tokenMatch && protocolMatch && poolIdMatch;
     });
   }, [filters]);
 
-  // Sort & filter the pools before pagination
   const processedPools = useMemo(() => {
-    console.log("Processing pools in useMemo", new Date().toISOString());
     const filtered = filterPools(pools);
     return sortPools(filtered);
   }, [pools, filterPools, sortPools]);
+
+  const summaryData = useMemo(() => {
+    const uniqueProtocolsInView = new Set(processedPools.map(p => p.protocol_system));
+    const uniqueTokensInView = new Set<string>();
+    processedPools.forEach(pool => {
+      pool.tokens.forEach(token => {
+        if (token.address) uniqueTokensInView.add(token.address);
+      });
+    });
+    return {
+      totalPools: processedPools.length,
+      totalUniqueTokens: uniqueTokensInView.size,
+      totalProtocols: uniqueProtocolsInView.size,
+    };
+  }, [processedPools]);
 
   const handleRowClick = (pool: Pool) => {
     const newSelection = selectedPool?.id === pool.id ? null : pool;
@@ -173,215 +158,122 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     }
   };
 
-  const handleSort = useCallback((column: string) => {
+  const handleSort = useCallback((columnId: string) => {
+    // Ensure column is sortable
+    if (!COLUMNS.find(c => c.id === columnId && (c.id === 'protocol_system' || c.id === 'static_attributes.fee' || c.id === 'spotPrice' || c.id === 'updatedAt'))) {
+      return;
+    }
     setSortConfig(prev => ({
-      column,
-      direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc'
+      column: columnId,
+      direction: prev.column === columnId && prev.direction === 'asc' ? 'desc' : 'asc'
     }));
-    setCurrentPage(1); // Reset to first page when sorting changes
+    setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT); // Reset display count on sort
   }, []);
 
-  const handleFilterChange = useCallback((key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
+  const handleFilterChange = useCallback(
+    (filterKey: keyof ListViewFilters, value: any, isSelected?: boolean) => {
+      setFilters(prev => {
+        const newFilters = { ...prev };
+        if (filterKey === 'selectedTokens') {
+          const token = value as Token; // Use imported Token type
+          if (isSelected) {
+            newFilters.selectedTokens = [...prev.selectedTokens, token];
+          } else {
+            newFilters.selectedTokens = prev.selectedTokens.filter(t => t.address !== token.address);
+          }
+        } else if (filterKey === 'selectedProtocols' || filterKey === 'selectedPoolIds') {
+          const item = value as string;
+          if (isSelected) {
+            (newFilters[filterKey] as string[]).push(item);
+          } else {
+            newFilters[filterKey] = (prev[filterKey] as string[]).filter(i => i !== item);
+          }
+        }
+        return newFilters;
+      });
+      setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT); // Reset display count on filter change
+    }, []);
+  
+  const handleResetFilters = useCallback(() => {
+    setFilters({
+      selectedTokens: [],
+      selectedProtocols: [],
+      selectedPoolIds: []
+    });
+    setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT);
   }, []);
 
-  // Handle selected pool state separately from pagination
+
   useEffect(() => {
     if (highlightedPoolId) {
-      const poolIndex = pools.findIndex(pool => pool.id === highlightedPoolId);
-      if (poolIndex >= 0) {
-        setSelectedPool(pools[poolIndex]);
-      }
+      const pool = pools.find(p => p.id === highlightedPoolId);
+      setSelectedPool(pool || null);
+    } else {
+      setSelectedPool(null); // Clear selection if highlightedPoolId is null
     }
   }, [highlightedPoolId, pools]);
 
-  const totalPages = Math.ceil(processedPools.length / POOLS_PER_PAGE);
-  const startIndex = (currentPage - 1) * POOLS_PER_PAGE;
-  const paginatedPools = processedPools.slice(startIndex, startIndex + POOLS_PER_PAGE);
-  
-  // console.log('Paginated pools for table:', paginatedPools.length, 'pools (page', currentPage, 'of', totalPages, ')');
+  const handleLoadMorePools = useCallback(() => {
+    setDisplayedPoolsCount(prevCount => 
+      Math.min(prevCount + POOL_LOAD_BATCH_SIZE, processedPools.length)
+    );
+  }, [processedPools.length]);
 
+  const poolsToDisplay = useMemo(() => 
+    processedPools.slice(0, displayedPoolsCount),
+  [processedPools, displayedPoolsCount]);
 
+  // Helper for PoolListFilterBar props
+  // Simplified onFilterItemSelect, directly using handleFilterChange structure
+  // This generic helper might be causing type inference issues, let's simplify calls to handleFilterChange
 
-  const renderFee = (pool: Pool) => {
-    
-    const feeValue = parsePoolFee(pool);
-    
-    if (isNaN(feeValue)) {
-      console.log('Invalid fee value:', pool.id, 'static_attributes: ', pool.static_attributes);
-      return 'NaN%';
-    }
-    
-    return `${feeValue}%`;
-  };
 
   return (
-    <div className={cn("space-y-4 flex flex-col h-full", className)}>
-      <MetricsCards
-        totalPools={overallMetrics.totalPools}
-        totalProtocols={overallMetrics.totalProtocols}
-        totalUniqueTokens={overallMetrics.totalUniqueTokens}
-      />
+    <div className={cn("relative flex flex-col h-full", className)}> {/* Added relative for sidebar positioning */}
+      {/* Main Content Panel with TC Design Styling */}
+      <div className="flex-grow flex flex-col bg-purple-900/10 backdrop-blur-xl rounded-xl border border-purple-500/30 overflow-hidden shadow-2xl"> {/* TC Design Styling */}
+        <PoolListFilterBar
+          selectedTokens={filters.selectedTokens}
+          selectedProtocols={filters.selectedProtocols}
+          selectedPoolIds={filters.selectedPoolIds}
+          // Pass specific handlers for type safety
+          onTokenSelect={(token, isSelected) => handleFilterChange('selectedTokens', token, isSelected)}
+          onProtocolSelect={(protocol, isSelected) => handleFilterChange('selectedProtocols', protocol, isSelected)}
+          onPoolIdSelect={(poolId, isSelected) => handleFilterChange('selectedPoolIds', poolId, isSelected)}
+          onResetFilters={handleResetFilters}
+          allTokensForFilter={allTokensForFilter}
+          allProtocolsForFilter={allProtocolsForFilter}
+          allPoolIdsForFilter={allPoolIdsForFilter}
+          blockNumber={blockNumber}
+          startTime={lastBlockTimestamp} 
+          duration={estimatedBlockDuration}
+        />
+        <PoolTable
+          // Props for PoolTable will be adjusted when PoolTable.tsx is refactored
+          // For now, ensure displayedPools is passed correctly
+          displayedPools={poolsToDisplay} 
+          highlightedPoolId={highlightedPoolId}
+          selectedPoolId={selectedPool?.id}
+          onPoolClick={handleRowClick}
+          allVisibleColumns={COLUMNS}
+          renderTokensText={renderTokensText} // Passing simplified text renderer
+          renderFee={(pool: Pool) => `${parsePoolFee(pool)}%`} // Keep renderFee simple
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          summaryData={summaryData}
+          onLoadMore={handleLoadMorePools}
+          hasMorePools={displayedPoolsCount < processedPools.length}
+        />
+      </div>
 
-      <Card className="flex-grow">
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">
-            List View 
-            {processedPools.length !== pools.length && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({processedPools.length} pools)
-              </span>
-            )}
-          </h2>
-          <div className="space-y-4">
-
-            {/* Filter Results */}
-            <div className="bg-secondary/30 rounded-lg">
-              <div className="p-0">
-                <PoolTable
-                  paginatedPools={paginatedPools}
-                  highlightedPoolId={highlightedPoolId}
-                  selectedPoolId={selectedPool?.id}
-                  onPoolClick={handleRowClick}
-                  allVisibleColumns={COLUMNS}
-                  renderTokens={renderTokens}
-                  renderFee={renderFee}
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                  onFilter={handleFilterChange}
-                  filters={filters}
-                />
-              </div>
-
-              <div className="p-2 w-full flex justify-center">
-                <TablePagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {selectedPool ? (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col space-y-4">
-              <h2 className="text-xl font-semibold">Pool Detail</h2>
-
-              {/* Pool Info Card */}
-              <div className="border rounded-lg p-4 bg-muted/10">
-                <div className="flex flex-col space-y-3">
-                  {/* Pool Address Section */}
-                  <div>
-                    <h3 className="text-sm text-muted-foreground mb-1">Pool address</h3>
-                    <div className="flex items-center">
-                      <TooltipProvider delayDuration={150}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="font-mono text-lg font-medium">{renderHexId(selectedPool.id)}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            <p className="font-mono flex items-center justify-between">
-                              <span>{selectedPool.id}</span>
-                              <button
-                                className="ml-2 text-xs text-muted-foreground hover:text-primary"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(selectedPool.id);
-                                }}
-                              >
-                                Copy
-                              </button>
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      {/* Protocol-specific link */}
-                      {getExternalLink(selectedPool) && (
-                        <a
-                          href={getExternalLink(selectedPool)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            className="h-4 w-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                          </svg>
-                        </a>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Protocol: <span className="font-medium">{selectedPool.protocol_system}</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Last Updated at Block: <span className="font-medium">{selectedPool.lastUpdatedAtBlock?.toLocaleString() || 'Unknown'}</span>
-                    </p>
-                  </div>
-
-                  {/* Tokens Section */}
-                  <div className="mt-2">
-                    <h4 className="text-sm text-muted-foreground mb-2">Tokens</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedPool.tokens.map((token, index) => (
-                        <div key={token.address || index}>
-                          <h5 className="text-sm text-muted-foreground mb-1">Token {index + 1}</h5>
-                          <div className="flex items-center">
-                            <span className="font-medium">{token.symbol}</span>
-                            {token.address && (
-                              <a
-                                href={`https://etherscan.io/token/${token.address}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="ml-2 text-blue-500 hover:text-blue-700 inline-flex items-center"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                  className="h-4 w-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                  <polyline points="15 3 21 3 21 9"></polyline>
-                                  <line x1="10" y1="14" x2="21" y2="3"></line>
-                                </svg>
-                              </a>
-                            )}
-                          </div>
-                          {token.address && (
-                            <div className="mt-1">
-                              <span className="font-mono text-xs text-muted-foreground">
-                                {renderHexId(token.address)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <SwapSimulator
-                poolId={selectedPool.id}
-                protocol={selectedPool.protocol_system}
-                tokens={selectedPool.tokens.map(token => ({
-                  symbol: token.symbol,
-                  address: token.address
-                }))}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col items-center justify-center py-6">
-              <h2 className="text-xl font-semibold mb-2">Pool Detail</h2>
-              <p className="text-muted-foreground">Select a pool to view details</p>
-            </div>
-          </CardContent>
-        </Card>
+      {selectedPool && (
+        <PoolDetailSidebar
+          pool={selectedPool}
+          onClose={() => {
+            setSelectedPool(null);
+            if (onPoolSelect) onPoolSelect(null); // Notify parent that selection is cleared
+          }}
+        />
       )}
     </div>
   );
