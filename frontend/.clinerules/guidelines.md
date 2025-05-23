@@ -10,6 +10,10 @@ When iterating on the plan with the user:
 * Be concise and use Germinc-style English words in the sense they are plain and concrete
 * Number the proposed changes, and use subitem numbering e.g. 1.1 and 1.1.2, so it's simple for the user to discuss the changes with you
 
+# Ambiguity
+
+When you do not know something, ask or find out by reading the source code or asking me to get data for you or run the browser and see for yourself. 
+
 # Coding guidelines
 
 Follow the following guidelines strictly.
