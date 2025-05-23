@@ -231,7 +231,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   return (
     <div className={cn("relative flex flex-col h-full", className)}> {/* Added relative for sidebar positioning */}
       {/* Main Content Panel with TC Design Styling */}
-      <div className="flex-grow flex flex-col bg-[rgba(255,244,224,0.02)] backdrop-blur-xl rounded-xl border border-[rgba(255,244,224,0.3)] overflow-hidden shadow-2xl"> {/* TC Design Styling */}
+      <div className="flex-grow flex flex-col bg-[rgba(255,244,224,0.02)] backdrop-blur-xl rounded-xl border border-[rgba(255,244,224,0.64)] overflow-hidden shadow-2xl"> {/* TC Design Styling */}
         <PoolListFilterBar
           selectedTokens={filters.selectedTokens}
           selectedProtocols={filters.selectedProtocols}
