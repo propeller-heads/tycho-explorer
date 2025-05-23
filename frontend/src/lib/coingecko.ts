@@ -27,6 +27,7 @@ interface CoinGeckoCoinDetail {
 let cachedCoinList: CoinGeckoCoin[] | null = null;
 const COIN_LIST_CACHE_KEY = 'coingeckoCoinList';
 const COIN_LIST_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+let inFlightCoinListFetch: Promise<CoinGeckoCoin[] | null> | null = null; // To prevent multiple simultaneous fetches
 
 // In-memory cache for coin ID to large image URL mapping
 const coinImageCache: Map<string, string | null> = new Map();
@@ -34,6 +35,15 @@ const COIN_IMAGE_URL_CACHE_PREFIX = 'coingeckoImageURL_';
 // Using the same duration as coin list for simplicity, can be adjusted
 const COIN_IMAGE_URL_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
+// Queue for image requests to prevent CoinGecko API rate limits
+interface QueuedImageRequest {
+  coinId: string;
+  resolve: (url: string | null) => void;
+  reject: (reason?: any) => void;
+}
+let imageRequestQueue: QueuedImageRequest[] = [];
+let isProcessingImageQueue = false;
+const IMAGE_REQUEST_DELAY_MS = 100; // 100ms delay between image API calls to respect rate limits
 
 /**
  * = Signature, Purpose Statement, Header
@@ -75,33 +85,60 @@ export async function getCoinId(symbol: string): Promise<string | null> {
   }
 
   if (!cachedCoinList) {
-    console.log('Fetching new CoinGecko coin list');
-    try {
-      // Fetch the list of coins via the proxy
-      const response = await fetch('/api/coingecko/coins/list');
-      if (!response.ok) {
-        console.error(`CoinGecko API error (coins/list via proxy): ${response.status} ${response.statusText}`);
-        return null;
+    if (inFlightCoinListFetch) {
+      // If a fetch is already in progress, await its result
+      cachedCoinList = await inFlightCoinListFetch;
+    } else {
+      // No cached list and no in-flight fetch, so start one
+      console.log('Initiating new CoinGecko coin list fetch');
+      inFlightCoinListFetch = (async () => {
+        let attempts = 0;
+        const MAX_ATTEMPTS = 3;
+        let fetchedData: CoinGeckoCoin[] | null = null;
+
+        while (attempts < MAX_ATTEMPTS) {
+          try {
+            const response = await fetch('/api/coingecko/coins/list');
+            if (response.ok) {
+              fetchedData = (await response.json()) as CoinGeckoCoin[];
+              // Cache in-memory only on success
+              cachedCoinList = fetchedData;
+              // Cache in localStorage only on success
+              try {
+                localStorage.setItem(COIN_LIST_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: fetchedData }));
+              } catch (e) {
+                console.error('Failed to save coin list to localStorage:', e);
+              }
+              break; // Success, exit retry loop
+            } else if (response.status === 429 && attempts < MAX_ATTEMPTS - 1) {
+              attempts++;
+              const delay = 1000 * Math.pow(2, attempts); // Exponential backoff (2s, 4s, 8s)
+              console.warn(`CoinGecko coins/list failed (429). Retrying in ${delay / 1000}s... (attempt ${attempts + 1}/${MAX_ATTEMPTS})`);
+              await new Promise(r => setTimeout(r, delay));
+            } else {
+              // Other HTTP error or max retries for 429 reached
+              console.error(`CoinGecko API error (coins/list via proxy): ${response.status} ${response.statusText}`);
+              break; // Exit retry loop
+            }
+          } catch (error) {
+            console.error('Failed to fetch CoinGecko coins list:', error);
+            attempts++;
+            if (attempts >= MAX_ATTEMPTS) break; // Max retries for network error
+            // Optional: add a small delay for general network errors before retry
+            await new Promise(r => setTimeout(r, 1000 * attempts)); 
+          }
+        }
+        return fetchedData; // Return null if all attempts fail
+      })();
+      const result = await inFlightCoinListFetch; // Await the result of the (possibly retried) fetch
+      if (result !== null) { // Only update cachedCoinList if the fetch was successful
+        cachedCoinList = result;
       }
-      const data = (await response.json()) as CoinGeckoCoin[];
-      // Cache in-memory
-      cachedCoinList = data;
-      // Cache in localStorage
-      try {
-        localStorage.setItem(COIN_LIST_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: data }));
-      } catch (e) {
-        console.error('Failed to save coin list to localStorage', e);
-        // This might happen if localStorage is full or disabled.
-        // The in-memory cache will still work for the session.
-      }
-    } catch (error) {
-      console.error('Failed to fetch CoinGecko coins list:', error);
-      return null;
     }
   }
 
   if (!cachedCoinList) {
-    // Should not happen if fetch was successful or cache loaded, but as a safeguard
+    // If after all attempts, cachedCoinList is still null, return null
     return null;
   }
 
@@ -151,7 +188,6 @@ export async function getCoinImageURL(coinId: string): Promise<string | null> {
     try {
       const cached = JSON.parse(cachedImageDataString);
       if (cached.timestamp && (Date.now() - cached.timestamp < COIN_IMAGE_URL_CACHE_DURATION)) {
-        // console.log(`Using cached image URL for ${coinId} from localStorage`);
         coinImageCache.set(coinId, cached.imageUrl); // Populate in-memory cache
         return cached.imageUrl;
       } else {
@@ -163,45 +199,88 @@ export async function getCoinImageURL(coinId: string): Promise<string | null> {
     }
   }
 
-  // 3. Fetch from network if not in any cache or cache expired
-  // console.log(`Fetching new image URL for coin ID: ${coinId}`);
-  try {
-    // Fetch the coin details via the proxy
-    const response = await fetch(`/api/coingecko/coins/${coinId}`);
-    if (!response.ok) {
-      console.error(`CoinGecko API error (coins/${coinId} via proxy): ${response.status} ${response.statusText}`);
-      // Cache failure as null in both caches to prevent re-fetching for a while
-      coinImageCache.set(coinId, null);
-      try {
-        localStorage.setItem(localStorageKey, JSON.stringify({ timestamp: Date.now(), imageUrl: null }));
-      } catch (e) { /* LocalStorage full or disabled */ }
-      return null;
-    }
-    const data = (await response.json()) as CoinGeckoCoinDetail;
+  // If not in cache, enqueue the request and return a promise
+  return new Promise<string | null>((resolve, reject) => {
+    imageRequestQueue.push({ coinId, resolve, reject });
+    processImageQueue(); // Start processing if not already running
+  });
+}
 
-    // Extract the large image URL
-    const imageUrl = data.image?.large || null; // Ensure it's null if undefined
-
-    // Cache the image URL (or null if not found) in both caches
-    coinImageCache.set(coinId, imageUrl);
-    try {
-      localStorage.setItem(localStorageKey, JSON.stringify({ timestamp: Date.now(), imageUrl: imageUrl }));
-    } catch (e) {
-      console.error(`Failed to save image URL for ${coinId} to localStorage`, e);
-    }
-
-    if (!imageUrl) {
-      console.warn(`No large image URL found for coin ID: ${coinId}`);
-    }
-    return imageUrl;
-
-  } catch (error) {
-    console.error(`Failed to fetch CoinGecko coin details for ID ${coinId}:`, error);
-    // Cache failure as null in both caches
-    coinImageCache.set(coinId, null);
-    try {
-      localStorage.setItem(localStorageKey, JSON.stringify({ timestamp: Date.now(), imageUrl: null }));
-    } catch (e) { /* LocalStorage full or disabled */ }
-    return null;
+/**
+ * = Signature, Purpose Statement, Header
+ * Processes the image request queue sequentially with delays to respect API rate limits.
+ * Consumes requests from `imageRequestQueue`.
+ * Produces side effects: fetches from CoinGecko, updates caches, resolves/rejects promises.
+ */
+async function processImageQueue() {
+  // Function Definition:
+  if (isProcessingImageQueue || imageRequestQueue.length === 0) {
+    return;
   }
+
+  isProcessingImageQueue = true;
+
+  while (imageRequestQueue.length > 0) {
+    const currentRequest = imageRequestQueue.shift();
+    if (!currentRequest) {
+      // This case should ideally not be hit if imageRequestQueue.length > 0
+      // but as a safeguard, if for some reason it's undefined, break the loop.
+      break; 
+    }
+
+    const { coinId, resolve, reject } = currentRequest;
+    const localStorageKey = `${COIN_IMAGE_URL_CACHE_PREFIX}${coinId}`; // Define localStorageKey here
+
+    // Double-check cache in case it was populated while waiting in queue
+    if (coinImageCache.has(coinId)) {
+      resolve(coinImageCache.get(coinId) ?? null);
+      // No delay needed if served from cache
+      continue; 
+    }
+
+    let imageUrl: string | null = null; // Declare imageUrl here
+
+    try {
+      // Fetch the coin details via the proxy
+      const response = await fetch(`/api/coingecko/coins/${coinId}`);
+
+      if (!response.ok) {
+        console.error(`CoinGecko API error (coins/${coinId} via proxy): ${response.status} ${response.statusText}`);
+        // Do NOT cache null/failure in localStorage or in-memory if it's an API error
+        reject(new Error(`API error: ${response.status}`)); // Reject the promise
+        continue; // Move to next item in queue
+      }
+      const data = (await response.json()) as CoinGeckoCoinDetail;
+
+      // Extract the large image URL
+      imageUrl = data.image?.large || null; // Assign to the declared variable
+
+      // If imageUrl is null (CoinGecko says no image), do not cache it.
+      // Otherwise, cache the image URL in both caches.
+      if (imageUrl !== null) {
+        coinImageCache.set(coinId, imageUrl);
+        try {
+          localStorage.setItem(localStorageKey, JSON.stringify({ timestamp: Date.now(), imageUrl: imageUrl }));
+        } catch (e) {
+          console.error(`Failed to save image URL for ${coinId} to localStorage`, e);
+        }
+      } else {
+        console.warn(`No large image URL found for coin ID: ${coinId}. Not caching null.`);
+      }
+      resolve(imageUrl); // Resolve the promise for this specific request
+
+    } catch (error) {
+      console.error(`Failed to fetch CoinGecko coin details for ID ${coinId}:`, error);
+      // Do NOT cache null/failure in localStorage or in-memory if it's a network error
+      reject(error); // Reject the promise
+      continue; // Move to next item in queue
+    }
+
+    // Wait before processing the next item, only if there are more items
+    if (imageRequestQueue.length > 0) {
+      await new Promise(r => setTimeout(r, IMAGE_REQUEST_DELAY_MS));
+    }
+  }
+
+  isProcessingImageQueue = false; // All requests processed
 }

@@ -60,6 +60,18 @@ Articulate the examples as tests and ensure that the function passes all. Doing 
 
 * Use as little abstraction as possible
 
+# Import lines
+
+Always put them at the top of source file.
+
+# Resopnse format
+
+When you reply, at the end of your reponse, add '======================================' so I know this is the end of your message more easily.
+
+# Root causing and debugging
+
+When you are asked to debug an issue, you must spend all your resources and read all the necessary files to remove ambiguity. Your goal is find the root cause of the issue.
+
 # Dependencies
 
 In this app, we use a number of dependencies e.g. vis-network. When you're told to bring yourself up on context, read all of deps/ files.
