@@ -271,7 +271,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
             startTime={startTime} // Pass renamed prop
             duration={duration}   // Pass renamed prop
             size={16} // Consistent with GraphControls
-            color="hsl(var(--primary))" // Prop name is 'color' in BlockProgressIcon
+            color="#FF3366" // Changed to red as per Figma and Graph View
           />
         )}
         {blockNumber !== null && (

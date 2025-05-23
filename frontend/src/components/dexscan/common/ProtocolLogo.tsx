@@ -43,12 +43,15 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) =
 
   return (
     <div 
-      className={`rounded-full bg-blue-700 border-2 border-blue-800 flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0`}
+      // Fallback styling: transparent background, subtle border, white text
+      className={`rounded-full bg-white/5 border border-white/10 flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0 text-white`}
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {logoUrl ? (
         <img src={logoUrl} alt={protocolName} className="w-full h-full object-cover rounded-full" />
       ) : (
+        // Log a warning if logo is not found, to help diagnose missing mappings
+        // console.warn(`ProtocolLogo: No logo found for protocol: ${protocolName}`);
         protocolName ? protocolName.substring(0, 1).toUpperCase() : 'P'
       )}
     </div>

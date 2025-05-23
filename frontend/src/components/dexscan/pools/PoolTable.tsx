@@ -113,12 +113,12 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         "p-4 text-xs font-medium text-white/60", // TC Design: Inter, 500, 13px, rgba(255,244,224,0.64)
                         isSortable && "cursor-pointer hover:text-white/80",
                         // TODO: Apply specific column widths based on Figma
-                        column.id === 'tokens' ? "w-[250px]" : 
-                        column.id === 'id' ? "w-[180px]" :
-                        column.id === 'protocol_system' ? "w-[150px]" :
-                        column.id === 'static_attributes.fee' ? "w-[100px]" :
-                        column.id === 'spotPrice' ? "w-[150px]" :
-                        column.id === 'updatedAt' ? "w-[180px]" : "w-auto"
+                        column.id === 'tokens' ? "w-[260px]" : /* Figma: 260px */
+                        column.id === 'id' ? "w-[150px]" :     /* Figma: 150px (Pool address) */
+                        column.id === 'protocol_system' ? "w-[180px]" : /* Figma: 180px */
+                        column.id === 'static_attributes.fee' ? "w-[100px]" : /* Figma: 100px */
+                        column.id === 'spotPrice' ? "w-[120px]" : /* Figma: 120px */
+                        column.id === 'updatedAt' ? "w-[180px]" : /* Figma: 180px */ "w-auto"
                       )}
                       onClick={() => isSortable && onSort(column.id)}
                     >
