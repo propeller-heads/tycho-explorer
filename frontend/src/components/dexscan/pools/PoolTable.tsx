@@ -12,6 +12,26 @@ import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // Import coingeck
 import TokenIcon from '../common/TokenIcon'; // Import the new TokenIcon component
 import ProtocolLogo from '../common/ProtocolLogo'; // Import the new ProtocolLogo component
 
+// Helper function for column widths
+const getColumnWidthClass = (columnId: string): string => {
+  switch (columnId) {
+    case 'tokens':
+      return 'min-w-[240px] w-1/3'; // Figma: fill
+    case 'id': // Pool ID
+      return 'w-[150px]';         // Figma: hug content (address + icon)
+    case 'protocol_system':
+      return 'min-w-[160px] w-1/6'; // Figma: hug content (logo + name)
+    case 'static_attributes.fee': // Fee Rate
+      return 'w-[100px]';         // Figma: hug content (percentage)
+    case 'spotPrice':
+      return 'w-[140px]';         // Figma: hug content (price figures)
+    case 'updatedAt':
+      return 'w-[180px]';         // Figma: hug content (timestamps/dates)
+    default:
+      return 'w-auto';            // Fallback
+  }
+};
+
 // --- StackedTokenIcons Component (uses imported TokenIcon) ---
 const StackedTokenIcons: React.FC<{ tokens: Token[] }> = ({ tokens }) => {
   return (
@@ -101,7 +121,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
           ref={scrollViewportRef} // Attach ref here
           style={{ overflowY: 'auto' }} // Make this div itself scrollable if ScrollArea doesn't do it as expected
         >
-          <Table className="table-fixed">
+          <Table className="table-auto">
             <TableHeader>
               <TableRow className="border-b border-white/10 sticky top-0 bg-neutral-900 z-10"> 
                 {allVisibleColumns.map((column) => {
@@ -112,13 +132,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       className={cn(
                         "p-4 text-xs font-medium text-white/60", // TC Design: Inter, 500, 13px, rgba(255,244,224,0.64)
                         isSortable && "cursor-pointer hover:text-white/80",
-                        // TODO: Apply specific column widths based on Figma
-                        column.id === 'tokens' ? "w-[260px]" : /* Figma: 260px */
-                        column.id === 'id' ? "w-[150px]" :     /* Figma: 150px (Pool address) */
-                        column.id === 'protocol_system' ? "w-[180px]" : /* Figma: 180px */
-                        column.id === 'static_attributes.fee' ? "w-[100px]" : /* Figma: 100px */
-                        column.id === 'spotPrice' ? "w-[120px]" : /* Figma: 120px */
-                        column.id === 'updatedAt' ? "w-[180px]" : /* Figma: 180px */ "w-auto"
+                        getColumnWidthClass(column.id) // Apply dynamic width class
                       )}
                       onClick={() => isSortable && onSort(column.id)}
                     >
