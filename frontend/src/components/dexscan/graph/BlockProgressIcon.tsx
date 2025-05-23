@@ -13,7 +13,7 @@ const BlockProgressIcon: React.FC<BlockProgressIconProps> = ({
   duration,
   size = 16, // Small default size, e.g. 16px
   strokeWidth = 2,
-  color = '#FF3366', // Default to Folly/red/neon
+  color = '#FF3366', // TC Design: #FF3366
 }) => {
   const [progress, setProgress] = useState(0); // 0 to 1
   const animationFrameId = useRef<number | null>(null);

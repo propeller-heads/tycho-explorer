@@ -4,7 +4,7 @@ This document outlines the current implementation status and planned work for th
 
 ## Pool View
 
-Currently we're working closing the gaps between the TC Design and the app.
+The Pool List View has undergone significant refactoring to align with the TC Design, including the implementation of infinite scroll and comprehensive styling updates.
 
 ## Graph View
 
@@ -12,6 +12,16 @@ Mostly works. There're fine tuning needed to be done. Specifically, the edge no 
 
 ## Evolution of Project Decisions
 
+*   **Pool List View Refactoring (Infinite Scroll & TC Design Styling - May 23, 2025):**
+    *   **Scope**: Implemented infinite scroll functionality and applied the TC Design system's visual styles across `ListView.tsx`, `PoolTable.tsx`, `TokenIcon.tsx`, `ProtocolLogo.tsx`, and `BlockProgressIcon.tsx`.
+    *   **Key Decisions & Features Implemented**:
+        *   Replaced traditional pagination with infinite scroll for a smoother user experience.
+        *   Modified `src/components/ui/scroll-area.tsx` to expose an `onViewportScroll` prop for scroll detection.
+        *   Updated `ListView.tsx` to manage `displayedPoolsCount` and `isLoadingMore` states, and to handle loading more pools on scroll.
+        *   Integrated scroll detection and a loading indicator into `PoolTable.tsx`.
+        *   Applied comprehensive TC Design color palette (warm cream/beige tones, specific `rgba` values, `#FFF4E0` primary text) and gradient borders throughout the Pool List View components.
+        *   Adjusted column widths in `PoolTable.tsx` to match Figma specifications precisely.
+        *   Updated styling for `TokenIcon.tsx`, `ProtocolLogo.tsx`, and `BlockProgressIcon.tsx` to align with the new theme.
 *   **Pool List View Refactoring (Column Widths - May 23, 2025):**
     *   **Scope**: Implemented dynamic column width sizing in `PoolTable.tsx` to match Figma's "fill" and "hug content" behavior.
     *   **Key Decisions & Features Implemented**:

@@ -23,17 +23,18 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Communicates view changes back to `DexScanContent` via the `setActiveTab` (passed as `onViewChange`) callback.
 
 4.  **`ListView.tsx`**:
-    *   Displays pools in a sortable and filterable table.
+    *   Displays pools in a sortable and filterable table with infinite scroll.
+    *   Manages the `displayedPoolsCount` and `isLoadingMore` states for infinite scrolling.
     *   Includes:
-        *   `MetricsCards`: Shows overall statistics (total pools, protocols, unique tokens).
-        *   `PoolTable`: The main table for displaying pool data.
-        *   `TablePagination`: For navigating through pages of pools.
-    *   When a pool is selected, it displays a "Pool Detail" card, which includes:
+        *   `PoolListFilterBar`: Provides filtering capabilities.
+        *   `PoolTable`: The main table for displaying pool data, now supporting infinite scroll.
+    *   When a pool is selected, it displays a `PoolDetailSidebar`, which includes:
         *   Pool information (address, protocol, tokens).
         *   `SwapSimulator.tsx`: Allows users to simulate swaps on the selected pool.
     *   Handles sorting by various columns (ID, Tokens, Protocol, Fee, Spot Price, Dates, Block Number).
     *   Handles filtering by tokens, protocol, and pool ID.
     *   Uses centralized fee parsing logic from `src/lib/poolUtils.ts`.
+    *   **Note**: `MetricsCards` and `TablePagination` have been removed as part of the UI refactor and infinite scroll implementation.
 
 5.  **`GraphViewContent.tsx` (within `graph/`)**:
     *   Responsible for rendering the market graph visualization.
@@ -82,14 +83,18 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 *   **Context API for Global State**: `PoolDataContext` serves as a centralized store for WebSocket connection status and shared pool data, making it accessible throughout the `dexscan` component tree.
 *   **Component Composition**: Features are broken down into smaller, reusable components (e.g., `HeaderBranding`, `MetricsCards`, `SwapControls`).
 *   **Props for Configuration and Callbacks**: Parent components pass data and behavior (callbacks) to child components (e.g., `DexScanHeader` passing `onViewChange` to `ViewSelector`).
+*   **Context API for Global State**: `PoolDataContext` serves as a centralized store for WebSocket connection status and shared pool data, making it accessible throughout the `dexscan` component tree.
+*   **Component Composition**: Features are broken down into smaller, reusable components (e.g., `HeaderBranding`, `SwapControls`).
+*   **Props for Configuration and Callbacks**: Parent components pass data and behavior (callbacks) to child components (e.g., `DexScanHeader` passing `onViewChange` to `ViewSelector`).
 *   **Conditional Rendering**:
     *   `DexScanContent` conditionally displays `ListView` or `GraphViewContent`.
-    *   `ListView` conditionally displays pool details or a "select a pool" message.
+    *   `ListView` conditionally displays `PoolDetailSidebar` when a pool is selected.
+*   **Infinite Scroll**: Implemented in `ListView.tsx` and `PoolTable.tsx` using `ScrollArea`'s `onViewportScroll` prop to load more data as the user scrolls.
 *   **URL-Driven State**: The active tab (`graph` or `pools`) is synchronized with the URL's `tab` query parameter in `DexScanContent.tsx`.
 *   **Utility Functions**: 
-    *   `src/lib/utils.ts` contains helper functions like `renderHexId` (renamed from `formatPoolId`), `getExternalLink` (supports Uniswap, Balancer, and PancakeSwap protocols), and `cn`.
+    *   `src/lib/utils.ts` contains helper functions like `renderHexId`, `getExternalLink`, and `cn`.
     *   `src/lib/poolUtils.ts` centralizes fee parsing logic (`parsePoolFee`, `parseFeeHexValue`).
-    *   `src/lib/coingecko.ts` (new) centralizes logic for fetching data from the CoinGecko API, including caching.
+    *   `src/lib/coingecko.ts` centralizes logic for fetching data from the CoinGecko API, including caching.
 *   **Type Definitions**: `src/components/dexscan/types.ts` centralizes data structure definitions (e.g., `Pool`, `WebSocketPool`).
 *   **Graph Node Rendering (`GraphView.tsx` via `useGraphData.ts`)**:
     *   Nodes can now be rendered as `shape: 'circularImage'` using URLs fetched from CoinGecko, with the token symbol as a label.

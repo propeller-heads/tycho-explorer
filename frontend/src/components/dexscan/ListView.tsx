@@ -56,6 +56,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     selectedPoolIds: []
   });
   const [displayedPoolsCount, setDisplayedPoolsCount] = useState(INITIAL_DISPLAY_COUNT);
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // New state for loading indicator
 
   // Prepare data for filter popovers
   const allTokensForFilter = useMemo((): Token[] => { // Changed to Token[]
@@ -214,10 +215,20 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   }, [highlightedPoolId, pools]);
 
   const handleLoadMorePools = useCallback(() => {
-    setDisplayedPoolsCount(prevCount => 
-      Math.min(prevCount + POOL_LOAD_BATCH_SIZE, processedPools.length)
-    );
-  }, [processedPools.length]);
+    if (isLoadingMore || displayedPoolsCount >= processedPools.length) {
+      return; // Prevent multiple simultaneous loads or loading if all pools are displayed
+    }
+
+    setIsLoadingMore(true);
+    // Simulate a small delay to show the loading indicator, then update count
+    // In a real app, this would be tied to actual data fetching completion
+    setTimeout(() => {
+      setDisplayedPoolsCount(prevCount => 
+        Math.min(prevCount + POOL_LOAD_BATCH_SIZE, processedPools.length)
+      );
+      setIsLoadingMore(false);
+    }, 300); // 300ms delay for visual feedback
+  }, [isLoadingMore, displayedPoolsCount, processedPools.length]);
 
   const poolsToDisplay = useMemo(() => 
     processedPools.slice(0, displayedPoolsCount),
@@ -263,6 +274,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
           summaryData={summaryData}
           onLoadMore={handleLoadMorePools}
           hasMorePools={displayedPoolsCount < processedPools.length}
+          isLoadingMore={isLoadingMore} // Pass new loading state
         />
       </div>
 

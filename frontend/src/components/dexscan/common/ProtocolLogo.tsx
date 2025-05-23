@@ -43,8 +43,7 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) =
 
   return (
     <div 
-      // Fallback styling: transparent background, subtle border, white text
-      className={`rounded-full bg-white/5 border border-white/10 flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0 text-white`}
+      className={`rounded-full bg-[rgba(255,244,224,0.15)] border-2 border-[rgba(255,244,224,0.25)] flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0 text-[#FFF4E0]`}
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {logoUrl ? (

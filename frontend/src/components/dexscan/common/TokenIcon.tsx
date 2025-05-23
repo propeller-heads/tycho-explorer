@@ -37,7 +37,7 @@ const TokenIcon: React.FC<TokenIconProps> = ({ token, size = 6 }) => {
 
   return (
     <div 
-      className={`rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0`}
+      className={`rounded-full bg-[rgba(255,244,224,0.1)] border-2 border-[rgba(255,244,224,0.2)] flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0`}
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {iconUrl ? (

@@ -4,27 +4,53 @@ This is done now.
 
 ## Current Work Focus
 
-The current focus is on ensuring the "Pool list" table's column widths in the application precisely match the dynamic sizing behavior specified in the Figma design. This involves moving away from fixed-width columns to a more flexible layout where the "Tokens" column expands and other columns fit their content.
+The current focus is on implementing infinite scroll for the "Pool list" table and applying the TC Design system's visual styles across the Pool List View components.
 
 ## Recent Changes
 
-*   **`src/components/dexscan/pools/PoolTable.tsx`**:
-    *   The table layout was changed from `table-fixed` to `table-auto`.
-    *   A new helper function, `getColumnWidthClass`, was introduced to dynamically apply Tailwind CSS width classes to each `TableHead` element.
-    *   This function assigns `min-w-[240px] w-1/3` to the 'tokens' column to allow it to fill available space, and specific pixel-based widths (`w-[150px]`, `min-w-[160px]`, `w-[100px]`, `w-[140px]`, `w-[180px]`) to other columns ('id', 'protocol_system', 'static_attributes.fee', 'spotPrice', 'updatedAt') to make them content-appropriate.
+*   **Infinite Scroll Implementation:**
+    *   **`src/components/ui/scroll-area.tsx`**: Modified to accept an `onViewportScroll` prop, allowing external components to listen for scroll events on the underlying viewport.
+    *   **`src/components/dexscan/ListView.tsx`**:
+        *   Removed `currentPage` and `totalPages` state.
+        *   Added `displayedPoolsCount` state to manage the number of currently visible pools.
+        *   Added `isLoadingMore` state to control the loading indicator.
+        *   Implemented `handleLoadMorePools` to increment `displayedPoolsCount` with a batch size, including a simulated delay for visual feedback of loading.
+        *   Passed `displayedPools`, `onLoadMore`, `hasMorePools`, and `isLoadingMore` props to `PoolTable`.
+        *   Removed the `TablePagination` component from rendering.
+    *   **`src/components/dexscan/pools/PoolTable.tsx`**:
+        *   Updated `PoolTableProps` to include `isLoadingMore`.
+        *   Integrated the `onViewportScroll` prop from `ScrollArea` to detect when the user scrolls near the bottom of the table.
+        *   Conditionally renders a "Loading more pools..." indicator at the bottom of the table when `isLoadingMore` is true and `hasMorePools` is true.
+        *   Removed the `scrollViewportRef` and its associated `useEffect` for manual scroll listening, as `onViewportScroll` is now used.
+
+*   **TC Design Styling Application:**
+    *   **`src/components/dexscan/pools/PoolTable.tsx`**:
+        *   Applied TC Design colors (`rgba(255,244,224,...)`, `#FFF4E0`) to text, backgrounds, and borders for table headers, summary row, and data rows.
+        *   Updated column widths to match Figma specifications more precisely.
+        *   Adjusted hover states for table rows.
+        *   Updated sort icon colors.
+    *   **`src/components/dexscan/common/TokenIcon.tsx`**: Updated background and border colors to match TC Design.
+    *   **`src/components/dexscan/common/ProtocolLogo.tsx`**: Updated background, border, and text colors to match TC Design.
+    *   **`src/components/dexscan/graph/BlockProgressIcon.tsx`**: Updated the default `color` prop to `#FF3366` as per TC Design.
 
 ## Next Steps
 
-*   No further immediate next steps for this specific task, as the column width alignment has been implemented and confirmed by the user.
-*   The overall "Pool List View Refactor - Final Polish" still has remaining verification and thorough testing items as outlined in `progress.md`.
+*   Verify the infinite scroll functionality and visual appearance in the running application.
+*   Thoroughly test all filter and sorting functionalities to ensure they interact correctly with infinite scroll.
+*   Review overall color scheme consistency across the application.
 
 ## Important Patterns and Preferences
 
-*   Adherence to Figma design specifications for UI elements, including dynamic sizing.
+*   Adherence to Figma design specifications for UI elements, including dynamic sizing and color palette.
 *   Use of Tailwind CSS for styling.
 *   Modular component design.
+*   Centralized state management for pool data via `PoolDataContext`.
+*   Client-side timestamping for `updatedAt` on `Pool` objects.
 
 ## Learnings and Project Insights
 
-*   The Figma design for the "Pool list" table uses a mixed column sizing strategy (one column fills, others hug content) which requires a `table-auto` layout and specific width hints in Tailwind CSS for accurate implementation.
-*   Previous "user's request" for uniform fixed width was overridden to achieve closer Figma alignment.
+*   Successfully integrated infinite scroll using Radix UI's `ScrollArea` by extending its functionality with a custom `onViewportScroll` prop.
+*   The importance of precise `SEARCH` blocks for `replace_in_file` operations, and the utility of `write_to_file` as a fallback for larger, more complex changes.
+*   Consistent application of the TC Design color palette requires careful attention to `rgba` values and specific hex codes.
+*   The `isLoadingMore` state provides crucial user feedback during asynchronous loading operations.
+*   The `getColumnWidthClass` helper function in `PoolTable.tsx` was adjusted to reflect the new, more precise pixel-based widths from the `listViewUIRefactor.md` plan, moving away from `min-w` and `w-1/3` for most columns to ensure exact alignment with Figma.
