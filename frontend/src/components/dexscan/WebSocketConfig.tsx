@@ -78,15 +78,20 @@ export const WebSocketConfig = ({
           onValueChange={handleChainChange}
           disabled={selectedChain !== 'Ethereum'} // Only Ethereum is selectable for now
         >
-          <SelectTrigger className="text-xs h-8">
+          <SelectTrigger 
+            className="text-xs h-10 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] border-transparent text-[#FFF4E0] transition-colors"
+          >
             <SelectValue placeholder="Select chain" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent 
+            className="bg-[rgba(255,244,224,0.04)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.2)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]"
+          >
             {availableChains.map(chain => (
               <SelectItem 
                 key={chain} 
                 value={chain}
                 disabled={chain !== 'Ethereum'} // Only Ethereum is selectable for now
+                className="text-[#FFF4E0] hover:bg-[rgba(255,244,224,0.06)] focus:bg-[rgba(255,244,224,0.06)]"
               >
                 {chain}{chain !== 'Ethereum' && ' (Coming soon)'}
               </SelectItem>
@@ -103,15 +108,15 @@ export const WebSocketConfig = ({
           value={wsUrl}
           onChange={(e) => setWsUrl(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="text-xs h-8"
+          className="text-xs h-10 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] border-transparent text-[#FFF4E0] placeholder:text-[rgba(255,244,224,0.4)] transition-colors"
           size={30}
         />
         <Button 
           onClick={handleConnect}
-          variant={isConnected ? "outline" : "default"}
+          variant="ghost"
           disabled={isReconnecting}
           size="sm"
-          className="h-8 whitespace-nowrap"
+          className="h-10 px-4 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] text-[#FFF4E0] border-transparent whitespace-nowrap transition-colors"
         >
           {isConnected ? "Reconnect" : "Connect"}
         </Button>
