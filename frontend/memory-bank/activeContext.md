@@ -1,54 +1,79 @@
-# Active Context: Pool Explorer - Resolved Logo Loading Issues
+# Active Context
 
 ## Current Work Focus
 
-The recent work focused on investigating and resolving issues related to token and protocol logos not loading in the Pool List View and potentially the Market Graph View. This task is now considered complete, with logos loading reliably, albeit slowly due to API rate limits.
+### Recent UI Color System Updates (2025-05-26)
 
-## Recent Changes
+The Pool List View UI has undergone significant color system updates to align with the TC Design from Figma:
 
-The investigation into missing logos revealed critical issues with CoinGecko API rate limiting and previous caching strategies. The following changes were implemented primarily in `src/lib/coingecko.ts`:
+1. **Color Scheme Transition**
+   - Moved from cool purple/blue tones to warm cream/beige palette
+   - Primary text color: `rgba(255, 244, 224, 1)` (#FFF4E0 at full opacity)
+   - Background panels: `rgba(255, 244, 224, 0.02)` to `rgba(255, 244, 224, 0.05)`
+   - Borders: `rgba(255, 244, 224, 0.05)` for table rows
 
-*   **Robust Coin List Fetching (`getCoinId` for `/api/coingecko/coins/list`):**
-    *   Implemented a **single in-flight fetch mechanism** (`inFlightCoinListFetch` promise) to ensure only one network request for the global coin list is active at any time, even with concurrent calls.
-    *   Added a **retry mechanism** (up to 3 attempts with exponential backoff, e.g., 2s, 4s delays) for the `/coins/list` fetch if it encounters HTTP 429 ("Too Many Requests") errors.
-    *   **Refined Caching:** Successful responses are cached in memory and `localStorage`. Failures (e.g., `null` result after all retries) do **not** overwrite previously valid cached data and are **not** stored as failures in `localStorage`, allowing future attempts.
+2. **Component-Specific Changes**
+   - **ListView.tsx**: Updated container with glass effect using backdrop blur and warm cream background
+   - **PoolTable.tsx**: 
+     - All text colors changed to `rgba(255, 244, 224, 1)` 
+     - Selected rows use transparent warm backgrounds
+     - Table row borders at 0.05 opacity
+   - **PoolListFilterBar.tsx**: All popover text, inputs, and labels updated to warm white
 
-*   **Queued & Delayed Image URL Fetching (`getCoinImageURL` for `/api/coingecko/coins/<id>`):**
-    *   Implemented an **asynchronous request queue** (`imageRequestQueue`) for fetching individual coin/protocol image URLs.
-    *   A single "worker" function (`processImageQueue`) processes this queue sequentially.
-    *   A **mutex flag** (`isProcessingImageQueue`) ensures only one worker instance runs, preventing race conditions.
-    *   A significant **delay (`IMAGE_REQUEST_DELAY_MS = 10000ms` or 10 seconds)** is enforced between each API call made by the queue worker to respect CoinGecko's strict rate limits (experimentally found to be necessary).
-    *   **Strict "Never Cache Nulls" Policy:**
-        *   API errors (4xx, 5xx, network issues) during image URL fetch attempts are **not** cached. The promise for the request is rejected.
-        *   If CoinGecko successfully responds but indicates no image is available for a `coinId` (i.e., `data.image?.large` is `null`), this `null` result is also **not** cached. The promise resolves with `null`, allowing UI fallbacks, but the system will re-attempt the fetch if the image is requested again later.
-        *   Only actual, valid image URL strings are cached.
-
-*   **Logging:** Added detailed `console.log` statements in `src/lib/coingecko.ts` to trace API call attempts, responses, queue activity, and delays for easier debugging.
-
-*   **`ListView.tsx` State:** This component was reverted by the user to its original state, meaning it does **not** contain proactive pre-fetching logic. Image loading relies on `TokenIcon.tsx` and `ProtocolLogo.tsx` initiating their own fetches upon rendering, which then utilize the robust `coingecko.ts` mechanisms.
+3. **Design Patterns**
+   - Gradient border implementation using nested divs with absolute positioning
+   - Transparent overlays for interactive states
+   - Consistent use of rgba values for precise color control
 
 ## Next Steps
 
-*   Monitor the application for any regressions or new issues related to logo fetching.
-*   Evaluate if the 10-second delay between image fetches, while necessary for reliability with the free CoinGecko API, is acceptable for user experience in the long term. Future optimizations might involve exploring paid API tiers, alternative image sources, or more advanced caching/proxying if faster loading is critical.
-*   Await the next development task.
+1. Continue monitoring for any remaining color inconsistencies
+2. Test the UI across different screen sizes and browsers
+3. Implement any additional TC Design requirements as they arise
+
+## Active Decisions and Considerations
+
+### Color System
+- **Decision**: Use `rgba(255, 244, 224, 1)` for ALL text with full opacity
+- **Rationale**: User explicitly requested opacity 1 for maximum readability
+- **Implementation**: Applied consistently across table cells, popovers, and all UI text
+
+### Border Implementation
+- **Decision**: Use solid borders with low opacity instead of gradient borders
+- **Rationale**: Simpler implementation, better performance, cleaner appearance
+- **Implementation**: `borderBottom: '1px solid rgba(255, 244, 224, 0.05)'`
+
+### Glass Effect Pattern
+- **Decision**: Use backdrop blur with semi-transparent backgrounds
+- **Rationale**: Creates modern, layered UI as per TC Design
+- **Implementation**: `backdrop-blur-[24px]` with `bg-[#FFF4E005]`
 
 ## Important Patterns and Preferences
 
-*   **API Robustness:** External API interactions must be resilient to transient errors (like rate limiting) using mechanisms such as retries and queues.
-*   **Rate Limiting:** Strict adherence to external API rate limits is paramount. Delays between requests must be configured based on observed API behavior and official documentation if available.
-*   **Caching Strategy:** Caching policies need careful consideration. The "never cache nulls from API errors or explicit 'no data' responses" policy was strictly implemented as per user directive, understanding the trade-off of potentially re-fetching "known not founds."
-*   **Modularity:** Complex API interaction logic is centralized in `src/lib/coingecko.ts`, allowing UI components (`TokenIcon`, `ProtocolLogo`) to be simpler consumers.
+### CSS Gradient Border Technique
+When implementing gradient borders with border-radius:
+1. Create wrapper div with gradient background and padding
+2. Inner div with solid background color
+3. This creates the appearance of a gradient border
+
+Example:
+```jsx
+<div className="bg-gradient-to-b from-[color1] to-[color2] p-[1px] rounded-xl">
+  <div className="bg-[solidColor] rounded-xl h-full w-full">
+    {/* Content */}
+  </div>
+</div>
+```
+
+### Color Value Consistency
+- Always use rgba format for colors to maintain consistency
+- Full opacity (1) for primary text
+- Lower opacity for secondary elements (0.6-0.8)
+- Very low opacity for backgrounds (0.02-0.08)
 
 ## Learnings and Project Insights
 
-*   **CoinGecko Free API Limits:** The free tier of the CoinGecko API has very strict rate limits (experimentally found to be around 5-15 calls per minute, later confirmed by user research). Even single initial calls can be rate-limited.
-*   **Debugging Process:** The resolution involved an iterative process:
-    1.  Initial symptom: Logos not loading.
-    2.  Hypothesis 1: Faulty image paths or component logic (disproven by code review).
-    3.  Hypothesis 2: Caching of `null` values preventing retries (confirmed by user clearing localStorage, leading to 429s).
-    4.  Hypothesis 3: API rate limiting (confirmed by 429 errors).
-    5.  Solution Iteration 1: Basic queue and delay (still saw 429s, delay too short, `coins/list` also an issue).
-    6.  Solution Iteration 2: Single-flight and retries for `coins/list`, increased delay for image queue, stricter null caching (this proved effective).
-*   **Mutex Necessity:** The `isProcessingImageQueue` mutex is crucial for the correct sequential operation of the asynchronous image request queue, preventing race conditions.
-*   **Trade-offs:** The 10-second delay for image loading is a direct trade-off for reliability under strict API limits. The "never cache nulls for 'no data'" policy is a trade-off for data freshness vs. request efficiency.
+1. **Figma Design Accuracy**: The TC Design uses a very specific warm color palette that must be matched exactly
+2. **Opacity Matters**: Text readability is crucial - full opacity ensures maximum contrast
+3. **Layered UI Design**: The app uses multiple transparent layers to create depth
+4. **Performance Considerations**: Simple borders perform better than complex gradients for frequently rendered elements like table rows
