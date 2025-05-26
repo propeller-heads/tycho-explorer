@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input'; // For amount input
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // For token selection
 import { ArrowRightLeft, ExternalLink } from 'lucide-react'; // For swap direction button and external link
 import { Pool, Token } from './types'; // Assuming Token type includes address, symbol, logoURI
 import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
-import { cn } from '@/lib/utils';
 import { callSimulationAPI } from './simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
 
@@ -14,7 +12,6 @@ import { parsePoolFee } from '@/lib/poolUtils';
 const simulateSwap = async (
   poolId: string, 
   tokenIn: string, 
-  tokenOut: string, 
   amountIn: number,
   poolFee: string
 ) => {
@@ -97,24 +94,26 @@ const SwapCard: React.FC<SwapCardProps> = ({
         {direction === 'sell' ? 'Sell' : 'Buy'}
       </div>
       
-      <div className="flex items-center justify-between gap-12">
-        {isAmountEditable ? (
-          <Input
-            type="number"
-            value={amount}
-            onChange={(e) => onAmountChange(e.target.value)}
-            className="text-[28px] leading-[1.2] font-semibold font-['Inter'] bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-[#FFFFFF] flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            placeholder="0"
-          />
-        ) : (
-          <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] text-[#FFFFFF] flex-1">
-            {amount ? parseFloat(amount).toFixed(2) : "0"}
-          </span>
-        )}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          {isAmountEditable ? (
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => onAmountChange(e.target.value)}
+              className="text-[28px] leading-[1.2] font-semibold font-['Inter'] bg-transparent border-0 p-0 m-0 h-auto outline-none focus:outline-none text-[#FFFFFF] w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              placeholder="0"
+            />
+          ) : (
+            <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] text-[#FFFFFF] block">
+              {amount ? parseFloat(amount).toFixed(2) : "0"}
+            </span>
+          )}
+        </div>
         
-        <div className="min-w-[150px] flex items-center justify-end gap-1">
+        <div className="flex items-center gap-1">
           <Select value={selectedToken?.address || ''} onValueChange={onTokenChange}>
-            <SelectTrigger className="w-auto bg-transparent border-0 p-0 h-auto hover:bg-transparent focus:ring-0 max-w-[150px]">
+            <SelectTrigger className="w-auto bg-transparent border-0 p-0 h-auto hover:bg-transparent focus:ring-0">
               <SelectValue>
                 <TokenDisplay token={selectedToken} />
               </SelectValue>
@@ -208,14 +207,13 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
         return;
       }
       try {
-        const result = await simulateSwap(poolId, sellToken.address, buyToken.address, parseFloat(sellAmount), fee);
-        // Format output to 2 decimal places
-        const formattedOutput = parseFloat(result.amountOut).toFixed(2);
-        setBuyAmount(formattedOutput);
+        const result = await simulateSwap(poolId, sellToken.address, parseFloat(sellAmount), fee);
+        // Keep the raw output value for display consistency
+        setBuyAmount(result.amountOut);
         setExchangeRate(result.exchangeRate);
         
         // Set net amount to same as output amount (no gas deduction)
-        setNetAmount(formattedOutput);
+        setNetAmount(result.amountOut);
       } catch (e) {
         console.error("Simulation failed:", e);
       }
@@ -272,7 +270,7 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
         {netAmount && buyToken && (
           <div className="flex justify-between items-center">
             <span className="text-sm font-['Inter'] text-[rgba(255,255,255,0.64)] w-32">Net Amount:</span>
-            <span className="text-sm font-['Inter'] text-[#FFFFFF]">{netAmount} {buyToken.symbol}</span>
+            <span className="text-sm font-['Inter'] text-[#FFFFFF]">{parseFloat(netAmount).toFixed(2)} {buyToken.symbol}</span>
           </div>
         )}
         

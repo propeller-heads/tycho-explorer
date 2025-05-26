@@ -2,6 +2,64 @@
 
 ## Current Work Focus
 
+### Recent Development Updates (2025-05-26)
+
+#### Critical Features to Maintain
+1. **Filter Popover Infinite Scroll**: 
+   - Token AND Pool ID popovers in PoolListFilterBar MUST have infinite scroll
+   - Shows 100 items initially, loads 100 more when near bottom
+   - Resets count to 100 when search changes
+   - DO NOT remove this feature - it's essential for handling large lists
+   - Batch size is 100 for both token and pool ID filters
+
+2. **Pool ID Filter Enhancement**:
+   - Shows pool ID with token pair: "0x001b...23d4 (TokenA / TokenB)"
+   - Search works across pool ID AND token symbols
+   - Full pool data is passed to filter bar (not just IDs)
+   - Displays shortened pool ID with full token pair names
+
+### Recent Development Updates (2025-05-26)
+
+#### Swap Simulator Improvements
+1. **Input Field Styling**: Fixed input amount capsule appearance
+   - Replaced styled `Input` component with native `input` element
+   - Removed all default padding, margins, and borders
+   - Input and output amounts now have identical visual appearance
+   - Both use `text-[28px]` for consistent sizing
+
+2. **Pool ID Tooltip Interaction**: Fixed tooltip click behavior
+   - Added `onClick={(e) => e.stopPropagation()}` to wrapper div
+   - Prevents row selection when interacting with pool ID tooltip
+   - Tooltip shows instantly with `delayDuration={0}`
+   - Added `z-[100]` for proper layering
+
+3. **Fee Percentage Formatting**: Added protocol-specific fee parsing
+   - Added support for `ekubo_v2` protocol fee format (divides by 1e16)
+   - Limited all fee percentages to 4 decimal places maximum
+   - Example: ekubo fee `0x000346dc5d638865` now displays as "0.0922%" instead of "92233720368.5477%"
+   - Consistent rounding applied across all protocols
+
+#### UI Component Refinements
+1. **Popover Glass Effect**: Updated all popovers to match Figma design
+   - Background: `rgba(255, 244, 224, 0.04)` with `backdrop-blur-[104px]`
+   - Shadow: `0px 4px 16px 0px rgba(37, 0, 63, 0.2)`
+   - Border: `rgba(255, 255, 255, 0.1)`
+
+2. **Checkbox Styling**: Changed from rounded to square checkboxes
+   - Updated from `rounded-sm` to `rounded-none` for perfect square appearance
+   - Border color: `rgba(255, 244, 224, 0.64)`
+
+3. **Pool ID Tooltips**: Added hover tooltips for pool IDs
+   - Shows full pool ID on hover for easy copying
+   - Styled with dark background and backdrop blur
+   - Uses `select-all` class for easy selection
+
+4. **Swap Simulator Number Formatting**:
+   - Input and output amounts use consistent `text-[28px]` sizing
+   - Output amounts display maximum 2 decimal places
+   - Smart decimal formatting: shows actual decimals up to 2 places (e.g., "273.42" not "273.420000")
+   - Applied to both buy amount display and net amount
+
 ### Recent UI Color System Updates (2025-05-26)
 
 The Pool List View UI has undergone significant color system updates to align with the TC Design from Figma:

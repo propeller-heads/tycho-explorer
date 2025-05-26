@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, memo, useEffect, useState } from 'react';
+import React, { memo } from 'react';
 import { 
   Table, TableHeader, TableBody, TableRow, 
   TableHead, TableCell 
@@ -9,6 +9,7 @@ import { Pool, Token } from '../types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TokenIcon from '@/components/dexscan/common/TokenIcon';
 import ProtocolLogo from '@/components/dexscan/common/ProtocolLogo';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Helper function for column widths
 const getColumnWidthClass = (columnId: string): string => {
@@ -85,7 +86,8 @@ const PoolTable: React.FC<PoolTableProps> = ({
   const sortableColumns = ['protocol_system', 'static_attributes.fee', 'spotPrice', 'updatedAt'];
 
   return (
-    <div className="w-full flex-grow flex flex-col overflow-hidden">
+    <TooltipProvider>
+      <div className="w-full flex-grow flex flex-col overflow-hidden">
       <ScrollArea 
         className="w-full flex-grow" 
         onViewportScroll={(event) => {
@@ -192,8 +194,28 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       } else if (column.id === 'id') {
                         const linkUrl = getExternalLink(pool);
                         displayValue = (
-                          <div className="flex items-center gap-1">
-                            <span className={cn("font-mono text-xs", "text-[rgba(255,244,224,1)]")}>{renderHexId(pool.id)}</span>
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Tooltip delayDuration={0}>
+                              <TooltipTrigger asChild>
+                                <span 
+                                  className={cn("font-mono text-xs cursor-pointer", "text-[rgba(255,244,224,1)]")}
+                                >
+                                  {renderHexId(pool.id)}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent 
+                                className="bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] text-[rgba(255,244,224,1)] z-[100]"
+                                side="top"
+                                onPointerDownOutside={(e) => e.preventDefault()}
+                              >
+                                <p 
+                                  className="font-mono text-xs select-all cursor-text"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {pool.id}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
                             {linkUrl && (
                               <a
                                 href={linkUrl}
@@ -258,6 +280,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
         </Table>
       </ScrollArea>
     </div>
+    </TooltipProvider>
   );
 };
 

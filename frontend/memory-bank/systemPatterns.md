@@ -27,10 +27,11 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Relies on `TokenIcon.tsx` and `ProtocolLogo.tsx` to initiate their own image fetches (no proactive pre-fetching within `ListView.tsx` itself).
     *   Manages the `displayedPoolsCount` and `isLoadingMore` states for infinite scrolling.
     *   Includes:
-        *   `PoolListFilterBar`: Provides filtering capabilities.
+        *   `PoolListFilterBar`: Provides filtering capabilities with infinite scroll in popovers.
         *   `PoolTable`: The main table for displaying pool data, now supporting infinite scroll.
     *   When a pool is selected, it displays a `PoolDetailSidebar`.
     *   Handles sorting and filtering.
+    *   **Important**: Passes full pool data to PoolListFilterBar (not just IDs) for enhanced filtering.
 
 5.  **`GraphViewContent.tsx` (within `graph/`)**:
     *   Responsible for rendering the market graph visualization.
@@ -76,9 +77,18 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 *   **Component Composition**: Standard React practice.
 *   **Props for Configuration and Callbacks**.
 *   **Conditional Rendering**.
-*   **Infinite Scroll**: In `ListView.tsx` and `PoolTable.tsx`.
+*   **Infinite Scroll**: 
+    *   In `ListView.tsx` and `PoolTable.tsx` for main pool list
+    *   **CRITICAL**: BOTH Token AND Pool ID filter popovers in `PoolListFilterBar.tsx` MUST have infinite scroll
+    *   Shows 100 items initially, loads 100 more when scrolling near bottom
+    *   Resets to 100 when search term changes
+    *   Uses `onViewportScroll` event to detect when user is near bottom (< 50px)
 *   **URL-Driven State**: For active tab.
 *   **Utility Functions**: In `src/lib/`.
+*   **Protocol-Specific Fee Parsing**: 
+    *   `parseFeeHexValue` in `poolUtils.ts` handles different fee formats per protocol
+    *   Supports: uniswap_v2, uniswap_v3, uniswap_v4, vm:balancer_v2, ekubo_v2
+    *   All fees limited to 4 decimal places for consistent display
 *   **Robust External API Interaction (`src/lib/coingecko.ts`):**
     *   Centralized module for all CoinGecko API calls.
     *   Handles rate limiting through request queueing and delays.

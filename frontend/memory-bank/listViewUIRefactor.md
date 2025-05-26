@@ -11,12 +11,17 @@ This document contains the comprehensive plan for refactoring the Pool List View
 - ✅ Applied glass effects with backdrop blur throughout UI
 - ✅ Updated selected row styling with transparent warm backgrounds
 - ✅ Modified all popover components to use warm white text
+- ✅ Popover glass effects with proper backdrop blur
+- ✅ Square checkboxes implementation
+- ✅ Pool ID tooltips with full ID display
+- ✅ Swap simulator input/output text sizing
+- ✅ Fee parsing for ekubo_v2 protocol
+- ✅ Filter popover infinite scroll (Token & Pool ID)
+- ✅ Pool ID filter shows token pairs with enhanced search
 
 ### Remaining Items
 - ⏳ Fine-tune table column widths to match TC Design proportions
 - ⏳ Complete gradient border implementations where specified
-- ⏳ Fix infinite scroll integration with ScrollArea component
-- ⏳ Remove any remaining purple or neutral color references
 - ⏳ Test across different browsers for glass effects
 
 ## Final Plan: Refactor Pool List View to TC Design (Consolidated)

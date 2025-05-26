@@ -26,6 +26,24 @@
 - **Table Styling**: Implemented proper table row borders with 0.05 opacity
 - **Glass Effects**: Applied backdrop blur and transparent backgrounds throughout
 - **Gradient Border Technique**: Explained and documented CSS technique for gradient borders
+- **Popover Styling**: Updated all filter popovers with proper glass effect matching Figma design
+- **Square Checkboxes**: Changed checkbox styling from rounded to square (`rounded-none`)
+- **Pool ID Tooltips**: Added tooltips showing full pool ID on hover with copy-friendly selection
+- **Swap Simulator Refinements**: 
+  - Fixed input field styling to match output display
+  - Added smart decimal formatting (max 2 places for amounts)
+  - Resolved tooltip interaction issues with row selection
+- **Fee Parsing Enhancement**: 
+  - Added ekubo_v2 protocol support with proper fee calculation
+  - Limited all fee displays to 4 decimal places maximum
+- **Filter Popover Infinite Scroll**: 
+  - Implemented infinite scroll for Token and Pool ID filter popovers
+  - Shows 100 items initially, loads 100 more when scrolling near bottom
+  - Critical feature for handling large token/pool lists
+- **Pool ID Filter Enhancement**:
+  - Enhanced to show pool ID with token pair: "0x001b...23d4 (TokenA / TokenB)"
+  - Search now works across pool ID AND token symbols
+  - Changed to pass full pool data instead of just IDs
 
 ## Current Status
 

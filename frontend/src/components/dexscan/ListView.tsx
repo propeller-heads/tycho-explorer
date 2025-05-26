@@ -76,8 +76,8 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     Array.from(new Set(pools.map(pool => pool.protocol_system))).filter(Boolean).sort() as string[], 
   [pools]);
 
-  const allPoolIdsForFilter = useMemo(() => 
-    pools.map(pool => pool.id).sort(),
+  const allPoolsForFilter = useMemo(() => 
+    [...pools].sort((a, b) => a.id.localeCompare(b.id)),
   [pools]);
 
   const sortPools = useCallback((poolsToSort: Pool[]) => {
@@ -259,7 +259,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
           onResetFilters={handleResetFilters}
           allTokensForFilter={allTokensForFilter}
           allProtocolsForFilter={allProtocolsForFilter}
-          allPoolIdsForFilter={allPoolIdsForFilter}
+          allPoolsForFilter={allPoolsForFilter}
           blockNumber={blockNumber}
           startTime={lastBlockTimestamp} 
           duration={estimatedBlockDuration}
