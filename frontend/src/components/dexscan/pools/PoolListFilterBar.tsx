@@ -72,8 +72,10 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
   // TODO: Implement popover content for each filter:
   // State for search terms within popovers
   const [tokenSearch, setTokenSearch] = useState('');
+  const [tokenSearchFocused, setTokenSearchFocused] = useState(false);
   // const [protocolSearch, setProtocolSearch] = useState('');
   const [poolIdSearch, setPoolIdSearch] = useState('');
+  const [poolIdSearchFocused, setPoolIdSearchFocused] = useState(false);
   
   // State for infinite scroll in popovers
   const [displayedTokensCount, setDisplayedTokensCount] = useState(100);
@@ -134,15 +136,28 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           </PopoverTrigger>
           <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <div className="p-2">
-              <div className="relative">
+              <div 
+                className="relative flex items-center"
+                style={{
+                  backgroundColor: "rgba(255, 244, 224, 0.02)",
+                  borderRadius: "8px",
+                  borderStyle: "solid",
+                  borderWidth: tokenSearchFocused ? "2px" : "1px",
+                  borderColor: tokenSearchFocused ? '#FF3366' : 'rgba(255, 244, 224, 0.2)',
+                  padding: "8px 12px",
+                  transition: "border-color 0.2s ease-in-out, border-width 0.2s ease-in-out"
+                }}
+              >
+                <Search className="mr-2 h-4 w-4 shrink-0 text-[rgba(255,244,224,0.4)]" />
                 <Input
                   type="text"
                   placeholder="Search token..."
-                  className="pl-8 h-8 text-xs bg-[rgba(255,244,224,0.04)] border-[rgba(255,244,224,0.12)] text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)] focus-visible:ring-[#FF3366] focus-visible:ring-1 focus-visible:border-[rgba(255,244,224,0.24)]"
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0 text-xs bg-transparent text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)]"
                   value={tokenSearch}
                   onChange={(e) => setTokenSearch(e.target.value)}
+                  onFocus={() => setTokenSearchFocused(true)}
+                  onBlur={() => setTokenSearchFocused(false)}
                 />
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,0.4)]" />
               </div>
             </div>
             <ScrollArea 
@@ -238,18 +253,31 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           </PopoverTrigger>
           <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <div className="p-2">
-              <div className="relative">
+              <div 
+                className="relative flex items-center"
+                style={{
+                  backgroundColor: "rgba(255, 244, 224, 0.02)",
+                  borderRadius: "8px",
+                  borderStyle: "solid",
+                  borderWidth: poolIdSearchFocused ? "2px" : "1px",
+                  borderColor: poolIdSearchFocused ? '#FF3366' : 'rgba(255, 244, 224, 0.2)',
+                  padding: "8px 12px",
+                  transition: "border-color 0.2s ease-in-out, border-width 0.2s ease-in-out"
+                }}
+              >
+                <Search className="mr-2 h-4 w-4 shrink-0 text-[rgba(255,244,224,0.4)]" />
                 <Input
                   type="text"
                   placeholder="Search pool ID or tokens..."
-                  className="pl-8 h-8 text-xs bg-[rgba(255,244,224,0.04)] border-[rgba(255,244,224,0.12)] text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)] focus-visible:ring-[#FF3366] focus-visible:ring-1 focus-visible:border-[rgba(255,244,224,0.24)]"
+                  className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0 text-xs bg-transparent text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)]"
                   value={poolIdSearch}
                   onChange={(e) => {
                     setPoolIdSearch(e.target.value);
                     if (onPoolIdSearchChange) onPoolIdSearchChange(e.target.value); // Optional: for more complex search/fetch
                   }}
+                  onFocus={() => setPoolIdSearchFocused(true)}
+                  onBlur={() => setPoolIdSearchFocused(false)}
                 />
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,0.4)]" />
               </div>
             </div>
             <ScrollArea 
