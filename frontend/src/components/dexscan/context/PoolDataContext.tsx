@@ -149,6 +149,7 @@ const convertWebSocketPool = (
     ...modifiedPool,
     spotPrice: spotPrices[pool.id] || 0, // Use spot price from map if available
     updatedAt: new Date().toISOString(),
+    lastUpdatedAtBlock: 0, // Initialize with 0, will be updated when pool receives updates
   } as unknown as Pool;
 };
 
@@ -241,43 +242,95 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: true } 
         });
+        
+        console.log('✅ WebSocket connected. Waiting for block updates with price changes...');
       };
 
       ws.onmessage = (event) => {
         try {
           const data: WebSocketMessage = JSON.parse(event.data);
 
+          console.log('Websocket data:', data);
+          
+          // Debug log to see message structure
+          console.log('🔳 WebSocket message:', {
+            hasBlockNumber: !!data.block_number,
+            hasNewPairs: !!data.new_pairs,
+            hasSpotPrices: !!data.spot_prices,
+            spotPriceCount: data.spot_prices ? Object.keys(data.spot_prices).length : 0,
+            newPairCount: data.new_pairs ? Object.keys(data.new_pairs).length : 0
+          });
+
+          // Collect spot prices first
+          const spotPrices = data.spot_prices || {};
+          
           // Update block number if provided
           if (data.block_number) {
+            console.log('🔷 WebSocket: New block number received:', data.block_number);
             dispatch({ 
               type: 'SET_BLOCK_NUMBER', 
               payload: { blockNumber: data.block_number, timestamp: Date.now() } 
             });
+            
+            // Log when no price updates come with block update
+            if (Object.keys(spotPrices).length === 0 && Object.keys(stateRef.current.pools).length > 0) {
+              console.log('⚠️ No price updates from server with block update');
+            }
           }
 
-          // Collect spot prices
-          const spotPrices = data.spot_prices || {};
+          // Debug log spot prices
+          if (Object.keys(spotPrices).length > 0) {
+            console.log(`🔵 WebSocket: Spot prices received for ${Object.keys(spotPrices).length} pools`);
+          }
           
           // Process new pools and incorporate spot prices
           const poolUpdates: Record<string, Pool> = {};
           
           // Add new pairs
           if (data.new_pairs) {
+            const blockForNewPairs = data.block_number || stateRef.current.blockNumber || 0;
             Object.entries(data.new_pairs).forEach(([id, wsPool]) => {
-              poolUpdates[id] = convertWebSocketPool(wsPool, spotPrices);
+              const pool = convertWebSocketPool(wsPool, spotPrices);
+              poolUpdates[id] = {
+                ...pool,
+                lastUpdatedAtBlock: blockForNewPairs // Set the block number when the pool is first seen
+              };
+              
+              // Log new pairs
+              if (blockForNewPairs > 0) {
+                console.log(`🆕 New pool ${id} at block ${blockForNewPairs}`);
+              }
             });
           }
           
           // Update existing pools with new spot prices
           if (spotPrices && Object.keys(spotPrices).length > 0) {
+            // Only update lastUpdatedAtBlock if we have a valid block number
+            const updateBlock = data.block_number || 0;
+            
             Object.entries(spotPrices).forEach(([id, price]) => {
               if (!poolUpdates[id] && stateRef.current.pools[id]) {
+                const existingPool = stateRef.current.pools[id];
+                const shouldUpdateBlock = updateBlock > 0 && updateBlock !== existingPool.lastUpdatedAtBlock;
+                
                 poolUpdates[id] = {
-                  ...stateRef.current.pools[id],
+                  ...existingPool,
                   spotPrice: price,
                   updatedAt: new Date().toISOString(),
-                  lastUpdatedAtBlock: data.block_number || stateRef.current.blockNumber // Track which block this update happened in
+                  // Only update lastUpdatedAtBlock if we have a valid block number
+                  lastUpdatedAtBlock: shouldUpdateBlock ? updateBlock : existingPool.lastUpdatedAtBlock
                 };
+                
+                // Debug log for edge widening
+                if (shouldUpdateBlock) {
+                  console.log(`🔶 Pool ${id} price updated at block ${updateBlock}:`, {
+                    poolId: id,
+                    oldBlock: existingPool.lastUpdatedAtBlock,
+                    newBlock: updateBlock,
+                    currentStateBlock: stateRef.current.blockNumber,
+                    spotPrice: price
+                  });
+                }
               }
             });
           }
@@ -338,7 +391,16 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const hasPoolUpdates = Object.keys(stateRef.current.pendingUpdates.pools).length > 0;
 
-    console.log("pool updates from ws: ", stateRef.current.pendingUpdates.pools);
+    if (hasPoolUpdates) {
+      console.log("🔸 Pending pool updates:", {
+        count: Object.keys(stateRef.current.pendingUpdates.pools).length,
+        currentBlock: stateRef.current.blockNumber,
+        updates: Object.entries(stateRef.current.pendingUpdates.pools).map(([id, pool]) => ({
+          id,
+          lastUpdatedAtBlock: pool.lastUpdatedAtBlock
+        }))
+      });
+    }
     
     if (hasPoolUpdates && !updateScheduled) {
       setUpdateScheduled(true);
@@ -354,6 +416,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
             type: 'SET_POOLS',
             payload: updatedPools
           });
+          console.log('🔹 Pool updates applied to state');
         }
         
         setUpdateScheduled(false);

@@ -19,9 +19,9 @@ When iterating on the plan with the user:
 * Don't npm commands, I am running bun and vite in another terminal
 * Don't ever mock data, we need this app be production ready, when you don't know how to read / write data, ask me!
 
-# Erros
+# Errors
 
-Try something else to update the file(s) when you get error like this:
+Try using "write to file" to update the file(s) when you get errors like this:
 ```
 Error: Found 2 matches of the string to replace, but expected 1. The number of actual matches must equal the expected replacements.
 ```

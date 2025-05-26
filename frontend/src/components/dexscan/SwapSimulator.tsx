@@ -6,6 +6,7 @@ import { Pool, Token } from './types'; // Assuming Token type includes address, 
 import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
 import { callSimulationAPI } from './simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
+import { renderHexId } from '@/lib/utils';
 
 
 // Call real simulation API
@@ -40,6 +41,15 @@ interface SwapCardProps {
   isAmountEditable?: boolean;
 }
 
+// Helper function to format token symbol
+const formatTokenSymbol = (symbol: string): string => {
+  // Check if the symbol looks like an address (starts with 0x and has 40+ hex chars)
+  if (symbol && symbol.startsWith('0x') && symbol.length >= 42) {
+    return renderHexId(symbol);
+  }
+  return symbol;
+};
+
 const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
   const [iconUrl, setIconUrl] = useState<string | null>(token?.logoURI || null);
 
@@ -64,6 +74,8 @@ const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
 
   if (!token) return <span className="text-sm text-[rgba(255,255,255,0.64)]">Select Token</span>;
 
+  const displaySymbol = formatTokenSymbol(token.symbol);
+
   return (
     <div className="flex items-center gap-2">
       {iconUrl ? (
@@ -73,7 +85,7 @@ const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
           {token.symbol.substring(0,1)}
         </div>
       )}
-      <span className="text-base font-semibold font-['Inter'] text-[#FFFFFF]">{token.symbol}</span>
+      <span className="text-base font-semibold font-['Inter'] text-[#FFFFFF]">{displaySymbol}</span>
     </div>
   );
 }
@@ -106,7 +118,7 @@ const SwapCard: React.FC<SwapCardProps> = ({
             />
           ) : (
             <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] text-[#FFFFFF] block">
-              {amount ? parseFloat(amount).toFixed(2) : "0"}
+              {amount || "0"}
             </span>
           )}
         </div>
@@ -263,14 +275,14 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
         {exchangeRate && sellToken && buyToken && (
           <div className="flex justify-between items-center">
             <span className="text-sm font-['Inter'] text-[rgba(255,255,255,0.64)] w-32">Exchange Rate:</span>
-            <span className="text-sm font-['Inter'] text-[#FFFFFF]">1 {sellToken.symbol} = {exchangeRate} {buyToken.symbol}</span>
+            <span className="text-sm font-['Inter'] text-[#FFFFFF]">1 {formatTokenSymbol(sellToken.symbol)} = {exchangeRate} {formatTokenSymbol(buyToken.symbol)}</span>
           </div>
         )}
         
         {netAmount && buyToken && (
           <div className="flex justify-between items-center">
             <span className="text-sm font-['Inter'] text-[rgba(255,255,255,0.64)] w-32">Net Amount:</span>
-            <span className="text-sm font-['Inter'] text-[#FFFFFF]">{parseFloat(netAmount).toFixed(2)} {buyToken.symbol}</span>
+            <span className="text-sm font-['Inter'] text-[#FFFFFF]">{netAmount} {formatTokenSymbol(buyToken.symbol)}</span>
           </div>
         )}
         

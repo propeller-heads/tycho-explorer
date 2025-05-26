@@ -2,6 +2,53 @@
 
 ## Current Work Focus
 
+### Recent Development Updates (2025-05-27)
+
+#### UI Refinements and Fixes
+1. **Token Address Formatting**:
+   - List View now formats raw address tokens (e.g., 0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2) as shortened format (0x9f8f...79a2)
+   - Swap Simulator also formats address tokens consistently
+   - Uses existing `renderHexId` function for consistency
+
+2. **Filter Popover Styling**:
+   - Updated all popovers to match Figma design with transparent borders
+   - Background: `rgba(255,244,224,0.02)` for depth 5 transparency
+   - Border: `rgba(255,244,224,0.12)` for warm transparent effect
+   - Checkboxes use folly red (#FF3366) fill with white checkmark
+   - Filter buttons have dashed borders with transparent styling
+
+3. **Favicon Configuration**:
+   - Fixed empty favicon.ico issue
+   - Configured to use /public/favicon.ico with proper MIME type
+   - Changed from `image/svg+xml` to `image/x-icon` in index.html
+
+4. **Swap Simulator Precision**:
+   - Removed truncation of net amount - now shows full precision
+   - Buy/Sell amounts display at full precision (no toFixed(2))
+   - Users see exact values from simulation API
+
+#### Graph View Edge Widening Investigation
+1. **Root Cause Analysis**: 
+   - Added comprehensive logging throughout the data flow (WebSocket → PoolDataContext → useGraphData → vis-network)
+   - Discovered WebSocket sends initial pool data but subsequent block updates contain 0 price updates
+   - All pools have `lastUpdatedAtBlock: 0` and never get updated
+   - Edge widening depends on `lastUpdatedAtBlock === currentBlockNumber`, so edges never widen
+
+2. **Temporary Solution**:
+   - Initially added simulation code to randomly update 5-10 pool prices per block
+   - Removed simulation at user's request, keeping only logging statements
+   - WebSocket server needs to be fixed to send actual price updates with blocks
+
+3. **Graph View Background Fix**:
+   - Updated GraphViewContent.tsx background to match List View's warm cream theme
+   - Changed from purple theme to `bg-[#FFF4E005]` with backdrop blur
+   - Added gradient border effect for consistency
+
+4. **Edge Tooltip Simplification**:
+   - Removed pool link from edge tooltip - now displays pool ID as plain text
+   - Removed redundant "Block" field since "Last Update" already shows temporal information
+   - Edge tooltip now shows: Protocol, Token pair, Pool ID (with copy button), Fee, Last update, and Spot price
+
 ### Recent Development Updates (2025-05-26)
 
 #### Critical Features to Maintain
@@ -129,9 +176,18 @@ Example:
 - Lower opacity for secondary elements (0.6-0.8)
 - Very low opacity for backgrounds (0.02-0.08)
 
+### UI Component Guidelines
+- **Token Address Display**: Always format raw addresses using `renderHexId` for consistency
+- **Number Precision**: Never truncate amounts in Swap Simulator - show full precision
+- **Popover Styling**: Use transparent borders with warm cream colors
+- **Checkbox Styling**: Folly red (#FF3366) for checked state with white checkmark
+
 ## Learnings and Project Insights
 
 1. **Figma Design Accuracy**: The TC Design uses a very specific warm color palette that must be matched exactly
 2. **Opacity Matters**: Text readability is crucial - full opacity ensures maximum contrast
 3. **Layered UI Design**: The app uses multiple transparent layers to create depth
 4. **Performance Considerations**: Simple borders perform better than complex gradients for frequently rendered elements like table rows
+5. **WebSocket Data Flow**: The WebSocket server sends initial pool data but doesn't include price updates with new blocks
+6. **vis-network Edge Updates**: Edge widening requires careful management of DataSet updates and proper tracking of pool update blocks
+7. **Debugging Complex Data Flows**: Color-coded console logging (🔷, 🔶, 🔸, etc.) helps trace data through multiple system layers

@@ -124,7 +124,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Token Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-[rgba(255,244,224,1)]">
+            <Button variant="outline" size="sm" className="h-8  border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedTokens, 'token')}
               {selectedTokens.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedTokens.forEach(t => onTokenSelect(t, false)); }} />
@@ -132,17 +132,17 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.04)] backdrop-blur-[104px] border border-[rgba(255,255,255,0.1)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
+          <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <div className="p-2">
               <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search token..."
-                  className="pl-8 h-8 text-xs bg-neutral-800/80 border-red-500 text-[rgba(255,244,224,1)] focus-visible:ring-red-500"
+                  className="pl-8 h-8 text-xs bg-[rgba(255,244,224,0.04)] border-[rgba(255,244,224,0.12)] text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)] focus-visible:ring-[#FF3366] focus-visible:ring-1 focus-visible:border-[rgba(255,244,224,0.24)]"
                   value={tokenSearch}
                   onChange={(e) => setTokenSearch(e.target.value)}
                 />
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,1)]" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,0.4)]" />
               </div>
             </div>
             <ScrollArea 
@@ -154,20 +154,20 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
                 }
               }}
             >
-              {filteredTokens.length === 0 && <p className="text-xs text-[rgba(255,244,224,1)] text-center py-2">No tokens found.</p>}
+              {filteredTokens.length === 0 && <p className="text-xs text-[rgba(255,244,224,0.4)] text-center py-2">No tokens found.</p>}
               {filteredTokens.slice(0, displayedTokensCount).map(token => {
                 const isSelected = selectedTokens.some(st => st.address === token.address);
                 return (
                   <div 
                     key={token.address} 
-                    className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-neutral-700/70 cursor-pointer"
+                    className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer"
                     onClick={() => onTokenSelect(token, !isSelected)}
                   >
                     <Checkbox
                       id={`token-${token.address}`}
                       checked={isSelected}
                       onCheckedChange={(checked) => onTokenSelect(token, !!checked)}
-                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 rounded-none"
+                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none"
                     />
                     <TokenIcon token={token} size={5} /> 
                     <label 
@@ -187,7 +187,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Protocol Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-[rgba(255,244,224,1)]">
+            <Button variant="outline" size="sm" className="h-8  border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedProtocols, 'protocol')}
               {selectedProtocols.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedProtocols.forEach(p => onProtocolSelect(p, false)); }} />
@@ -195,22 +195,22 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-0 bg-[rgba(255,244,224,0.04)] backdrop-blur-[104px] border border-[rgba(255,255,255,0.1)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
+          <PopoverContent className="w-64 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <ScrollArea className="h-[200px] p-2">
-              {allProtocolsForFilter.length === 0 && <p className="text-xs text-[rgba(255,244,224,1)] text-center py-2">No protocols available.</p>}
+              {allProtocolsForFilter.length === 0 && <p className="text-xs text-[rgba(255,244,224,0.4)] text-center py-2">No protocols available.</p>}
               {allProtocolsForFilter.map(protocol => {
                 const isSelected = selectedProtocols.includes(protocol);
                 return (
                   <div 
                     key={protocol}
-                    className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-neutral-700/70 cursor-pointer"
+                    className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer"
                     onClick={() => onProtocolSelect(protocol, !isSelected)}
                   >
                     <Checkbox
                       id={`protocol-${protocol}`}
                       checked={isSelected}
                       onCheckedChange={(checked) => onProtocolSelect(protocol, !!checked)}
-                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 rounded-none"
+                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none"
                     />
                     <label 
                       htmlFor={`protocol-${protocol}`}
@@ -228,7 +228,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Pool ID Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-[rgba(255,244,224,1)]">
+            <Button variant="outline" size="sm" className="h-8  border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedPoolIds, 'poolId')}
               {selectedPoolIds.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedPoolIds.forEach(pid => onPoolIdSelect(pid, false)); }} />
@@ -236,20 +236,20 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.04)] backdrop-blur-[104px] border border-[rgba(255,255,255,0.1)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
+          <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <div className="p-2">
               <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search pool ID or tokens..."
-                  className="pl-8 h-8 text-xs bg-neutral-800/80 border-red-500 text-[rgba(255,244,224,1)] focus-visible:ring-red-500"
+                  className="pl-8 h-8 text-xs bg-[rgba(255,244,224,0.04)] border-[rgba(255,244,224,0.12)] text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)] focus-visible:ring-[#FF3366] focus-visible:ring-1 focus-visible:border-[rgba(255,244,224,0.24)]"
                   value={poolIdSearch}
                   onChange={(e) => {
                     setPoolIdSearch(e.target.value);
                     if (onPoolIdSearchChange) onPoolIdSearchChange(e.target.value); // Optional: for more complex search/fetch
                   }}
                 />
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,1)]" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,0.4)]" />
               </div>
             </div>
             <ScrollArea 
@@ -261,21 +261,21 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
                 }
               }}
             >
-              {filteredPools.length === 0 && <p className="text-xs text-[rgba(255,244,224,1)] text-center py-2">No pools found.</p>}
+              {filteredPools.length === 0 && <p className="text-xs text-[rgba(255,244,224,0.4)] text-center py-2">No pools found.</p>}
               {filteredPools.slice(0, displayedPoolIdsCount).map(pool => {
                 const isSelected = selectedPoolIds.includes(pool.id);
                 const tokenPair = pool.tokens.map(t => t.symbol).join(' / ');
                 return (
                   <div 
                     key={pool.id}
-                    className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-neutral-700/70 cursor-pointer"
+                    className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer"
                     onClick={() => onPoolIdSelect(pool.id, !isSelected)}
                   >
                     <Checkbox
                       id={`poolId-${pool.id}`}
                       checked={isSelected}
                       onCheckedChange={(checked) => onPoolIdSelect(pool.id, !!checked)}
-                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 rounded-none"
+                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none"
                     />
                     <label 
                       htmlFor={`poolId-${pool.id}`}
@@ -292,7 +292,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Button variant="link" size="sm" className="h-8 text-xs text-[rgba(255,244,224,1)] hover:text-[rgba(255,244,224,1)]" onClick={onResetFilters}>
+        <Button variant="link" size="sm" className="h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2" onClick={onResetFilters}>
           Reset filters
         </Button>
       </div>
@@ -307,7 +307,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           />
         )}
         {blockNumber !== null && (
-          <span className="text-sm font-medium text-[rgba(255,244,224,1)]">{blockNumber}</span>
+          <span className="text-sm font-medium text-[rgba(255,244,224,0.8)]">{blockNumber}</span>
         )}
       </div>
     </div>

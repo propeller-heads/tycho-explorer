@@ -89,6 +89,11 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   `parseFeeHexValue` in `poolUtils.ts` handles different fee formats per protocol
     *   Supports: uniswap_v2, uniswap_v3, uniswap_v4, vm:balancer_v2, ekubo_v2
     *   All fees limited to 4 decimal places for consistent display
+*   **Graph View Patterns**:
+    *   vis-network library for graph visualization
+    *   Edge widening based on `lastUpdatedAtBlock === currentBlockNumber`
+    *   Edge tooltips show pool details without external links
+    *   Node tooltips show token information with pool counts
 *   **Robust External API Interaction (`src/lib/coingecko.ts`):**
     *   Centralized module for all CoinGecko API calls.
     *   Handles rate limiting through request queueing and delays.

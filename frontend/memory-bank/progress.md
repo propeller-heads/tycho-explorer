@@ -20,6 +20,21 @@
 - Block progress indicator
 - Token and protocol icons with fallbacks
 
+### Recent Accomplishments (2025-05-27)
+- **Graph View Investigation**: 
+  - Identified root cause of edges not widening: WebSocket server sends 0 price updates with block updates
+  - Added comprehensive logging to trace data flow through the system
+  - Fixed graph view background to match List View's warm cream theme
+- **Edge Tooltip Updates**:
+  - Removed pool link from edge tooltip for cleaner presentation
+  - Removed redundant "Block" field to avoid duplication with "Last Update"
+  - Simplified tooltip to show essential information only
+- **UI Polish and Fixes**:
+  - Token addresses now display as shortened format (0xaabb...bbaa) in List View and Swap Simulator
+  - Filter popovers updated with transparent borders and folly red checkboxes
+  - Fixed favicon configuration to use /public/favicon.ico
+  - Swap Simulator now shows full precision for all amounts (no truncation)
+
 ### Recent Accomplishments (2025-05-26)
 - **Color System Overhaul**: Successfully transitioned entire UI from purple/blue theme to TC Design warm cream/beige palette
 - **Text Readability**: Updated all text to use `rgba(255, 244, 224, 1)` with full opacity for maximum readability
@@ -53,6 +68,7 @@ The Pool List View is functionally complete with the TC Design color system full
 
 1. **Logo Loading**: CoinGecko API rate limits can cause slow logo loading
 2. **ScrollArea Integration**: Infinite scroll implementation may need refinement
+3. **WebSocket Price Updates**: Server not sending price updates with new blocks, preventing edge widening visualization
 
 ## Evolution of Project Decisions
 

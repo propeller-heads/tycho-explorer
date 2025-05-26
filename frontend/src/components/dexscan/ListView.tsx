@@ -39,7 +39,13 @@ interface PoolListViewProps {
 
 // Simplified renderTokens for text part, icons will be handled in PoolTable cell
 const renderTokensText = (pool: Pool) => {
-  return pool.tokens.map(token => token.symbol).join(' / ');
+  return pool.tokens.map(token => {
+    // Check if the symbol looks like an address (starts with 0x and has 40+ hex chars)
+    if (token.symbol && token.symbol.startsWith('0x') && token.symbol.length >= 42) {
+      return renderHexId(token.symbol);
+    }
+    return token.symbol;
+  }).join(' / ');
 };
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {

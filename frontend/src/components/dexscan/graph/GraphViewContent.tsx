@@ -80,6 +80,13 @@ const PoolGraphView: React.FC = () => {
     estimatedBlockDuration // This now comes from useGraphData
   } = useGraphData(selectedTokens, selectedProtocols);
   
+  // Debug log
+  React.useEffect(() => {
+    if (currentBlockNumber > 0) {
+      console.log('🟪 GraphViewContent - currentBlockNumber:', currentBlockNumber);
+    }
+  }, [currentBlockNumber]);
+  
   // Handle reset
   const handleReset = () => {
     setSelectedTokens([]);
@@ -89,19 +96,13 @@ const PoolGraphView: React.FC = () => {
 
   return (
     <div 
-      className="flex flex-col h-full p-6 rounded-xl"
-      style={{ 
-        height: "100%",
-        backgroundColor: "rgba(255, 244, 224, 0.02)",
-        backgroundImage: `url(${graphFrameBgArtboard})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        border: "1px solid rgba(255, 244, 224, 0.2)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        boxSizing: "border-box",
-      }}
+      className="flex flex-col h-full bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl relative"
     >
+      {/* Gradient border effect */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-b rgba(255,244,224,0.02) p-[1px]">
+        <div className="bg-[#FFF4E005] rounded-xl h-full w-full" />
+      </div>
+      <div className="relative z-10 flex flex-col h-full p-6"> {/* Content wrapper */}
       <GraphControls 
         tokenList={allAvailableTokenNodes} 
         protocols={uniqueProtocols}
@@ -122,6 +123,7 @@ const PoolGraphView: React.FC = () => {
               tokenNodes={graphDisplayNodes} 
               poolEdges={graphDisplayEdges}
               rawPoolsData={rawPoolsData} // Pass rawPoolsData as a prop
+              currentBlockNumber={currentBlockNumber} // Pass currentBlockNumber
             />
           </div>
         </>
@@ -132,6 +134,7 @@ const PoolGraphView: React.FC = () => {
           </p>
         </div>
       )}
+      </div> {/* Close content wrapper */}
     </div>
   );
 };

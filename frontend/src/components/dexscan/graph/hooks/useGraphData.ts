@@ -181,7 +181,12 @@ export function useGraphData(
 
 
   return useMemo(() => {
-    // console.log("DEBUG: useGraphData running memoization", { selectedTokens, selectedProtocols, currentBlockNumber, tokenImageUrls });
+    console.log("🟦 useGraphData recalculating:", { 
+      selectedTokens: selectedTokens.length, 
+      selectedProtocols: selectedProtocols.length, 
+      currentBlockNumber,
+      poolCount: Object.keys(pools).length
+    });
 
     // Early Exit: If no tokens are selected, return empty graph structure.
     if (selectedTokens.length === 0) {
@@ -277,6 +282,18 @@ export function useGraphData(
 
       const isUpdatedInCurrentBlock =
         currentPoolEdge.lastUpdatedAtBlock === currentBlockNumber && currentBlockNumber > 0;
+
+      // Debug logging
+      if (pool.id && isProtocolSelected) {
+        console.log(`🟧 Edge ${pool.id} processing:`, {
+          poolId: pool.id,
+          lastUpdatedAtBlock: pool.lastUpdatedAtBlock,
+          currentBlockNumber,
+          isUpdatedInCurrentBlock,
+          isProtocolSelected,
+          willWiden: isUpdatedInCurrentBlock && isProtocolSelected
+        });
+      }
 
       let determinedColor;
       const defaultEdgeWidth = 1;
