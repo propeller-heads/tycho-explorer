@@ -39,22 +39,22 @@ const App = () => (
       <img
         src={bgSmallComet}
         alt=""
-        style={{ position: "absolute", top: "10%", left: "10%", opacity: 0.1, zIndex: 2, pointerEvents: "none", width: "200px" }} // Example styling
+        style={{ position: "absolute", top: "10%", left: "10%", opacity: 0.4, zIndex: 2, pointerEvents: "none", width: "200px" }}
       />
       <img
         src={bgLargeComet}
         alt=""
-        style={{ position: "absolute", bottom: "5%", right: "5%", opacity: 0.1, zIndex: 2, pointerEvents: "none", width: "400px" }} // Example styling
+        style={{ position: "absolute", bottom: "5%", right: "5%", opacity: 0.4, zIndex: 2, pointerEvents: "none", width: "400px" }}
       />
       <img
         src={bgGodRay1}
         alt=""
-        style={{ position: "absolute", top: "0", right: "15%", opacity: 0.1, zIndex: 2, pointerEvents: "none", height: "100vh" }} // Example styling
+        style={{ position: "absolute", top: "0", right: "15%", opacity: 0.3, zIndex: 2, pointerEvents: "none", height: "100vh" }}
       />
       <img
         src={bgGodRay2}
         alt=""
-        style={{ position: "absolute", top: "0", left: "15%", opacity: 0.1, zIndex: 2, pointerEvents: "none", height: "100vh", transform: "scaleX(-1)" }} // Example styling, flipped
+        style={{ position: "absolute", top: "0", left: "15%", opacity: 0.3, zIndex: 2, pointerEvents: "none", height: "100vh", transform: "scaleX(-1)" }}
       />
 
       {/* Main Content - ensure it's above background elements */}

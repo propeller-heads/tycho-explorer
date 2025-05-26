@@ -110,7 +110,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Token Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-white/80">
+            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedTokens, 'token')}
               {selectedTokens.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedTokens.forEach(t => onTokenSelect(t, false)); }} />
@@ -118,21 +118,21 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-0 bg-neutral-900/90 backdrop-blur-md border-neutral-700 shadow-2xl">
+          <PopoverContent className="w-72 p-0 bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] shadow-2xl">
             <div className="p-2">
               <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search token..."
-                  className="pl-8 h-8 text-xs bg-neutral-800/80 border-neutral-700 text-white focus-visible:ring-purple-500"
+                  className="pl-8 h-8 text-xs bg-neutral-800/80 border-neutral-700 text-[rgba(255,244,224,1)] focus-visible:ring-purple-500"
                   value={tokenSearch}
                   onChange={(e) => setTokenSearch(e.target.value)}
                 />
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,1)]" />
               </div>
             </div>
             <ScrollArea className="h-[200px] p-2">
-              {filteredTokens.length === 0 && <p className="text-xs text-neutral-400 text-center py-2">No tokens found.</p>}
+              {filteredTokens.length === 0 && <p className="text-xs text-[rgba(255,244,224,1)] text-center py-2">No tokens found.</p>}
               {filteredTokens.map(token => {
                 const isSelected = selectedTokens.some(st => st.address === token.address);
                 return (
@@ -150,10 +150,10 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
                     <TokenIcon token={token} size={5} /> 
                     <label 
                       htmlFor={`token-${token.address}`}
-                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate text-white/90"
+                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate text-[rgba(255,244,224,1)]"
                       title={`${token.name} (${token.symbol})`}
                     >
-                      {token.symbol} <span className="text-neutral-400 text-xs">{token.name}</span>
+                      {token.symbol} <span className="text-[rgba(255,244,224,1)] text-xs">{token.name}</span>
                     </label>
                   </div>
                 );
@@ -165,7 +165,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Protocol Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-white/80">
+            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedProtocols, 'protocol')}
               {selectedProtocols.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedProtocols.forEach(p => onProtocolSelect(p, false)); }} />
@@ -173,9 +173,9 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-0 bg-neutral-900/90 backdrop-blur-md border-neutral-700 shadow-2xl">
+          <PopoverContent className="w-64 p-0 bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] shadow-2xl">
             <ScrollArea className="h-[200px] p-2">
-              {allProtocolsForFilter.length === 0 && <p className="text-xs text-neutral-400 text-center py-2">No protocols available.</p>}
+              {allProtocolsForFilter.length === 0 && <p className="text-xs text-[rgba(255,244,224,1)] text-center py-2">No protocols available.</p>}
               {allProtocolsForFilter.map(protocol => {
                 const isSelected = selectedProtocols.includes(protocol);
                 return (
@@ -192,7 +192,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
                     />
                     <label 
                       htmlFor={`protocol-${protocol}`}
-                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/90"
+                      className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-[rgba(255,244,224,1)]"
                     >
                       {protocol}
                     </label>
@@ -206,7 +206,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Pool ID Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-white/80">
+            <Button variant="outline" size="sm" className="h-8 border-dashed bg-white/5 hover:bg-white/10 text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedPoolIds, 'poolId')}
               {selectedPoolIds.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedPoolIds.forEach(pid => onPoolIdSelect(pid, false)); }} />
@@ -214,24 +214,24 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-0 bg-neutral-900/90 backdrop-blur-md border-neutral-700 shadow-2xl">
+          <PopoverContent className="w-72 p-0 bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] shadow-2xl">
             <div className="p-2">
               <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search Pool ID..."
-                  className="pl-8 h-8 text-xs bg-neutral-800/80 border-neutral-700 text-white focus-visible:ring-purple-500"
+                  className="pl-8 h-8 text-xs bg-neutral-800/80 border-neutral-700 text-[rgba(255,244,224,1)] focus-visible:ring-purple-500"
                   value={poolIdSearch}
                   onChange={(e) => {
                     setPoolIdSearch(e.target.value);
                     if (onPoolIdSearchChange) onPoolIdSearchChange(e.target.value); // Optional: for more complex search/fetch
                   }}
                 />
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-[rgba(255,244,224,1)]" />
               </div>
             </div>
             <ScrollArea className="h-[200px] p-2">
-              {filteredPoolIds.length === 0 && <p className="text-xs text-neutral-400 text-center py-2">No Pool IDs found.</p>}
+              {filteredPoolIds.length === 0 && <p className="text-xs text-[rgba(255,244,224,1)] text-center py-2">No Pool IDs found.</p>}
               {filteredPoolIds.map(poolId => {
                 const isSelected = selectedPoolIds.includes(poolId);
                 return (
@@ -248,7 +248,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
                     />
                     <label 
                       htmlFor={`poolId-${poolId}`}
-                      className="text-xs font-mono leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/90 truncate"
+                      className="text-xs font-mono leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-[rgba(255,244,224,1)] truncate"
                       title={poolId}
                     >
                       {renderHexId(poolId)} {/* Use renderHexId for display */}
@@ -260,7 +260,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Button variant="link" size="sm" className="h-8 text-xs text-white/60 hover:text-white/80" onClick={onResetFilters}>
+        <Button variant="link" size="sm" className="h-8 text-xs text-[rgba(255,244,224,1)] hover:text-[rgba(255,244,224,1)]" onClick={onResetFilters}>
           Reset filters
         </Button>
       </div>
@@ -275,7 +275,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           />
         )}
         {blockNumber !== null && (
-          <span className="text-sm font-medium text-white/80">{blockNumber}</span>
+          <span className="text-sm font-medium text-[rgba(255,244,224,1)]">{blockNumber}</span>
         )}
       </div>
     </div>

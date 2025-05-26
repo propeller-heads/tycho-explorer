@@ -25,8 +25,8 @@ const TEXT_WS_CONNECTION_TITLE = "WebSocket Connection";
 const TEXT_DISCONNECTED = "Disconnected";
 
 // --- CSS Class Constants ---
-const DOCS_LINK_CLASSES = "flex items-center gap-1 text-sm font-normal text-[#FFF4E0] hover:text-[#FFF4E0]/90 transition-colors";
-const WS_INDICATOR_BUTTON_CLASSES = "flex h-9 items-center gap-1.5 rounded-xl bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.1)] px-3 py-1.5 transition-colors text-[#FFF4E0]";
+const DOCS_LINK_CLASSES = "flex items-center gap-1 text-sm font-normal text-[#FFFFFF] hover:text-[#FFFFFF]/90 transition-colors";
+const WS_INDICATOR_BUTTON_CLASSES = "flex h-9 items-center gap-1.5 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] px-3 py-1.5 transition-colors text-[#FFFFFF]";
 const WS_PANEL_CLASSES = "mt-2 w-72 md:w-80 shadow-lg absolute top-full right-0 z-50";
 const WS_PANEL_CARD_CLASSES = "bg-card rounded-lg border shadow-lg relative";
 const WS_PANEL_HEADER_CLASSES = "flex items-center p-2 border-b";
@@ -116,12 +116,12 @@ const WebSocketIndicator: React.FC<WebSocketIndicatorProps> = ({
           <div 
             className="overflow-hidden shadow-lg relative" // Keep overflow-hidden, shadow-lg, relative. Remove bg-card, rounded-lg, border.
             style={{
-              backgroundColor: "rgba(255, 244, 224, 0.04)",
-              borderColor: "rgba(255, 244, 224, 0.2)",
+              backgroundColor: "rgba(255, 255, 255, 0.04)",
+              borderColor: "rgba(255, 255, 255, 0.2)",
               borderWidth: "1px",
               borderStyle: "solid",
               borderRadius: "12px",
-              color: "#FFF4E0", // Default text color for the panel
+              color: "#FFFFFF", // Default text color for the panel
               // boxShadow: "0px 4px 16px 0px rgba(37, 0, 63, 0.2)", // shadow-lg is present, let's see if it's sufficient or if this specific one is needed
               backdropFilter: "blur(10.4px)",
               WebkitBackdropFilter: "blur(10.4px)",

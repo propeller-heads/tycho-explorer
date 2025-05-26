@@ -1,6 +1,10 @@
+# Objective
+
+You will help me implement this app. You should aim to be as proactive and as indepedent as possible, to be maximally helpful.
+
 # Development workflows
 
-Typically, in Plan Mode, you'd be asked to plan and iterate with the user until the plan is accurate and comprehensive. The final will need to be detailed enough to have specific code changes for the task. Then you will implement the plan. In your response in Plan Mode or when you asked to "reiterate the plan", this is so the user can easily review your new understanding of the plan. 
+Typically, in Plan Mode, you'd be asked to plan and iterate with the user until the plan is accurate and comprehensive. The final will need to be detailed enough to have specific code changes for the task. Then you will implement the plan. In your response in Plan Mode or when you asked to "reiterate the plan", this is so the user can easily review your new understanding of the plan. **You should note any ambiguity and FIGURE OUT AS MUCH AS POSSIBLE YOURSELF; FAILING THAT YOU SHOULD ASK FOR MY HELP!** 
 
 When iterating on the plan with the user:
 
@@ -9,6 +13,18 @@ When iterating on the plan with the user:
 * Group changes by each change's concept, rationale, specific file changes, component changes, function changes, code changes, configuration changes
 * Be concise and use Germinc-style English words in the sense they are plain and concrete
 * Number the proposed changes, and use subitem numbering e.g. 1.1 and 1.1.2, so it's simple for the user to discuss the changes with you
+
+# Tips
+
+* Don't npm commands, I am running bun and vite in another terminal
+* Don't ever mock data, we need this app be production ready, when you don't know how to read / write data, ask me!
+
+# Erros
+
+Try something else to update the file(s) when you get error like this:
+```
+Error: Found 2 matches of the string to replace, but expected 1. The number of actual matches must equal the expected replacements.
+```
 
 # Ambiguity
 

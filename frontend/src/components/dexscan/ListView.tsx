@@ -242,7 +242,12 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   return (
     <div className={cn("relative flex flex-col h-full", className)}> {/* Added relative for sidebar positioning */}
       {/* Main Content Panel with TC Design Styling */}
-      <div className="flex-grow flex flex-col bg-[rgba(255,244,224,0.02)] backdrop-blur-xl rounded-xl border border-[rgba(255,244,224,0.64)] overflow-hidden shadow-2xl"> {/* TC Design Styling */}
+      <div className="flex-grow flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl relative">
+        {/* Gradient border effect */}
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-b rgba(255,244,224,0.02) p-[1px]">
+          <div className="bg-[#FFF4E005] rounded-xl h-full w-full" />
+        </div>
+        <div className="relative z-10 flex flex-col h-full"> {/* Content wrapper */}
         <PoolListFilterBar
           selectedTokens={filters.selectedTokens}
           selectedProtocols={filters.selectedProtocols}
@@ -276,6 +281,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
           hasMorePools={displayedPoolsCount < processedPools.length}
           isLoadingMore={isLoadingMore} // Pass new loading state
         />
+        </div> {/* Close content wrapper */}
       </div>
 
       {selectedPool && (

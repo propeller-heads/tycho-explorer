@@ -2,21 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // For amount input
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // For token selection
-import { ArrowRightLeft } from 'lucide-react'; // For swap direction button
-import { Token } from './types'; // Assuming Token type includes address, symbol, logoURI
+import { ArrowRightLeft, ExternalLink } from 'lucide-react'; // For swap direction button and external link
+import { Pool, Token } from './types'; // Assuming Token type includes address, symbol, logoURI
 import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
 import { cn } from '@/lib/utils';
+import { callSimulationAPI } from './simulation/simulationApi';
+import { parsePoolFee } from '@/lib/poolUtils';
 
-// Placeholder for actual simulation API call
-const simulateSwap = async (poolId: string, tokenIn: string, tokenOut: string, amountIn: number) => {
-  console.log(`Simulating swap for ${poolId}: ${amountIn} ${tokenIn} -> ${tokenOut}`);
-  // Mock result
-  await new Promise(resolve => setTimeout(resolve, 500));
-  if (amountIn <= 0) return { amountOut: '0', priceImpact: '0', fee: '0' };
+
+// Call real simulation API
+const simulateSwap = async (
+  poolId: string, 
+  tokenIn: string, 
+  tokenOut: string, 
+  amountIn: number,
+  poolFee: string
+) => {
+  const result = await callSimulationAPI(tokenIn, poolId, amountIn);
+  if (!result || !result.success) {
+    throw new Error('Simulation failed');
+  }
+  
+  const outputAmount = parseFloat(result.output_amount);
+  const exchangeRate = amountIn > 0 ? (outputAmount / amountIn).toFixed(6) : '0';
+  
   return {
-    amountOut: (amountIn * 1800).toString(), // Example rate
-    priceImpact: (amountIn * 0.0005).toFixed(4), // Example price impact
-    fee: (amountIn * 0.003).toFixed(5),      // Example fee
+    amountOut: result.output_amount,
+    fee: poolFee,
+    exchangeRate: exchangeRate
   };
 };
 
@@ -27,7 +40,6 @@ interface SwapCardProps {
   selectedToken: Token | undefined;
   onTokenChange: (tokenId: string) => void;
   tokens: Token[];
-  usdValue?: string; // Optional USD value display
   isAmountEditable?: boolean;
 }
 
@@ -53,19 +65,18 @@ const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
     return () => { isMounted = false; };
   }, [token, iconUrl]);
 
-  if (!token) return <span className="text-sm">Select Token</span>;
+  if (!token) return <span className="text-sm text-[rgba(255,255,255,0.64)]">Select Token</span>;
 
   return (
     <div className="flex items-center gap-2">
       {iconUrl ? (
-        <img src={iconUrl} alt={token.symbol} className="w-6 h-6 rounded-full" />
+        <img src={iconUrl} alt={token.symbol} className="w-6 h-6 rounded-full flex-shrink-0" />
       ) : (
-        <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-xs">
+        <div className="w-6 h-6 rounded-full bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] flex items-center justify-center text-xs text-[#FFFFFF] flex-shrink-0">
           {token.symbol.substring(0,1)}
         </div>
       )}
-      <span className="text-base font-medium text-white">{token.symbol}</span>
-      {/* External link icon can be added here if needed */}
+      <span className="text-base font-semibold font-['Inter'] text-[#FFFFFF]">{token.symbol}</span>
     </div>
   );
 }
@@ -78,67 +89,96 @@ const SwapCard: React.FC<SwapCardProps> = ({
   selectedToken,
   onTokenChange,
   tokens,
-  usdValue,
   isAmountEditable = true,
 }) => {
   return (
-    <div className="bg-white/5 p-4 rounded-lg border border-white/10 space-y-2">
-      <div className="text-xs text-white/60">{direction === 'sell' ? 'Sell' : 'Buy'}</div>
-      <div className="flex items-center justify-between">
+    <div className="bg-[rgba(255,255,255,0.02)] p-4 rounded-xl border border-[rgba(255,255,255,0.06)]">
+      <div className="text-xs font-['Inter'] text-[rgba(255,255,255,0.64)] mb-2">
+        {direction === 'sell' ? 'Sell' : 'Buy'}
+      </div>
+      
+      <div className="flex items-center justify-between gap-12">
         {isAmountEditable ? (
           <Input
             type="number"
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
-            className="text-2xl font-semibold bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-white w-1/2"
-            placeholder="0.0"
+            className="text-[28px] leading-[1.2] font-semibold font-['Inter'] bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-[#FFFFFF] flex-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            placeholder="0"
           />
         ) : (
-          <span className="text-2xl font-semibold text-white truncate w-1/2">{amount || "0.0"}</span>
+          <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] text-[#FFFFFF] flex-1">
+            {amount ? parseFloat(amount).toFixed(2) : "0"}
+          </span>
         )}
-        <Select value={selectedToken?.address} onValueChange={onTokenChange}>
-          <SelectTrigger className="w-auto bg-white/10 border-white/20 text-white">
-            <SelectValue placeholder="Token">
-              <TokenDisplay token={selectedToken} />
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent className="bg-neutral-800 text-white border-neutral-700">
-            {tokens.map(t => (
-              <SelectItem key={t.address} value={t.address || t.symbol}>
-                <TokenDisplay token={t} />
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        
+        <div className="min-w-[150px] flex items-center justify-end gap-1">
+          <Select value={selectedToken?.address || ''} onValueChange={onTokenChange}>
+            <SelectTrigger className="w-auto bg-transparent border-0 p-0 h-auto hover:bg-transparent focus:ring-0 max-w-[150px]">
+              <SelectValue>
+                <TokenDisplay token={selectedToken} />
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl text-[#FFFFFF] border-[rgba(255,255,255,0.1)]">
+              {tokens.map(t => (
+                <SelectItem key={t.address} value={t.address}>
+                  <TokenDisplay token={t} />
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedToken && (
+            <a
+              href={`https://etherscan.io/token/${selectedToken.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[rgba(255,255,255,0.64)] hover:text-[#FFFFFF] transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+        </div>
       </div>
-      {usdValue && <div className="text-xs text-white/60 text-right">${usdValue}</div>}
     </div>
   );
 };
 
 interface SwapSimulatorProps {
   poolId: string;
-  // protocol: string; // Protocol might not be needed if poolId is enough for simulation
   tokens: Token[]; // Expect full Token objects
+  fee: string; // Pool fee from static_attributes
+  pool?: Pool; // Optional pool object for fee formatting
 }
 
-const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens }) => {
+const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool }) => {
   const [sellAmount, setSellAmount] = useState<string>("1");
   const [buyAmount, setBuyAmount] = useState<string>("");
-  const [sellTokenAddress, setSellTokenAddress] = useState<string | undefined>(tokens[0]?.address);
-  const [buyTokenAddress, setBuyTokenAddress] = useState<string | undefined>(tokens[1]?.address || tokens[0]?.address);
+  // Initialize with first available tokens
+  const [sellTokenAddress, setSellTokenAddress] = useState<string>(tokens[0]?.address || '');
   
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [buyTokenAddress, setBuyTokenAddress] = useState<string>(tokens[1]?.address || '');
+  
+  // Update token selection when pool changes
+  useEffect(() => {
+    if (tokens && tokens.length > 0) {
+      setSellTokenAddress(tokens[0]?.address || '');
+      setBuyTokenAddress(tokens[1]?.address || tokens[0]?.address || '');
+    }
+  }, [poolId]); // Re-run when poolId changes
+  
+  console.log("sim: t0, t1, tokens ", sellTokenAddress, buyTokenAddress, tokens);
+  
 
   // Simulation results
   const [exchangeRate, setExchangeRate] = useState<string | null>(null);
-  const [priceImpact, setPriceImpact] = useState<string | null>(null);
-  // Gas cost and net amount would typically come from a more detailed simulation or estimation
-  const [gasCost, setGasCost] = useState<string | null>("0.002 ETH ($4.64)"); // Placeholder
+  const [netAmount, setNetAmount] = useState<string | null>(null);
   
+  // Find tokens by address
   const sellToken = tokens.find(t => t.address === sellTokenAddress);
   const buyToken = tokens.find(t => t.address === buyTokenAddress);
+
+  console.log("sim: sell, buy ", sellToken, buyToken, tokens);
 
   const handleSwapDirection = () => {
     const tempAmount = sellAmount;
@@ -154,7 +194,7 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens }) => {
         // For simplicity, let's clear buyAmount and let user re-initiate or re-simulate.
         setBuyAmount(""); 
         setExchangeRate(null);
-        setPriceImpact(null);
+        setNetAmount(null);
     }
   };
   
@@ -164,86 +204,82 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens }) => {
       if (!sellToken || !buyToken || !sellAmount || parseFloat(sellAmount) <= 0) {
         setBuyAmount("");
         setExchangeRate(null);
-        setPriceImpact(null);
+        setNetAmount(null);
         return;
       }
-      setIsSubmitting(true);
-      setError(null);
       try {
-        const result = await simulateSwap(poolId, sellToken.address, buyToken.address, parseFloat(sellAmount));
-        setBuyAmount(result.amountOut);
-        setPriceImpact(result.priceImpact);
-        if (parseFloat(sellAmount) > 0 && parseFloat(result.amountOut) > 0) {
-          setExchangeRate((parseFloat(result.amountOut) / parseFloat(sellAmount)).toFixed(6));
-        } else {
-          setExchangeRate(null);
-        }
+        const result = await simulateSwap(poolId, sellToken.address, buyToken.address, parseFloat(sellAmount), fee);
+        // Format output to 2 decimal places
+        const formattedOutput = parseFloat(result.amountOut).toFixed(2);
+        setBuyAmount(formattedOutput);
+        setExchangeRate(result.exchangeRate);
+        
+        // Set net amount to same as output amount (no gas deduction)
+        setNetAmount(formattedOutput);
       } catch (e) {
-        setError("Simulation failed.");
-        console.error(e);
-      } finally {
-        setIsSubmitting(false);
+        console.error("Simulation failed:", e);
       }
     };
     performSimulation();
-  }, [sellAmount, sellToken, buyToken, poolId]);
+  }, [sellAmount, sellToken, buyToken, poolId, fee]);
 
 
   return (
-    <div className="space-y-4">
-      <div className="relative flex flex-col space-y-2">
-        <SwapCard
-          direction="sell"
-          amount={sellAmount}
-          onAmountChange={setSellAmount}
-          selectedToken={sellToken}
-          onTokenChange={setSellTokenAddress}
-          tokens={tokens}
-          // usdValue="1,987.92" // Placeholder
-        />
+    <div className="space-y-6">
+      <div className="relative">
+        <div className="space-y-2">
+          <SwapCard
+            direction="sell"
+            amount={sellAmount}
+            onAmountChange={setSellAmount}
+            selectedToken={sellToken}
+            onTokenChange={setSellTokenAddress}
+            tokens={tokens}
+          />
+          
+          <SwapCard
+            direction="buy"
+            amount={buyAmount}
+            onAmountChange={setBuyAmount}
+            selectedToken={buyToken}
+            onTokenChange={setBuyTokenAddress}
+            tokens={tokens}
+            isAmountEditable={false}
+          />
+        </div>
+        
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={handleSwapDirection}
-            className="rounded-full bg-purple-700/20 border-purple-500/50 hover:bg-purple-600/30 text-white w-8 h-8"
+            className="rounded-md bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.04)] text-[#FFFFFF] w-9 h-9 backdrop-blur-[112px]"
           >
-            <ArrowRightLeft className="w-4 h-4" />
+            <ArrowRightLeft className="w-5 h-5" />
           </Button>
         </div>
-        <SwapCard
-          direction="buy"
-          amount={buyAmount}
-          onAmountChange={setBuyAmount} // Typically buy amount is result, not editable
-          selectedToken={buyToken}
-          onTokenChange={setBuyTokenAddress}
-          tokens={tokens}
-          isAmountEditable={false} // Buy amount is usually the result of simulation
-          // usdValue="1,986.75" // Placeholder
-        />
       </div>
 
-      {/* Simulation Details */}
-      <div className="space-y-1 text-xs text-white/80">
+      {/* Simulation Details - Matching Figma design */}
+      <div className="space-y-2">
         {exchangeRate && sellToken && buyToken && (
-          <div className="flex justify-between">
-            <span>Exchange Rate:</span>
-            <span className="text-white">1 {sellToken.symbol} = {exchangeRate} {buyToken.symbol}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-['Inter'] text-[rgba(255,255,255,0.64)] w-32">Exchange Rate:</span>
+            <span className="text-sm font-['Inter'] text-[#FFFFFF]">1 {sellToken.symbol} = {exchangeRate} {buyToken.symbol}</span>
           </div>
         )}
-        {priceImpact !== null && (
-          <div className="flex justify-between">
-            <span>Price Impact:</span>
-            <span className="text-white">{priceImpact}%</span>
+        
+        {netAmount && buyToken && (
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-['Inter'] text-[rgba(255,255,255,0.64)] w-32">Net Amount:</span>
+            <span className="text-sm font-['Inter'] text-[#FFFFFF]">{netAmount} {buyToken.symbol}</span>
           </div>
         )}
-        {gasCost && (
-           <div className="flex justify-between">
-            <span>Est. Gas Cost:</span>
-            <span className="text-white">{gasCost}</span>
-          </div>
-        )}
-        {/* Net Amount could be calculated if gas is in a common currency */}
+        
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-['Inter'] text-[rgba(255,255,255,0.64)] w-32">Pool Fee:</span>
+          <span className="text-sm font-['Inter'] text-[#FFFFFF]">{pool ? `${parsePoolFee(pool)}%` : `${fee}%`}</span>
+        </div>
       </div>
     </div>
   );
