@@ -13,21 +13,21 @@ const networkOptions = {
     size: 24, // Default size for nodes, including circularImage
     color: {
       border: "rgba(255, 244, 224, 0.2)", // Subtle light border for fallback circle
-      background: "rgba(10, 10, 20, 0.8)", // Very dark background for fallback circle
+      background: "rgba(255, 244, 224, 0.04)", // Warm cream background matching List View
       highlight: {
         border: "#FF3366", // Folly Red for selection
-        background: "rgba(30, 30, 40, 0.9)",
+        background: "rgba(255, 244, 224, 0.08)", // Slightly brighter warm cream
       },
       hover: {
         border: "rgba(255, 244, 224, 0.5)",
-        background: "rgba(30, 30, 40, 0.9)",
+        background: "rgba(255, 244, 224, 0.06)", // Warm cream hover
       }
     },
     borderWidth: 6,
     // borderWidthSelected is handled programmatically in GraphManager for #FF3366
     font: {
       size: 16, // px
-      color: "#EAEAEA", 
+      color: "rgba(255, 244, 224, 1)", // Warm cream text 
       face: "Inter, Arial, sans-serif",
       vadjust: 0,
     },

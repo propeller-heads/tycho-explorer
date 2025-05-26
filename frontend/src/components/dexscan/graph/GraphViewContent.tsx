@@ -7,6 +7,7 @@ import { usePoolData } from '../context/PoolDataContext'; // Corrected Import us
 
 // Import graph frame background asset
 import graphFrameBgArtboard from '@/assets/figma_generated/graph_frame_bg_artboard.png';
+import globalBgNoise from '@/assets/figma_generated/global_bg_noise.png';
 
 // Define a minimal type for Pool and Token if not already globally available
 // This should ideally come from a shared types file e.g., ../types
@@ -96,19 +97,54 @@ const PoolGraphView: React.FC = () => {
 
   return (
     <div 
-      className="flex flex-col h-full p-6 rounded-xl"
+      className="flex flex-col h-full rounded-xl relative overflow-hidden"
       style={{ 
         height: "100%",
-        backgroundColor: "rgba(255, 244, 224, 0.02)",
-        backgroundImage: `url(${graphFrameBgArtboard})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        border: "1px solid rgba(255, 244, 224, 0.2)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
+        backgroundColor: "rgba(255, 244, 224, 0.01)", // Reduced opacity for more transparency
+        backdropFilter: "blur(16px)", // Reduced blur to see more background detail
+        WebkitBackdropFilter: "blur(16px)",
         boxSizing: "border-box",
       }}
     >
+      {/* Background layers to match Figma */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${graphFrameBgArtboard})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.25, // Reduced opacity to let comet rays shine through
+        }}
+      />
+      
+      {/* Noise texture layer */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${globalBgNoise})`,
+          backgroundRepeat: "repeat",
+          opacity: 0.1, // Match Figma's 10% opacity on noise
+        }}
+      />
+      
+      {/* Gradient border */}
+      <div 
+        className="absolute inset-0 rounded-xl pointer-events-none"
+        style={{
+          background: `linear-gradient(180deg, rgba(255, 244, 224, 0.1) 0%, rgba(255, 244, 224, 0.064) 100%)`,
+          padding: "1px",
+        }}
+      >
+        <div 
+          className="w-full h-full rounded-xl" 
+          style={{
+            backgroundColor: "transparent", // Remove opaque background to let rays through
+          }}
+        />
+      </div>
+      
+      {/* Content wrapper */}
+      <div className="relative z-10 flex flex-col h-full p-6">
       <GraphControls 
         tokenList={allAvailableTokenNodes} 
         protocols={uniqueProtocols}
@@ -139,6 +175,7 @@ const PoolGraphView: React.FC = () => {
           </p>
         </div>
       )}
+      </div> {/* Close content wrapper */}
     </div>
   );
 };
