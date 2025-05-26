@@ -4,6 +4,26 @@
 
 ### Recent Development Updates (2025-05-27 - Latest Session)
 
+#### Swap Simulator Number Display
+1. **Output Amount Display**:
+   - Limited to maximum 9 decimal places for cleaner display
+   - Uses smart formatting: shows actual decimals up to 9 places
+   - Example: "274.499327076" displays as "274.499327076" (not padded with zeros)
+   - If value has fewer decimals, shows only those (e.g., "100.5" stays "100.5")
+   
+2. **Net Amount Precision**:
+   - Always displays full precision - never truncated
+   - Critical for users to see exact amounts they'll receive
+   - Maintains consistency with user requirement
+
+3. **Bug Fix - TypeError**:
+   - Fixed "amount.split is not a function" error in SwapSimulator
+   - Issue: `amount` was a number but `.split()` was called on it
+   - Solution: Convert to string first with `String(amount).split()`
+   - Error occurred at line 121 in SwapCard component
+
+### Recent Development Updates (2025-05-27)
+
 #### Graph View UI Enhancements
 1. **Graph Pan Controls Implementation**:
    - Created comprehensive PanManager class for Figma-like pan controls

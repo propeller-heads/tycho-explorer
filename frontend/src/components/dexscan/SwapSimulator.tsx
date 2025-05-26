@@ -118,7 +118,7 @@ const SwapCard: React.FC<SwapCardProps> = ({
             />
           ) : (
             <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] text-[#FFFFFF] block">
-              {amount || "0"}
+              {amount ? (parseFloat(amount) === 0 ? "0" : parseFloat(amount).toFixed(Math.min(9, String(amount).split('.')[1]?.length || 0))) : "0"}
             </span>
           )}
         </div>

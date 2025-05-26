@@ -33,7 +33,9 @@
   - Token addresses now display as shortened format (0xaabb...bbaa) in List View and Swap Simulator
   - Filter popovers updated with transparent borders and folly red checkboxes
   - Fixed favicon configuration to use /public/favicon.ico
-  - Swap Simulator now shows full precision for all amounts (no truncation)
+  - Swap Simulator output amount limited to 9 decimal places display (but keeps full precision in calculations)
+  - Net amount always shows full precision (never truncated)
+  - Fixed "amount.split is not a function" TypeError by converting number to string
 - **App Menu Selector**:
   - Added app menu selector button in header (left of Tycho Explorer)
   - Implemented dropdown with Explorer (disabled) and Orderbook (links to orderbook.wtf)
