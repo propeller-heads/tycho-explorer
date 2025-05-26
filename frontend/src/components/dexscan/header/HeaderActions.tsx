@@ -28,7 +28,6 @@ const TEXT_DISCONNECTED = "Disconnected";
 const DOCS_LINK_CLASSES = "flex items-center gap-1 text-sm font-normal text-[#FFFFFF] hover:text-[#FFFFFF]/90 transition-colors";
 const WS_INDICATOR_BUTTON_CLASSES = "flex h-9 items-center gap-1.5 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] px-3 py-1.5 transition-colors text-[#FFFFFF]";
 const WS_PANEL_CLASSES = "mt-2 w-72 md:w-80 shadow-lg absolute top-full right-0 z-50";
-const WS_PANEL_CARD_CLASSES = "bg-card rounded-lg border shadow-lg relative";
 const WS_PANEL_HEADER_CLASSES = "flex items-center p-2 border-b";
 const WS_PANEL_CLOSE_BUTTON_CLASSES = "h-6 w-6 p-0 ml-1";
 const WS_ICON_BASE_CLASSES = "h-4 w-4";

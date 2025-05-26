@@ -2,6 +2,8 @@
 import React from 'react';
 // Import the Tycho Indexer SVG icon from the assets folder using alias path
 import TychoIndexerLightSmallIcon from '@/assets/figma_header_icons/tycho-indexer-light-small.svg';
+// Import the AppMenuSelector component
+import AppMenuSelector from './AppMenuSelector';
 
 // Define a functional component named HeaderBranding with no props
 const HeaderBranding: React.FC = () => {
@@ -9,6 +11,9 @@ const HeaderBranding: React.FC = () => {
   return (
     // Outer container with flexbox layout, vertically centered items and 16px gap (gap-4)
     <div className="flex items-center gap-4"> {/* Corresponds to Frame 152534 gap-4 is approx 16px */}
+      {/* App menu selector */}
+      <AppMenuSelector />
+      
       {/* Logo and Explorer Text - Corresponds to Frame 152361 7675:7895 */}
       {/* Inner container with flexbox layout, vertically centered items and 12px gap (gap-3) */}
       <div className="flex items-center gap-3"> {/* gap-3 is 12px */}
