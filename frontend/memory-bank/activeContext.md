@@ -2,6 +2,51 @@
 
 ## Current Work Focus
 
+### Recent Development Updates (2025-05-27 - Latest Session)
+
+#### Graph View UI Enhancements
+1. **Graph Pan Controls Implementation**:
+   - Created comprehensive PanManager class for Figma-like pan controls
+   - Middle mouse button drag for panning (like Figma)
+   - Two-finger trackpad pan support
+   - Disabled default left-click pan in vis-network (`dragView: false`)
+   - Used requestAnimationFrame for smooth 60fps panning
+   - Proper event handling and cleanup in GraphManager
+
+2. **App Menu Selector**:
+   - Added app menu selector in header (left of Tycho Explorer logo)
+   - Downloads grid dots icon from Figma assets
+   - Dropdown shows Explorer (current app, disabled) and Orderbook (links to orderbook.wtf)
+   - Glassy styling: `bg-[rgba(255,244,224,0.04)]` with backdrop blur
+   - Folly red border (#FF3366) for dropdown
+
+3. **Graph View Background Restoration**:
+   - Analyzed Figma design layers to understand purple effect
+   - Purple artboard at 25% opacity (reduced from 40% to let rays through)
+   - Added noise texture layer at 10% opacity
+   - Removed opaque `bg-[#190A35]` to transparent background
+   - Reduced backdrop blur from 24px to 16px for more detail
+   - Base background reduced to 0.01 opacity
+
+4. **Node Color Fixes**:
+   - Restored warm cream node colors from dark colors
+   - Background: `rgba(255, 244, 224, 0.04)` → `rgba(255, 244, 224, 0.08)` on highlight
+   - Text color: `rgba(255, 244, 224, 1)`
+   - Hover states with warm cream at 0.06 opacity
+
+5. **WebSocket Config Restyling**:
+   - Updated all form elements to glassy style
+   - Select dropdown: transparent borders, warm cream text
+   - Input field and button matching app selector style
+   - Height increased to h-10 for consistency
+
+6. **Filter Search Bars Update**:
+   - Matched GraphControls dynamic border implementation
+   - Wrapper div with conditional border styling
+   - Default: 1px `rgba(255, 244, 224, 0.2)` border
+   - Focused: 2px `#FF3366` (folly red) border
+   - Added focus state tracking with separate state variables
+
 ### Recent Development Updates (2025-05-27)
 
 #### UI Refinements and Fixes

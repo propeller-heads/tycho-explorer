@@ -34,6 +34,36 @@
   - Filter popovers updated with transparent borders and folly red checkboxes
   - Fixed favicon configuration to use /public/favicon.ico
   - Swap Simulator now shows full precision for all amounts (no truncation)
+- **Graph Pan Controls Implementation**:
+  - Implemented Figma-like pan controls for graph view
+  - Added PanManager class for middle mouse button and two-finger trackpad pan
+  - Disabled default left-click pan to match Figma behavior
+  - Added requestAnimationFrame for smooth 60fps panning
+- **App Menu Selector**:
+  - Added app menu selector button in header (left of Tycho Explorer)
+  - Implemented dropdown with Explorer (disabled) and Orderbook (links to orderbook.wtf)
+  - Styled with same glassy effect as other UI components
+- **Graph View Background Enhancement**:
+  - Restored purple background with proper layering to match Figma
+  - Purple artboard image at 25% opacity (reduced from 40% to let comet rays through)
+  - Added noise texture layer at 10% opacity
+  - Removed opaque backgrounds to allow background rays to shine through
+  - Adjusted backdrop blur to 16px for more background detail
+- **Node Color Restoration**:
+  - Fixed graph nodes to use warm cream colors instead of dark colors
+  - Node background: `rgba(255, 244, 224, 0.04)`
+  - Node text: `rgba(255, 244, 224, 1)`
+  - Maintains consistency with overall warm cream theme
+- **WebSocket Config Styling**:
+  - Updated to use glassy style matching app menu selector
+  - Select dropdown, input field, and button all use consistent styling
+  - Background: `rgba(255,244,224,0.06)` with hover states
+  - Text color: warm cream (#FFF4E0)
+- **Filter Search Bar Styling**:
+  - Updated search bars to match GraphControls dynamic border style
+  - Default border: `rgba(255, 244, 224, 0.2)`
+  - Focused border: `#FF3366` (folly red) with 2px width
+  - Smooth transition effects on focus/blur
 
 ### Recent Accomplishments (2025-05-26)
 - **Color System Overhaul**: Successfully transitioned entire UI from purple/blue theme to TC Design warm cream/beige palette

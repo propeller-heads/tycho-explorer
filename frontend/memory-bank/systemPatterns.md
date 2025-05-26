@@ -17,6 +17,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   The main header component.
     *   Composed of `HeaderBranding` (left), `ViewSelector` (center), and `HeaderActions` (right).
     *   Receives `currentView` and `onViewChange` props to manage view switching.
+    *   **HeaderBranding** includes AppMenuSelector for app switching (Explorer/Orderbook)
 
 3.  **`ViewSelector.tsx`**:
     *   Provides toggle buttons ("Pool List", "Market Graph") for switching between the two main views.
@@ -83,6 +84,12 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Shows 100 items initially, loads 100 more when scrolling near bottom
     *   Resets to 100 when search term changes
     *   Uses `onViewportScroll` event to detect when user is near bottom (< 50px)
+*   **UI Styling Patterns**:
+    *   Glassy effects: `bg-[rgba(255,244,224,0.02-0.06)]` with `backdrop-blur`
+    *   Warm cream text: `rgba(255, 244, 224, 1)` (#FFF4E0)
+    *   Folly red accents: `#FF3366` for checkboxes, borders, focus states
+    *   Dynamic border focus: 1px default → 2px on focus with smooth transition
+    *   Search bars wrapped in div with conditional border styling
 *   **URL-Driven State**: For active tab.
 *   **Utility Functions**: In `src/lib/`.
 *   **Protocol-Specific Fee Parsing**: 
@@ -94,6 +101,11 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Edge widening based on `lastUpdatedAtBlock === currentBlockNumber`
     *   Edge tooltips show pool details without external links
     *   Node tooltips show token information with pool counts
+    *   **Pan Controls**: Custom PanManager class for Figma-like pan behavior
+        *   Middle mouse button drag for panning
+        *   Two-finger trackpad pan (detects wheel events with ctrlKey)
+        *   RequestAnimationFrame for smooth 60fps panning
+        *   Disabled default left-click pan (`dragView: false`)
 *   **Robust External API Interaction (`src/lib/coingecko.ts`):**
     *   Centralized module for all CoinGecko API calls.
     *   Handles rate limiting through request queueing and delays.
