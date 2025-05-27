@@ -111,9 +111,15 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   **Mobile Support**:
         *   Touch interactions enabled via vis-network configuration
         *   Mobile-optimized physics (tighter clustering, faster stabilization)
-        *   Auto-centering on load and when new nodes added
         *   Single-tap tooltips (no long press required)
         *   Direct touchend event handling for edge tooltips
+    *   **🚨 CRITICAL - Layout Preservation**:
+        *   NO fit() calls anywhere - prevents unwanted re-centering
+        *   `autoResize: false` - prevents automatic viewport adjustments
+        *   Viewport position/scale saved before data updates
+        *   Viewport restored after updates with `moveTo()` (no animation)
+        *   Graph initialization separated from data updates
+        *   User's zoom/pan/node positions ALWAYS preserved
 *   **Robust External API Interaction (`src/lib/coingecko.ts`):**
     *   Centralized module for all CoinGecko API calls.
     *   Handles rate limiting through request queueing and delays.

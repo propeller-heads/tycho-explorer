@@ -14,6 +14,8 @@ When iterating on the plan with the user:
 * Be concise and use Germinc-style English words in the sense they are plain and concrete
 * Number the proposed changes, and use subitem numbering e.g. 1.1 and 1.1.2, so it's simple for the user to discuss the changes with you
 
+When implementing a feature: we want to 1) gather data 2) root cause 3) find options 4) select best option 5) execute on the option.
+
 # Tips
 
 * Don't npm commands, I am running bun and vite in another terminal

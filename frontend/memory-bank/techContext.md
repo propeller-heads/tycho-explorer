@@ -56,3 +56,8 @@
 *   **Touch Interactions**: Verify all touch gestures work smoothly
 *   **TypeScript**: Use `npx tsc --noEmit` for type checking
 *   **Performance**: Monitor graph performance on lower-end mobile devices
+*   **🚨 CRITICAL - Graph View Testing**: 
+    *   ALWAYS verify zoom/pan persists through block updates
+    *   Test that graph NEVER auto-centers or auto-fits
+    *   Ensure viewport position is maintained exactly
+    *   Test with rapid block updates to ensure stability

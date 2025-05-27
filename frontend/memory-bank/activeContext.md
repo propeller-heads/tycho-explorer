@@ -2,6 +2,35 @@
 
 ## Current Work Focus
 
+### 🚨 CRITICAL FIX - Graph View Layout Preservation (2025-05-27)
+
+**PROBLEM**: Graph view was re-centering on every block update, destroying user's zoom, pan, and node manipulations.
+
+**ROOT CAUSE**: Multiple issues causing unwanted re-centering:
+1. Mobile-friendly code added `network.fit()` calls in updateData method
+2. Initial useEffect was re-initializing graph on data changes
+3. `autoResize: true` was causing automatic viewport adjustments
+4. vis-network's internal layout recalculations on data updates
+
+**SOLUTION IMPLEMENTED**:
+1. **Removed ALL fit() calls** - No auto-fitting anywhere in the code
+2. **Set autoResize: false** - Prevents automatic resizing/re-centering
+3. **Separated initialization** - Graph manager created once, data updates don't reinitialize
+4. **Viewport preservation** - Save and restore viewport position/scale during updates:
+   ```typescript
+   // In updateData method:
+   const currentViewPosition = this.network.getViewPosition();
+   const currentScale = this.network.getScale();
+   // ... perform updates ...
+   this.network.moveTo({
+     position: currentViewPosition,
+     scale: currentScale,
+     animation: false
+   });
+   ```
+
+**CRITICAL**: This fix MUST be preserved. Users expect their graph manipulations to persist.
+
 ### Recent Development Updates (2025-05-27 - Latest Session - Mobile Friendliness)
 
 #### Mobile-Friendly Implementation (Completed)

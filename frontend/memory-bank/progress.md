@@ -62,7 +62,20 @@
   - Focused border: `#FF3366` (folly red) with 2px width
   - Smooth transition effects on focus/blur
 
-### Recent Accomplishments (2025-05-27 - Latest Session - Mobile Friendliness)
+### Recent Accomplishments (2025-05-27 - Latest Session)
+
+#### 🚨 CRITICAL: Graph View Layout Preservation Fix
+- **Fixed graph re-centering issue** that destroyed user's zoom/pan on block updates
+- Removed all `network.fit()` calls that were causing unwanted re-centering
+- Set `autoResize: false` to prevent automatic viewport adjustments
+- Implemented viewport preservation in updateData method:
+  - Saves current position and scale before updates
+  - Restores exact viewport after data changes
+  - No animation for instant restoration
+- Separated graph initialization from data updates
+- **This fix is CRITICAL and must be preserved**
+
+#### Mobile Friendliness Implementation
 - **Mobile-Friendly Implementation**: Executed comprehensive mobile optimization plan
   - Phase 1 (Critical): Enabled touch interactions, auto-centering, responsive header
   - Phase 2 (UX): Mobile physics optimization, filter control stacking, responsive spacing

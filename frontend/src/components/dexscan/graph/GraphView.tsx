@@ -8,7 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile'; // Import mobile detection hoo
 
 // Function to get network options based on device type
 const getNetworkOptions = (isMobile: boolean) => ({
-  autoResize: true,
+  autoResize: false, // Prevent automatic resizing that might cause re-centering
   nodes: {
     shape: "circle", // Default shape, will be overridden by 'circularImage' for nodes with images
     size: 24, // Default size for nodes, including circularImage
@@ -158,22 +158,11 @@ class GraphManager {
       this.networkOptions
     );
 
-    // Listen for initial stabilization to be done, then fit the network
-    // This ensures the graph is nicely framed on initial load.
-    // Subsequent zoom/pan by the user will be preserved due to `physics.stabilization.fit: false`.
+    // Listen for initial stabilization to be done
+    // We don't call fit() anymore to prevent any re-centering
+    // User's zoom/pan will be preserved from the start
     this.network.once('stabilizationIterationsDone', () => {
-      if (this.network) { // Ensure network still exists
-        // Add a small delay on mobile to ensure proper fitting
-        if (isMobile) {
-          setTimeout(() => {
-            if (this.network) {
-              this.network.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
-            }
-          }, 100);
-        } else {
-          this.network.fit();
-        }
-      }
+      // Stabilization complete - no action needed
     });
 
     // Add click event handler for nodes and edges
@@ -541,6 +530,10 @@ class GraphManager {
   updateData(newNodesData: VisNode[], newEdgesData: VisEdge[], isMobile: boolean = false) {
     if (!this.nodesDataset || !this.edgesDataset || !this.network) return;
 
+    // Save current viewport position before updates
+    const currentViewPosition = this.network.getViewPosition();
+    const currentScale = this.network.getScale();
+
     // --- Nodes Diffing and Updating ---
     // Get current nodes as a Map for efficient lookup
     const currentNodesMap = new Map(this.nodesDataset.get({ returnType: 'Array' }).map(node => [node.id, node]));
@@ -626,18 +619,13 @@ class GraphManager {
       this.edgesDataset.remove(edgeIdsToRemove);
     }
     
-    // After updating datasets, it might be necessary to explicitly tell the network to redraw
-    // if changes aren't automatically picked up for some reason, though typically DataSet events handle this.
-    // this.network.redraw(); // Usually not needed if DataSets are correctly linked.
-    
-    // On mobile, if we're adding new nodes, ensure the graph fits them into view
-    if (isMobile && nodesToAdd.length > 0) {
-      setTimeout(() => {
-        if (this.network) {
-          this.network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
-        }
-      }, 500); // Wait for physics to stabilize
-    }
+    // After updating datasets, restore the viewport position
+    // This prevents the graph from re-centering after updates
+    this.network.moveTo({
+      position: currentViewPosition,
+      scale: currentScale,
+      animation: false // No animation to make it instant
+    });
   }
 
   refreshCurrentTooltipData() {
@@ -839,17 +827,10 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
   const graphManagerRef = useRef<GraphManager | null>(null);
   const isMobile = useIsMobile();
 
-  // Initialize graph only once
+  // Create graph manager on mount
   useEffect(() => {
     if (!graphManagerRef.current) {
       graphManagerRef.current = new GraphManager();
-    }
-
-    if (containerRef.current) {
-      const manager = graphManagerRef.current;
-      if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
-        manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData, isMobile);
-      }
     }
 
     // Only clean up on unmount
@@ -859,19 +840,23 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
         graphManagerRef.current = null;
       }
     };
-  }, [tokenNodes, poolEdges, rawPoolsData, isMobile]); // Include all dependencies
+  }, []); // Empty dependencies - only run once on mount
 
-  // Handle updates to nodes, edges, or rawPoolsData
+  // Initialize or update graph when data changes
   useEffect(() => {
-    if (containerRef.current && graphManagerRef.current && graphManagerRef.current.isInitialized()) {
-      const manager = graphManagerRef.current;
-      // Pass rawPoolsData to updateData if it needs to be updated,
-      // or ensure manager.rawPoolsData is updated if it changes.
-      // Ensure the manager's internal rawPoolsData is correctly typed and updated
-    manager.rawPoolsData = rawPoolsData as Record<string, PoolType>; 
-    manager.updateData(tokenNodes, poolEdges, isMobile);
-    manager.refreshCurrentTooltipData(); // Refresh tooltip if open
-  }
+    if (!containerRef.current || !graphManagerRef.current) return;
+    
+    const manager = graphManagerRef.current;
+    
+    if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
+      // First time initialization
+      manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData, isMobile);
+    } else if (manager.isInitialized()) {
+      // Subsequent updates
+      manager.rawPoolsData = rawPoolsData as Record<string, PoolType>; 
+      manager.updateData(tokenNodes, poolEdges, isMobile);
+      manager.refreshCurrentTooltipData(); // Refresh tooltip if open
+    }
   }, [tokenNodes, poolEdges, rawPoolsData, isMobile]);
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */ }
