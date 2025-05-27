@@ -8,6 +8,10 @@ Pool Explorer is a local user interface designed to explore Decentralized Exchan
 
 To get started with Pool Explorer, follow these steps:
 
+* You need to first get the tycho websocket api server running https://github.com/ex9-fyi/tycho-api
+
+* You then start this application
+
 ```bash
 # Build first
 bun run build
