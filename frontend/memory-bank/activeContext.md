@@ -31,6 +31,51 @@
 
 **CRITICAL**: This fix MUST be preserved. Users expect their graph manipulations to persist.
 
+### 🚨 CRITICAL FIX - Mobile Edge Tooltip Touch Handler (2025-05-27)
+
+**PROBLEM**: Edge tooltips stopped working on mobile after the layout preservation fix.
+
+**ROOT CAUSE**: The touchend event listener was only added during initialization. Since initialization now runs only once (to prevent re-centering), if the graph initialized on desktop and then viewed on mobile, the touch handler wasn't present.
+
+**SOLUTION IMPLEMENTED**:
+1. **Made GraphManager properties accessible**:
+   - Changed `network` from private to public
+   - Changed `showEdgeInfoPopover` from private to public
+2. **Added separate useEffect for mobile touch handling**:
+   ```typescript
+   useEffect(() => {
+     if (!containerRef.current || !graphManagerRef.current || !graphManagerRef.current.isInitialized() || !isMobile) return;
+     
+     const canvas = containerRef.current.querySelector('canvas');
+     if (!canvas) return;
+     
+     const handleTouchEnd = (event: TouchEvent) => {
+       event.preventDefault();
+       const touch = event.changedTouches[0];
+       const manager = graphManagerRef.current;
+       if (!manager || !manager.network) return;
+       
+       const canvasPos = manager.network.DOMtoCanvas({ 
+         x: touch.clientX, 
+         y: touch.clientY 
+       });
+       const edgeId = manager.network.getEdgeAt(canvasPos);
+       
+       if (edgeId) {
+         manager.showEdgeInfoPopover(String(edgeId), touch.clientX, touch.clientY);
+       }
+     };
+     
+     canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+     
+     return () => {
+       canvas.removeEventListener('touchend', handleTouchEnd);
+     };
+   }, [isMobile, tokenNodes]);
+   ```
+
+**CRITICAL**: This ensures edge tooltips work on mobile regardless of initialization order.
+
 ### Recent Development Updates (2025-05-27 - Latest Session - Mobile Friendliness)
 
 #### Mobile-Friendly Implementation (Completed)

@@ -121,7 +121,7 @@ interface GraphViewProps {
 
 // Class to manage the network and position cache
 class GraphManager {
-  private network: Network | null = null;
+  public network: Network | null = null; // Made public for mobile touch handler
   private nodesDataset: DataSet<VisNode> | null = null;
   private edgesDataset: DataSet<VisEdge> | null = null;
   public rawPoolsData: Record<string, PoolType> // Changed RawPool to PoolType
@@ -657,7 +657,7 @@ class GraphManager {
   }
 
   // Method to display information for a clicked edge
-  private showEdgeInfoPopover(poolId: string, clickX: number, clickY: number) {
+  public showEdgeInfoPopover(poolId: string, clickX: number, clickY: number) {
     if (!this.network || !this.container || !this.rawPoolsData) return;
 
     const pool = this.rawPoolsData[poolId];
@@ -858,6 +858,38 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
       manager.refreshCurrentTooltipData(); // Refresh tooltip if open
     }
   }, [tokenNodes, poolEdges, rawPoolsData, isMobile]);
+
+  // Add mobile touch handler for edges when on mobile
+  useEffect(() => {
+    if (!containerRef.current || !graphManagerRef.current || !graphManagerRef.current.isInitialized() || !isMobile) return;
+    
+    const canvas = containerRef.current.querySelector('canvas');
+    if (!canvas) return;
+    
+    const handleTouchEnd = (event: TouchEvent) => {
+      event.preventDefault();
+      const touch = event.changedTouches[0];
+      const manager = graphManagerRef.current;
+      if (!manager || !manager.network) return;
+      
+      const canvasPos = manager.network.DOMtoCanvas({ 
+        x: touch.clientX, 
+        y: touch.clientY 
+      });
+      const edgeId = manager.network.getEdgeAt(canvasPos);
+      
+      // Trigger edge tooltip for taps
+      if (edgeId) {
+        manager.showEdgeInfoPopover(String(edgeId), touch.clientX, touch.clientY);
+      }
+    };
+    
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+    
+    return () => {
+      canvas.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isMobile, tokenNodes]); // Re-run when mobile state changes or graph updates
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */ }
 };

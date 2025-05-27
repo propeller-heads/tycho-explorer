@@ -8,20 +8,10 @@ Pool Explorer is a local user interface designed to explore Decentralized Exchan
 
 To get started with Pool Explorer, follow these steps:
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/ex9-fyi/swift-price-oracle.git
-    ```
-2.  **Navigate into the project directory:**
-    ```bash
-    cd swift-price-oracle
-    ```
-3.  **Make the startup script executable:**
-    ```bash
-    chmod +x start-prod.sh
-    ```
-4.  **Run the application:**
-    ```bash
-    ./start-prod.sh --parallel
-    ```
-This will start the application.
+```bash
+# Build first
+bun run build
+
+# Then run the production build
+bun run preview
+```

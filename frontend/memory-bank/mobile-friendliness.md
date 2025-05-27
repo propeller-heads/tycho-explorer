@@ -73,6 +73,7 @@ All mobile-friendliness issues have been successfully resolved. The application 
 - App menu mobile optimization
 - Filter popover truncation
 - Tooltip interaction fixes
+- **🚨 CRITICAL: Mobile edge tooltip handler** - Separate useEffect ensures tooltips work regardless of when graph initialized
 
 ## Testing Recommendations
 

@@ -120,6 +120,13 @@ The Pool Explorer is a local client-side application built with React and TypeSc
         *   Viewport restored after updates with `moveTo()` (no animation)
         *   Graph initialization separated from data updates
         *   User's zoom/pan/node positions ALWAYS preserved
+    *   **🚨 CRITICAL - Mobile Edge Tooltip Handler**:
+        *   Separate useEffect for mobile touch handling
+        *   Runs when isMobile state changes or graph updates
+        *   Direct touchend event listener on canvas element
+        *   Converts touch coordinates to canvas coordinates
+        *   GraphManager.network and showEdgeInfoPopover made public
+        *   Ensures tooltips work regardless of initialization order
 *   **Robust External API Interaction (`src/lib/coingecko.ts`):**
     *   Centralized module for all CoinGecko API calls.
     *   Handles rate limiting through request queueing and delays.

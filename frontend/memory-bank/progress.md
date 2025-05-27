@@ -75,6 +75,18 @@
 - Separated graph initialization from data updates
 - **This fix is CRITICAL and must be preserved**
 
+#### 🚨 CRITICAL: Mobile Edge Tooltip Touch Handler Fix
+- **Fixed edge tooltips not working on mobile** after layout preservation changes
+- Root cause: touchend listener only added during initialization
+- Implemented separate useEffect that:
+  - Runs when isMobile state changes
+  - Adds touchend event listener to canvas
+  - Properly handles edge detection and tooltip display
+- Made GraphManager methods public:
+  - `network` property now public
+  - `showEdgeInfoPopover` method now public
+- **This fix is CRITICAL for mobile usability**
+
 #### Mobile Friendliness Implementation
 - **Mobile-Friendly Implementation**: Executed comprehensive mobile optimization plan
   - Phase 1 (Critical): Enabled touch interactions, auto-centering, responsive header
