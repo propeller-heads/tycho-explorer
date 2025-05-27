@@ -16,16 +16,12 @@ To get started with Pool Explorer, follow these steps:
     ```bash
     cd swift-price-oracle
     ```
-3.  **Checkout the `graph_view_wt1` branch (the development branch):**
+3.  **Make the startup script executable:**
     ```bash
-    git checkout graph_view_wt1
+    chmod +x start-prod.sh
     ```
-4.  **Make the startup script executable:**
+4.  **Run the application:**
     ```bash
-    chmod +x start.sh
-    ```
-5.  **Run the application:**
-    ```bash
-    ./start.sh --parallel
+    ./start-prod.sh --parallel
     ```
 This will start the application.
