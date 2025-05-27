@@ -1,3 +1,5 @@
+Install rust and cargo: https://www.rust-lang.org/tools/install
+
 To run on ethereum: 
 
 For prod
