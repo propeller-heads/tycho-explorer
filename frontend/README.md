@@ -23,3 +23,13 @@ bun run preview
 # Mobile
 
 The app is made to be mobile friendly but as it stands there are UI quirks with Chrome. It works well on Firefox.
+
+# Quick developement setup
+
+```
+chmod +x ./start.sh
+./start.sh --parallel
+```
+
+This is an non-optimized build.
+
