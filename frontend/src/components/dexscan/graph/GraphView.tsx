@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { Network } from 'vis-network';
+import { Network, Node as VisNode, Edge as VisEdge } from 'vis-network';
 import { DataSet } from 'vis-data';
 import { parsePoolFee } from '@/lib/poolUtils'; // Import for fee parsing
 import { Pool as PoolType } from '@/components/dexscan/types'; // Import Pool type
 import { getExternalLink, renderHexId, formatTimeAgo } from '@/lib/utils'; // Import getExternalLink, renderHexId, and formatTimeAgo
+import { useIsMobile } from '@/hooks/use-mobile'; // Import mobile detection hook
 
-// Define the network options
-const networkOptions = {
+// Function to get network options based on device type
+const getNetworkOptions = (isMobile: boolean) => ({
   autoResize: true,
   nodes: {
     shape: "circle", // Default shape, will be overridden by 'circularImage' for nodes with images
@@ -53,12 +54,12 @@ const networkOptions = {
     enabled: true,
     solver: 'barnesHut', // Default, generally good for non-hierarchical
     barnesHut: {
-      gravitationalConstant: -25000, // Increased repulsion
-      centralGravity: 0.1,           // Reduced pull to center
-      springLength: 300,             // Increased for more node separation
-      springConstant: 0.03,          // Might need slight reduction with longer springs
-      damping: 0.09,                 // Standard
-      avoidOverlap: 0.7              // Increased to prevent node overlap
+      gravitationalConstant: isMobile ? -15000 : -25000, // Less repulsion on mobile for tighter clustering
+      centralGravity: isMobile ? 0.3 : 0.1,              // More center pull on mobile to keep nodes in view
+      springLength: isMobile ? 150 : 300,                // Shorter springs on mobile for compact layout
+      springConstant: isMobile ? 0.05 : 0.03,            // Slightly higher spring constant for mobile
+      damping: 0.09,                                      // Standard
+      avoidOverlap: isMobile ? 0.5 : 0.7                 // Less overlap avoidance for tighter mobile layout
     },
     adaptiveTimestep: true, // Default
     // Stabilization options:
@@ -83,9 +84,22 @@ const networkOptions = {
   interaction: {
     hover: true, // To see hover effects
     tooltipDelay: 200, // Default 300
+    // Enable touch interactions for mobile
+    dragNodes: true,
+    dragView: true,
+    zoomView: true,
+    zoomSpeed: 0.5, // Reduce zoom sensitivity (default is 1.0)
+    multiselect: false, // Keep single selection for simplicity on mobile
+    navigationButtons: false, // Hide navigation buttons on mobile to save space
+    // Configure selection behavior for faster response
+    selectConnectedEdges: true,
+    hoverConnectedEdges: true,
+    // Make touch interactions more responsive
+    hideEdgesOnDrag: false,
+    hideEdgesOnZoom: false,
     // Other interaction defaults are usually fine
   }
-};
+});
 
 
 // Minimal types for rawPoolsData, assuming structure from PoolDataContext/useGraphData
@@ -108,8 +122,8 @@ interface GraphViewProps {
 // Class to manage the network and position cache
 class GraphManager {
   private network: Network | null = null;
-  private nodesDataset: DataSet<any> | null = null;
-  private edgesDataset: DataSet<any> | null = null;
+  private nodesDataset: DataSet<VisNode> | null = null;
+  private edgesDataset: DataSet<VisEdge> | null = null;
   public rawPoolsData: Record<string, PoolType> // Changed RawPool to PoolType
   private initialized = false;
   private container: HTMLElement | null = null;
@@ -117,9 +131,10 @@ class GraphManager {
   private currentEdgePopover: { element: HTMLElement; poolId: string } | null = null; // For edge popovers
   private activeTimeout: NodeJS.Timeout | null = null;
   private selectedNodeId: string | null = null; // To track selected node
-  private boundHandleDocumentMousedown: ((event: MouseEvent) => void) | null = null;
+  private boundHandleDocumentMousedown: ((event: MouseEvent | TouchEvent) => void) | null = null;
+  private networkOptions: ReturnType<typeof getNetworkOptions> | null = null; // Store network options for later use
 
-  initialize(container: HTMLElement, initialNodes: any[], initialEdges: any[], rawPools: Record<string, PoolType>) {
+  initialize(container: HTMLElement, initialNodes: VisNode[], initialEdges: VisEdge[], rawPools: Record<string, PoolType>, isMobile: boolean) {
     this.rawPoolsData = rawPools; // Store raw pools data
     this.boundHandleDocumentMousedown = this.handleDocumentMousedown.bind(this);
     this.container = container;
@@ -133,11 +148,14 @@ class GraphManager {
     // const nodes = this.nodesDataset.get();
     // nodes.forEach(node => { ... });
 
-    // Create network
+    // Store network options for later use
+    this.networkOptions = getNetworkOptions(isMobile);
+
+    // Create network with mobile-optimized options
     this.network = new Network(
       container,
       { nodes: this.nodesDataset, edges: this.edgesDataset },
-      networkOptions
+      this.networkOptions
     );
 
     // Listen for initial stabilization to be done, then fit the network
@@ -145,16 +163,58 @@ class GraphManager {
     // Subsequent zoom/pan by the user will be preserved due to `physics.stabilization.fit: false`.
     this.network.once('stabilizationIterationsDone', () => {
       if (this.network) { // Ensure network still exists
-        this.network.fit();
+        // Add a small delay on mobile to ensure proper fitting
+        if (isMobile) {
+          setTimeout(() => {
+            if (this.network) {
+              this.network.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+            }
+          }, 100);
+        } else {
+          this.network.fit();
+        }
       }
     });
 
     // Add click event handler for nodes and edges
-    this.network.on('click', (params) => {
+    // Also handle tap events for mobile
+    const handleInteraction = (params: any) => {
       const clickedNodeId = params.nodes.length > 0 ? params.nodes[0] : null;
       const clickedEdgeId = params.edges.length > 0 ? params.edges[0] : null;
       const previousSelectedNodeId = this.selectedNodeId;
-      const clickEvent = params.event?.center || { x: 0, y: 0 }; // DOM click coordinates
+      // Get the actual DOM position of the click event
+      // Handle both mouse and touch events
+      let clickEvent = { x: 0, y: 0 };
+      
+      if (params.event) {
+        // For mouse events
+        if (params.event.center) {
+          clickEvent = { x: params.event.center.x, y: params.event.center.y };
+        } 
+        // For touch events, check srcEvent
+        else if (params.event.srcEvent) {
+          const srcEvent = params.event.srcEvent;
+          if (srcEvent.touches && srcEvent.touches.length > 0) {
+            // Touch event
+            clickEvent = { 
+              x: srcEvent.touches[0].clientX, 
+              y: srcEvent.touches[0].clientY 
+            };
+          } else if (srcEvent.changedTouches && srcEvent.changedTouches.length > 0) {
+            // Touch end event
+            clickEvent = { 
+              x: srcEvent.changedTouches[0].clientX, 
+              y: srcEvent.changedTouches[0].clientY 
+            };
+          } else if (srcEvent.clientX !== undefined) {
+            // Mouse event fallback
+            clickEvent = { x: srcEvent.clientX, y: srcEvent.clientY };
+          }
+        }
+      } else if (params.pointer && params.pointer.DOM) {
+        // Fallback to pointer position
+        clickEvent = { x: params.pointer.DOM.x, y: params.pointer.DOM.y };
+      }
 
       // Always hide any existing popups (node or edge) first
       this.hidePopup(); // This is the existing node tooltip popup
@@ -166,11 +226,11 @@ class GraphManager {
         if (previousSelectedNodeId && previousSelectedNodeId !== clickedNodeId) {
             this.nodesDataset?.update({
               id: previousSelectedNodeId,
-              borderWidth: networkOptions.nodes.borderWidth,
+              borderWidth: this.networkOptions.nodes.borderWidth,
               color: {
-                border: networkOptions.nodes.color.border,
-                background: networkOptions.nodes.color.background,
-                highlight: networkOptions.nodes.color.highlight
+                border: this.networkOptions.nodes.color.border,
+                background: this.networkOptions.nodes.color.background,
+                highlight: this.networkOptions.nodes.color.highlight
               }
             });
           }
@@ -182,10 +242,10 @@ class GraphManager {
             borderWidth: 2, // Selected border width
             color: {
               border: '#FF3366', // Selected border color
-              background: networkOptions.nodes.color.background, // Keep original background
+              background: this.networkOptions.nodes.color.background, // Keep original background
               highlight: { // Keep highlight consistent or adjust if needed
                 border: '#FF3366',
-                background: networkOptions.nodes.color.highlight.background
+                background: this.networkOptions.nodes.color.highlight.background
               }
             }
           });
@@ -207,11 +267,11 @@ class GraphManager {
         if (previousSelectedNodeId) {
           this.nodesDataset?.update({
             id: previousSelectedNodeId,
-            borderWidth: networkOptions.nodes.borderWidth,
+            borderWidth: this.networkOptions.nodes.borderWidth,
             color: {
-              border: networkOptions.nodes.color.border,
-              background: networkOptions.nodes.color.background,
-              highlight: networkOptions.nodes.color.highlight
+              border: this.networkOptions.nodes.color.border,
+              background: this.networkOptions.nodes.color.background,
+              highlight: this.networkOptions.nodes.color.highlight
             }
           });
         }
@@ -226,17 +286,46 @@ class GraphManager {
         if (previousSelectedNodeId) {
           this.nodesDataset?.update({
             id: previousSelectedNodeId,
-            borderWidth: networkOptions.nodes.borderWidth,
+            borderWidth: this.networkOptions.nodes.borderWidth,
             color: {
-              border: networkOptions.nodes.color.border,
-              background: networkOptions.nodes.color.background,
-              highlight: networkOptions.nodes.color.highlight
+              border: this.networkOptions.nodes.color.border,
+              background: this.networkOptions.nodes.color.background,
+              highlight: this.networkOptions.nodes.color.highlight
             }
           });
         }
         this.selectedNodeId = null; // No node is selected.
       }
-    });
+    };
+
+    // Bind click event for all devices
+    this.network.on('click', handleInteraction);
+    
+    // On mobile, add immediate touch response for edges
+    if (isMobile) {
+      const canvas = container.querySelector('canvas');
+      if (canvas) {
+        canvas.addEventListener('touchend', (event) => {
+          event.preventDefault();
+          const touch = event.changedTouches[0];
+          const canvasPos = this.network!.DOMtoCanvas({ 
+            x: touch.clientX, 
+            y: touch.clientY 
+          });
+          const edgeId = this.network!.getEdgeAt(canvasPos);
+          
+          // Trigger interaction for edge taps
+          if (edgeId) {
+            handleInteraction({
+              nodes: [],
+              edges: [edgeId],
+              pointer: { DOM: { x: touch.clientX, y: touch.clientY } },
+              event: { srcEvent: event }
+            });
+          }
+        }, { passive: false });
+      }
+    }
 
     // Add zoom handler to hide popups when zooming
     this.network.on('zoom', () => {
@@ -324,13 +413,14 @@ class GraphManager {
     this.popupDiv.style.left = `${clickX - (popupWidth / 2)}px`;
     this.popupDiv.style.top = `${clickY - popupHeight - 20}px`;
 
-    // Add document mousedown listener only when popup is shown
+    // Add document mousedown and touchstart listeners only when popup is shown
     if (this.boundHandleDocumentMousedown) {
       document.addEventListener('mousedown', this.boundHandleDocumentMousedown, true); // Use capture phase
+      document.addEventListener('touchstart', this.boundHandleDocumentMousedown, true); // For mobile
     }
   }
 
-  private handleDocumentMousedown(event: MouseEvent) {
+  private handleDocumentMousedown(event: MouseEvent | TouchEvent) {
     let clickedInsideANodePopup = false;
     if (this.popupDiv && this.popupDiv.contains(event.target as Node)) {
       clickedInsideANodePopup = true;
@@ -350,11 +440,11 @@ class GraphManager {
         // Revert previously selected node to default styling
         this.nodesDataset?.update({
           id: this.selectedNodeId,
-          borderWidth: networkOptions.nodes.borderWidth,
+          borderWidth: this.networkOptions.nodes.borderWidth,
           color: {
-            border: networkOptions.nodes.color.border,
-            background: networkOptions.nodes.color.background,
-            highlight: networkOptions.nodes.color.highlight
+            border: this.networkOptions.nodes.color.border,
+            background: this.networkOptions.nodes.color.background,
+            highlight: this.networkOptions.nodes.color.highlight
           }
         });
         this.selectedNodeId = null;
@@ -375,9 +465,10 @@ class GraphManager {
         this.popupDiv.parentNode.removeChild(this.popupDiv);
       }
       this.popupDiv = null;
-      // Remove document mousedown listener when popup is hidden
+      // Remove document mousedown and touchstart listeners when popup is hidden
       if (this.boundHandleDocumentMousedown) {
         document.removeEventListener('mousedown', this.boundHandleDocumentMousedown, true);
+        document.removeEventListener('touchstart', this.boundHandleDocumentMousedown, true);
       }
     }
   }
@@ -447,7 +538,7 @@ class GraphManager {
     });
   }
 
-  updateData(newNodesData: any[], newEdgesData: any[]) {
+  updateData(newNodesData: VisNode[], newEdgesData: VisEdge[], isMobile: boolean = false) {
     if (!this.nodesDataset || !this.edgesDataset || !this.network) return;
 
     // --- Nodes Diffing and Updating ---
@@ -538,6 +629,15 @@ class GraphManager {
     // After updating datasets, it might be necessary to explicitly tell the network to redraw
     // if changes aren't automatically picked up for some reason, though typically DataSet events handle this.
     // this.network.redraw(); // Usually not needed if DataSets are correctly linked.
+    
+    // On mobile, if we're adding new nodes, ensure the graph fits them into view
+    if (isMobile && nodesToAdd.length > 0) {
+      setTimeout(() => {
+        if (this.network) {
+          this.network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+        }
+      }, 500); // Wait for physics to stabilize
+    }
   }
 
   refreshCurrentTooltipData() {
@@ -663,6 +763,8 @@ class GraphManager {
     // Stop propagation for clicks inside the popover itself
     popoverDiv.addEventListener('click', (e) => e.stopPropagation());
     popoverDiv.addEventListener('mousedown', (e) => e.stopPropagation()); // Also for mousedown
+    popoverDiv.addEventListener('touchstart', (e) => e.stopPropagation()); // For touch events
+    popoverDiv.addEventListener('touchend', (e) => e.stopPropagation()); // For touch events
 
     document.body.appendChild(popoverDiv);
     this.currentEdgePopover = { element: popoverDiv, poolId: poolId };
@@ -671,16 +773,29 @@ class GraphManager {
     const popupHeight = popoverDiv.offsetHeight;
     const popupWidth = popoverDiv.offsetWidth;
     
-    // Position relative to the click, similar to node tooltips
-    // Adjustments might be needed based on where the edge click is registered
+    // Check if mobile device
+    const isMobile = window.innerWidth < 768;
+    
+    // Position relative to the click, with mobile adjustments
     let left = clickX - (popupWidth / 2);
     let top = clickY - popupHeight - 20; // 20px above the click
+    
+    // Add padding for mobile screens
+    const padding = isMobile ? 10 : 0;
 
-    // Boundary checks (simple version)
-    if (left < 0) left = 0;
-    if (top < 0) top = 0;
-    if (left + popupWidth > window.innerWidth) left = window.innerWidth - popupWidth;
-    if (top + popupHeight > window.innerHeight) top = window.innerHeight - popupHeight;
+    // Boundary checks with padding
+    if (left < padding) left = padding;
+    if (top < padding) {
+      // If no room above, show below the click point
+      top = clickY + 20;
+    }
+    if (left + popupWidth > window.innerWidth - padding) {
+      left = window.innerWidth - popupWidth - padding;
+    }
+    if (top + popupHeight > window.innerHeight - padding) {
+      // If no room below either, center vertically
+      top = Math.max(padding, (window.innerHeight - popupHeight) / 2);
+    }
 
     popoverDiv.style.left = `${left}px`;
     popoverDiv.style.top = `${top}px`;
@@ -701,7 +816,9 @@ class GraphManager {
       // Remove first to avoid duplicates, then add.
       // This ensures it's active if this is the only popup.
       document.removeEventListener('mousedown', this.boundHandleDocumentMousedown, true);
+      document.removeEventListener('touchstart', this.boundHandleDocumentMousedown, true);
       document.addEventListener('mousedown', this.boundHandleDocumentMousedown, true);
+      document.addEventListener('touchstart', this.boundHandleDocumentMousedown, true);
     }
   }
 
@@ -720,6 +837,7 @@ class GraphManager {
 const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsData }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphManagerRef = useRef<GraphManager | null>(null);
+  const isMobile = useIsMobile();
 
   // Initialize graph only once
   useEffect(() => {
@@ -730,7 +848,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
     if (containerRef.current) {
       const manager = graphManagerRef.current;
       if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
-        manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData);
+        manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData, isMobile);
       }
     }
 
@@ -741,7 +859,7 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
         graphManagerRef.current = null;
       }
     };
-  }, []); // Empty dependency array = only run on mount/unmount
+  }, [tokenNodes, poolEdges, rawPoolsData, isMobile]); // Include all dependencies
 
   // Handle updates to nodes, edges, or rawPoolsData
   useEffect(() => {
@@ -751,10 +869,10 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
       // or ensure manager.rawPoolsData is updated if it changes.
       // Ensure the manager's internal rawPoolsData is correctly typed and updated
     manager.rawPoolsData = rawPoolsData as Record<string, PoolType>; 
-    manager.updateData(tokenNodes, poolEdges);
+    manager.updateData(tokenNodes, poolEdges, isMobile);
     manager.refreshCurrentTooltipData(); // Refresh tooltip if open
   }
-  }, [tokenNodes, poolEdges, rawPoolsData]);
+  }, [tokenNodes, poolEdges, rawPoolsData, isMobile]);
 
   return <div ref={containerRef} style={{ height: "100%", width: "100%" }} />; {/* Removed border */ }
 };

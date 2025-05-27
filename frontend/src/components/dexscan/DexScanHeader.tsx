@@ -20,16 +20,25 @@ interface DexScanHeaderProps {
 const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange }) => {
   // Return the JSX for the component
   return (
-    // Header element with flexbox layout, fixed height, centered items, and transparent background
-    <header className="flex h-[72px] items-center justify-between bg-transparent px-6 py-0 w-full">
-      {/* Left Section: Contains the branding (logo and "Explorer" text) */}
-      <div className="flex-shrink-0">
-        {/* Render the HeaderBranding component */}
-        <HeaderBranding />
+    // Header element with responsive layout - stacks on mobile, row on desktop
+    <header className="flex flex-col sm:flex-row sm:h-[72px] sm:items-center sm:justify-between bg-transparent px-4 sm:px-6 py-3 sm:py-0 w-full gap-3 sm:gap-0">
+      {/* Mobile Row 1 / Desktop Left-Right Container */}
+      <div className="flex items-center justify-between w-full sm:w-auto">
+        {/* Left Section: Contains the branding (logo and "Explorer" text) */}
+        <div className="flex-shrink-0">
+          {/* Render the HeaderBranding component */}
+          <HeaderBranding />
+        </div>
+
+        {/* Right Section (mobile) / Hidden on desktop: Contains the documentation link and network selector */}
+        <div className="flex-shrink-0 sm:hidden">
+          {/* Render the HeaderActions component */}
+          <HeaderActions />
+        </div>
       </div>
 
-      {/* Center Section: Contains the view selector toggle buttons */}
-      <div className="flex flex-grow justify-center max-w-[475px] mx-auto">
+      {/* Mobile Row 2 / Desktop Center Section: Contains the view selector toggle buttons */}
+      <div className="flex justify-center w-full sm:max-w-[475px] sm:mx-auto">
         {/* Render the ViewSelector component and pass props */}
         <ViewSelector 
           // Pass the current active view
@@ -39,8 +48,8 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
         />
       </div>
 
-      {/* Right Section: Contains the documentation link and network selector */}
-      <div className="flex-shrink-0">
+      {/* Desktop Right Section (hidden on mobile - already shown above) */}
+      <div className="hidden sm:block flex-shrink-0">
         {/* Render the HeaderActions component */}
         <HeaderActions />
       </div>

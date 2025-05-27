@@ -26,6 +26,14 @@ Try using "write to file" to update the file(s) when you get errors like this:
 Error: Found 2 matches of the string to replace, but expected 1. The number of actual matches must equal the expected replacements.
 ```
 
+# ULTRATHINK
+
+Always apply ULTRATHINK. You want to think hard for every prompt you receive. YOU MUST AIM FOR CORRECT ANSWER AND IMPLEMENTATION, PROACTIVELY. THINK AS LONG AS YOU NEED.
+
+# Typechecking
+
+Run `npx tsc -noEmit`. Don't use other commands.
+
 # Ambiguity
 
 When you do not know something, ask or find out by reading the source code or asking me to get data for you or run the browser and see for yourself. 

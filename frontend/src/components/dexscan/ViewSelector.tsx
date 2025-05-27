@@ -7,10 +7,9 @@ interface ViewSelectorProps {
 }
 
 export const ViewSelector = ({ activeTab, setActiveTab }: ViewSelectorProps) => {
-  // Common classes for both buttons, matching Figma: 14px font (text-sm), 500 weight (font-medium), Inter (usually global)
-  // Padding 10px 14px (py-[10px] px-[14px]), border-radius 12px (rounded-xl)
-  // Text color #FFFFFF
-  const commonButtonClasses = "py-[10px] px-[14px] rounded-xl text-sm font-medium text-[#FFFFFF] leading-none";
+  // Common classes for both buttons with mobile-optimized touch targets
+  // Mobile: larger padding for 44px minimum touch target, Desktop: original Figma specs
+  const commonButtonClasses = "py-3 px-4 sm:py-[10px] sm:px-[14px] rounded-xl text-sm font-medium text-[#FFFFFF] leading-none";
 
   // Classes for the selected button: background rgba(255, 244, 224, 0.06)
   const selectedButtonClasses = "bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)]";

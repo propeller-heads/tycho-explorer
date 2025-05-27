@@ -41,3 +41,18 @@
 *   **`execute_command`**: Used for running development servers (`npm run dev`) or other CLI operations.
 *   **`browser_action`**: Used for visual verification of UI changes and interactions in the browser, and for analyzing console/network logs during debugging.
 *   **MCP Tools**: Used for interacting with external services like Figma (e.g., `get_figma_data`, `download_figma_images`).
+
+## Mobile Development Patterns
+
+*   **`use-mobile.tsx` hook**: Central hook for mobile device detection, used across components
+*   **Touch Event Handling**: Direct event listeners on canvas elements for immediate response
+*   **Responsive Utilities**: Tailwind's responsive prefixes (sm:, md:, lg:) for adaptive layouts
+*   **Mobile Physics**: vis-network configurations optimized for mobile viewing
+*   **Touch Targets**: Minimum 44px height for all interactive elements on mobile
+
+## Testing Considerations
+
+*   **Mobile Testing**: Test on various mobile devices and screen sizes
+*   **Touch Interactions**: Verify all touch gestures work smoothly
+*   **TypeScript**: Use `npx tsc --noEmit` for type checking
+*   **Performance**: Monitor graph performance on lower-end mobile devices

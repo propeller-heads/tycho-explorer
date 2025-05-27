@@ -100,11 +100,11 @@ const WebSocketIndicator: React.FC<WebSocketIndicatorProps> = ({
         )}
         
         {isConnected && selectedChain ? (
-          <span className="text-xs font-medium">
+          <span className="hidden sm:inline text-xs font-medium">
             {selectedChain}
           </span>
         ) : (
-          !isConnected && <span className="text-xs font-medium">{TEXT_DISCONNECTED}</span>
+          !isConnected && <span className="hidden sm:inline text-xs font-medium">{TEXT_DISCONNECTED}</span>
         )}
         
         {ChevronDisplayIcon}
@@ -168,14 +168,14 @@ const HeaderActions: React.FC = () => {
   const chainLogo = selectedChain === 'Ethereum' ? EthereumLogo : EthereumLogo;
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2 sm:gap-4">
       <a
         href={DOCS_URL}
         target="_blank"
         rel="noopener noreferrer"
         className={DOCS_LINK_CLASSES}
       >
-        <span>{TEXT_DOCS}</span>
+        <span className="hidden sm:inline">{TEXT_DOCS}</span>
         <img src={CallMadeIcon} alt={ALT_TEXT_EXTERNAL_LINK} className="h-4 w-4" />
       </a>
       <WebSocketIndicator

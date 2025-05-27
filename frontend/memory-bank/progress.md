@@ -62,6 +62,41 @@
   - Focused border: `#FF3366` (folly red) with 2px width
   - Smooth transition effects on focus/blur
 
+### Recent Accomplishments (2025-05-27 - Latest Session - Mobile Friendliness)
+- **Mobile-Friendly Implementation**: Executed comprehensive mobile optimization plan
+  - Phase 1 (Critical): Enabled touch interactions, auto-centering, responsive header
+  - Phase 2 (UX): Mobile physics optimization, filter control stacking, responsive spacing
+  - Phase 3 (Polish): Graph controls repositioning, mobile-friendly app menu
+- **Graph View Touch Support**:
+  - Enabled touch interactions in vis-network configuration
+  - Added mobile detection using useIsMobile hook
+  - Implemented mobile-optimized physics parameters (tighter clustering, faster stabilization)
+  - Enhanced auto-centering with animation on mobile
+  - Added re-centering when new nodes are added on mobile
+- **Responsive Header Layout**:
+  - Header now stacks into 2 rows on mobile (brand/network on top, view selector below)
+  - Reduced gaps and font sizes for mobile screens
+  - Hide "Docs" text and network name on mobile to save space
+  - ViewSelector buttons have larger touch targets (44px minimum)
+- **Mobile-Optimized Controls**:
+  - Filter buttons in Pool List and Graph View now have 44px minimum touch targets
+  - Filter controls stack vertically on mobile with proper wrapping
+  - App menu selector button enlarged for better touch interaction
+  - All interactive elements meet accessibility standards
+- **Filter Popover Truncation**:
+  - Token filters show first 3 items then "..." to prevent extending beyond screen
+  - Protocol filters show first 2 items then "..." for mobile screens
+  - Prevents horizontal scrolling on mobile devices
+- **Graph View Tooltip Fixes**:
+  - Fixed node tooltips not showing on click (networkOptions reference issue)
+  - Fixed edge tooltips requiring long press on mobile
+  - Added immediate touchend event handler for single-tap edge tooltips
+  - Properly converts DOM to canvas coordinates for accurate detection
+- **TypeScript Type Safety**:
+  - Resolved all type errors in GraphView.tsx
+  - Used VisNode/VisEdge type aliases to avoid conflicts with browser's Node type
+  - All components now pass strict type checking
+
 ### Recent Accomplishments (2025-05-26)
 - **Color System Overhaul**: Successfully transitioned entire UI from purple/blue theme to TC Design warm cream/beige palette
 - **Text Readability**: Updated all text to use `rgba(255, 244, 224, 1)` with full opacity for maximum readability
@@ -96,6 +131,7 @@ The Pool List View is functionally complete with the TC Design color system full
 1. **Logo Loading**: CoinGecko API rate limits can cause slow logo loading
 2. **ScrollArea Integration**: Infinite scroll implementation may need refinement
 3. **WebSocket Price Updates**: Server not sending price updates with new blocks, preventing edge widening visualization
+4. **Graph Auto Re-center**: Graph occasionally auto re-centers (user decided not to fix)
 
 ## Evolution of Project Decisions
 

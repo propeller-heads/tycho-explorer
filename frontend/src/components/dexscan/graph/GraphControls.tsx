@@ -234,27 +234,32 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
       style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', marginBottom: '16px' /* Spacing before graph area */ }}
     >
       {/* Left section for filters - allow wrapping on small screens */}
-      <div className="flex flex-wrap items-center gap-3"> {/* flex-wrap allows filters to wrap if needed */}
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3"> {/* flex-wrap allows filters to wrap if needed, responsive gap */}
         {/* Token Filter Display */}
         <Popover open={tokenSearchOpen} onOpenChange={setTokenSearchOpen}>
           <PopoverTrigger asChild>
             <button
-              className="flex items-center justify-between gap-2 text-sm font-medium max-w-xs" // Added max-w-xs
+              className="flex items-center justify-between gap-2 text-sm font-medium w-full sm:w-auto sm:max-w-xs" // Full width on mobile
               style={{
                 backgroundColor: "rgba(255, 244, 224, 0.06)",
                 border: "1px solid rgba(255, 244, 224, 0.4)",
                 borderRadius: "8px",
                 color: "#FFF4E0",
-                padding: "10px 12px 10px 16px", // Adjusted padding to be closer to Figma's 14px vertical, 16px left, 12px right
-                minHeight: "36px", // Matches Figma's Filter item height
+                padding: "12px 12px 12px 16px", // Increased padding for better touch target
+                minHeight: "44px", // 44px minimum touch target on mobile
               }}
             >
               <span className="truncate">
                 {selectedTokens.length > 0
-                  ? selectedTokens.map(id => {
-                    const token = tokenList.find(t => t.id === id);
-                    return token?.label || 'Unknown'; // Use the label directly
-                  }).join(', ')
+                  ? (() => {
+                      const labels = selectedTokens.map(id => {
+                        const token = tokenList.find(t => t.id === id);
+                        return token?.label || 'Unknown';
+                      });
+                      return labels.length > 3 
+                        ? `${labels.slice(0, 3).join(', ')}, ...`
+                        : labels.join(', ');
+                    })()
                   : "Select tokens"}
               </span>
               {selectedTokens.length > 0 && (
@@ -337,19 +342,21 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
         <Popover open={protocolSearchOpen} onOpenChange={setProtocolSearchOpen}>
           <PopoverTrigger asChild>
             <button
-              className="flex items-center justify-between gap-2 text-sm font-medium max-w-xs" // Added max-w-xs
+              className="flex items-center justify-between gap-2 text-sm font-medium w-full sm:w-auto sm:max-w-xs" // Full width on mobile
               style={{
                 backgroundColor: "rgba(255, 244, 224, 0.06)",
                 border: "1px solid rgba(255, 244, 224, 0.4)",
                 borderRadius: "8px",
                 color: "#FFF4E0",
-                padding: "10px 12px 10px 16px",
-                minHeight: "36px",
+                padding: "12px 12px 12px 16px",
+                minHeight: "44px",
               }}
             >
               <span className="truncate">
                 {selectedProtocols.length > 0
-                  ? selectedProtocols.join(', ')
+                  ? selectedProtocols.length > 2 
+                    ? `${selectedProtocols.slice(0, 2).join(', ')}, ...`
+                    : selectedProtocols.join(', ')
                   : "Select protocols"}
               </span>
               {/* No 'x' clear icon for protocols as per Figma design for this specific item */}

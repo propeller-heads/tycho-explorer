@@ -18,6 +18,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Composed of `HeaderBranding` (left), `ViewSelector` (center), and `HeaderActions` (right).
     *   Receives `currentView` and `onViewChange` props to manage view switching.
     *   **HeaderBranding** includes AppMenuSelector for app switching (Explorer/Orderbook)
+    *   **Mobile Responsive**: Stacks into 2 rows on mobile (brand/network top, view selector bottom)
 
 3.  **`ViewSelector.tsx`**:
     *   Provides toggle buttons ("Pool List", "Market Graph") for switching between the two main views.
@@ -37,6 +38,7 @@ The Pool Explorer is a local client-side application built with React and TypeSc
 5.  **`GraphViewContent.tsx` (within `graph/`)**:
     *   Responsible for rendering the market graph visualization.
     *   Image fetching for graph nodes will also use the robust `src/lib/coingecko.ts` module.
+    *   **Mobile Optimized**: Includes touch interactions, auto-centering, and mobile physics
 
 6.  **`SwapSimulator.tsx`**:
     *   Provides an interface to simulate trades on a selected pool.
@@ -106,6 +108,12 @@ The Pool Explorer is a local client-side application built with React and TypeSc
         *   Two-finger trackpad pan (detects wheel events with ctrlKey)
         *   RequestAnimationFrame for smooth 60fps panning
         *   Disabled default left-click pan (`dragView: false`)
+    *   **Mobile Support**:
+        *   Touch interactions enabled via vis-network configuration
+        *   Mobile-optimized physics (tighter clustering, faster stabilization)
+        *   Auto-centering on load and when new nodes added
+        *   Single-tap tooltips (no long press required)
+        *   Direct touchend event handling for edge tooltips
 *   **Robust External API Interaction (`src/lib/coingecko.ts`):**
     *   Centralized module for all CoinGecko API calls.
     *   Handles rate limiting through request queueing and delays.
@@ -113,6 +121,22 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Implements a specific caching strategy ("never cache nulls from API errors/explicit no data").
 *   **Type Definitions**: In `src/components/dexscan/types.ts`.
 *   **Development Server Proxy**: For CoinGecko API.
+
+## Mobile-First Patterns
+
+*   **Device Detection**: `useIsMobile()` hook from `@/hooks/use-mobile`
+*   **Responsive Design**: 
+    *   Tailwind responsive utilities (sm:, md:, lg:)
+    *   Touch targets minimum 44px (h-10 on mobile)
+    *   Responsive gaps and spacing
+*   **Touch Interactions**:
+    *   vis-network touch configuration for graph
+    *   Immediate tooltip response on tap
+    *   Proper coordinate conversion (DOM to canvas)
+*   **Layout Adaptations**:
+    *   Header stacking on mobile screens
+    *   Filter controls wrapping and full-width
+    *   Truncated filter lists to prevent overflow
 
 ## Modularity and Dependencies
 

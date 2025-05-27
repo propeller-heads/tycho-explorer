@@ -121,12 +121,12 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 border-b border-white/10"> {/* Adjusted border color */}
-      <div className="flex items-center gap-2"> {/* Reduced gap for closer filter tags */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-3"> {/* Responsive layout */}
+      <div className="flex flex-wrap items-center gap-2"> {/* Allow wrapping on mobile */}
         {/* Token Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8  border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
+            <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedTokens, 'token')}
               {selectedTokens.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedTokens.forEach(t => onTokenSelect(t, false)); }} />
@@ -202,7 +202,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Protocol Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8  border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
+            <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedProtocols, 'protocol')}
               {selectedProtocols.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedProtocols.forEach(p => onProtocolSelect(p, false)); }} />
@@ -243,7 +243,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         {/* Pool ID Filter */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8  border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
+            <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedPoolIds, 'poolId')}
               {selectedPoolIds.length > 0 && (
                 <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedPoolIds.forEach(pid => onPoolIdSelect(pid, false)); }} />
@@ -320,12 +320,12 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           </PopoverContent>
         </Popover>
 
-        <Button variant="link" size="sm" className="h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2" onClick={onResetFilters}>
+        <Button variant="link" size="sm" className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2" onClick={onResetFilters}>
           Reset filters
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 ml-auto sm:ml-0">
         {startTime && duration && ( // Check for renamed props
           <BlockProgressIcon
             startTime={startTime} // Pass renamed prop

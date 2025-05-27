@@ -9,18 +9,18 @@ import AppMenuSelector from './AppMenuSelector';
 const HeaderBranding: React.FC = () => {
   // Return JSX for rendering
   return (
-    // Outer container with flexbox layout, vertically centered items and 16px gap (gap-4)
-    <div className="flex items-center gap-4"> {/* Corresponds to Frame 152534 gap-4 is approx 16px */}
+    // Outer container with flexbox layout, vertically centered items and responsive gap
+    <div className="flex items-center gap-2 sm:gap-4"> {/* Responsive gap: 8px mobile, 16px desktop */}
       {/* App menu selector */}
       <AppMenuSelector />
       
       {/* Logo and Explorer Text - Corresponds to Frame 152361 7675:7895 */}
-      {/* Inner container with flexbox layout, vertically centered items and 12px gap (gap-3) */}
-      <div className="flex items-center gap-3"> {/* gap-3 is 12px */}
-        {/* Render the Tycho Indexer logo with height of 24px (h-6) and accessibility alt text */}
-        <img src={TychoIndexerLightSmallIcon} alt="Tycho Indexer Logo" className="h-6" />
-        {/* Text element with sans-serif font, 24px (h-6), cream color at 50% opacity */}
-        <span className="font-sans h-6 text-[#FFF4E1] opacity-50">
+      {/* Inner container with flexbox layout, vertically centered items and responsive gap */}
+      <div className="flex items-center gap-2 sm:gap-3"> {/* Responsive gap: 8px mobile, 12px desktop */}
+        {/* Render the Tycho Indexer logo with responsive height */}
+        <img src={TychoIndexerLightSmallIcon} alt="Tycho Indexer Logo" className="h-5 sm:h-6" />
+        {/* Text element with responsive font size, cream color at 50% opacity */}
+        <span className="font-sans text-sm sm:text-base text-[#FFF4E1] opacity-50">
           {/* The actual text content */}
           Explorer
         </span>
