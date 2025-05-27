@@ -24,6 +24,10 @@ bun run preview
 
 The app is made to be mobile friendly but as it stands there are UI quirks with Chrome. It works well on Firefox.
 
+# Logo loading
+
+This is using Coingecko **free and public** APIs. The good thing is no one needs an API key. So the app loads token logos 15 seconds at a tiem and saves them on your browser for the future. Please be patient. 
+
 # Quick developement setup
 
 ```
