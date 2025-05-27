@@ -19,3 +19,7 @@ bun run build
 # Then run the production build
 bun run preview
 ```
+
+# Mobile
+
+The app is made to be mobile friendly but as it stands there are UI quirks with Chrome. It works well on Firefox.
