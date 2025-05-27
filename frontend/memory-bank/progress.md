@@ -96,6 +96,11 @@
   - Resolved all type errors in GraphView.tsx
   - Used VisNode/VisEdge type aliases to avoid conflicts with browser's Node type
   - All components now pass strict type checking
+- **Mobile Table Scrolling**:
+  - Fixed touch scrolling in Pool List View table that wasn't working on mobile
+  - Implemented conditional rendering: native div with overflow-auto on mobile, ScrollArea on desktop
+  - Added WebKit-specific properties for smooth iOS scrolling
+  - Users can now naturally swipe to scroll through the table on mobile devices
 
 ### Recent Accomplishments (2025-05-26)
 - **Color System Overhaul**: Successfully transitioned entire UI from purple/blue theme to TC Design warm cream/beige palette

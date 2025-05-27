@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import TokenIcon from '@/components/dexscan/common/TokenIcon';
 import ProtocolLogo from '@/components/dexscan/common/ProtocolLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Helper function for column widths
 const getColumnWidthClass = (columnId: string): string => {
@@ -84,31 +85,27 @@ const PoolTable: React.FC<PoolTableProps> = ({
   isLoadingMore
 }) => {
   const sortableColumns = ['protocol_system', 'static_attributes.fee', 'spotPrice', 'updatedAt'];
+  const isMobile = useIsMobile();
 
-  return (
-    <TooltipProvider>
-      <div className="w-full flex-grow flex flex-col overflow-hidden">
-      <ScrollArea 
-        className="w-full flex-grow" 
-        onViewportScroll={(event) => {
-          if (!hasMorePools || isLoadingMore) return;
+  // Mobile scroll handler
+  const handleMobileScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    if (!hasMorePools || isLoadingMore) return;
+    const target = event.currentTarget;
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 200) {
+      onLoadMore();
+    }
+  };
 
-          const target = event.currentTarget;
-          if (target.scrollHeight - target.scrollTop - target.clientHeight < 200) {
-            onLoadMore();
-          }
-        }}
-        withHorizontalScrollbar={true}
-      >
-        <Table className="table-auto w-full">
-          <TableHeader>
-            <TableRow 
-              className="sticky top-0 z-10"
-              style={{
-                borderBottom: '1px solid rgba(255, 244, 224, 0.05)',
-                background: 'transparent'
-              }}
-            > 
+  const tableContent = (
+    <Table className="table-auto w-full">
+      <TableHeader>
+        <TableRow 
+          className="sticky top-0 z-10"
+          style={{
+            borderBottom: '1px solid rgba(255, 244, 224, 0.05)',
+            background: 'transparent'
+          }}
+        > 
               {allVisibleColumns.map((column) => {
                 const isSortable = sortableColumns.includes(column.id);
                 return (
@@ -278,8 +275,39 @@ const PoolTable: React.FC<PoolTableProps> = ({
             )}
           </TableBody>
         </Table>
-      </ScrollArea>
-    </div>
+  );
+
+  return (
+    <TooltipProvider>
+      <div className="w-full flex-grow flex flex-col overflow-hidden">
+        {isMobile ? (
+          // Native scrolling for mobile
+          <div 
+            className="w-full flex-grow overflow-auto overscroll-contain"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+            }}
+            onScroll={handleMobileScroll}
+          >
+            {tableContent}
+          </div>
+        ) : (
+          // ScrollArea for desktop
+          <ScrollArea 
+            className="w-full flex-grow" 
+            onViewportScroll={(event) => {
+              if (!hasMorePools || isLoadingMore) return;
+              const target = event.currentTarget;
+              if (target.scrollHeight - target.scrollTop - target.clientHeight < 200) {
+                onLoadMore();
+              }
+            }}
+            withHorizontalScrollbar={true}
+          >
+            {tableContent}
+          </ScrollArea>
+        )}
+      </div>
     </TooltipProvider>
   );
 };

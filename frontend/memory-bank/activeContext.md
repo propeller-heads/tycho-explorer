@@ -46,6 +46,13 @@
    - Used VisNode/VisEdge aliases to avoid conflicts with browser's Node type
    - Proper type imports from vis-network library
 
+6. **Mobile Table Scrolling Fix**:
+   - Fixed touch scrolling issue in Pool List View table
+   - Implemented conditional rendering: native scrolling on mobile, ScrollArea on desktop
+   - Added `-webkit-overflow-scrolling: touch` for smooth iOS scrolling
+   - Maintained infinite scroll functionality on both platforms
+   - Users can now swipe up/down naturally to scroll through the table on mobile
+
 ### Recent Development Updates (2025-05-27 - Earlier Session)
 
 #### Swap Simulator Number Display

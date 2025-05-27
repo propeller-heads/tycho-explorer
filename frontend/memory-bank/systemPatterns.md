@@ -137,6 +137,11 @@ The Pool Explorer is a local client-side application built with React and TypeSc
     *   Header stacking on mobile screens
     *   Filter controls wrapping and full-width
     *   Truncated filter lists to prevent overflow
+*   **Scrolling Patterns**:
+    *   Conditional rendering based on device type
+    *   Native scrolling (overflow-auto) on mobile for touch gestures
+    *   Custom ScrollArea component on desktop for styled scrollbars
+    *   WebKit overflow scrolling for smooth iOS experience
 
 ## Modularity and Dependencies
 

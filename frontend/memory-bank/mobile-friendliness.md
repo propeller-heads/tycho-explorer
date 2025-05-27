@@ -50,6 +50,12 @@ All mobile-friendliness issues have been successfully resolved. The application 
 - Proper vis-network type imports (VisNode/VisEdge)
 - Full type safety maintained throughout
 
+### Mobile Table Scrolling
+- Fixed touch scrolling issue in Pool List View
+- Native scrolling on mobile devices for natural swipe gestures
+- Custom ScrollArea preserved on desktop for styled scrollbars
+- Smooth scrolling with -webkit-overflow-scrolling: touch
+
 ## Implementation Approach
 
 ### Phase 1: Critical Touch Functionality ✓
