@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Simulation dependencies
-tycho-simulation = { git = "https://github.com/propeller-heads/tycho-simulation", rev = "9b164c6" }
+tycho-simulation = { git = "https://github.com/propeller-heads/tycho-simulation", rev = "aed9864" } # 0.103.0 https://github.com/propeller-heads/tycho-simulation/releases/tag/0.103.0
 num-bigint = "0.4"
 
 # API and WebSocket server
