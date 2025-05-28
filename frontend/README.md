@@ -20,6 +20,10 @@ bun run build
 bun run preview
 ```
 
+# Environment variables
+
+Use `.env` to configure e.g. the websocket server url that this app uses to fetch pool data.
+
 # Mobile
 
 The app is made to be mobile friendly but as it stands there are UI quirks with Chrome. It works well on Firefox.
