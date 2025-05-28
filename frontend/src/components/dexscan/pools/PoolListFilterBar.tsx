@@ -86,12 +86,29 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
   const filteredTokens = useMemo(() => {
     // Reset displayed count when search changes
     setDisplayedTokensCount(100);
-    return allTokensForFilter.filter(token => 
+    
+    // First filter tokens based on search
+    const filtered = allTokensForFilter.filter(token => 
       token.symbol.toLowerCase().includes(tokenSearch.toLowerCase()) ||
       token.name?.toLowerCase().includes(tokenSearch.toLowerCase()) ||
       token.address.toLowerCase().includes(tokenSearch.toLowerCase())
     );
-  }, [allTokensForFilter, tokenSearch]);
+    
+    // Then sort to put selected tokens first
+    return filtered.sort((a, b) => {
+      const aIsSelected = selectedTokens.some(st => st.address === a.address);
+      const bIsSelected = selectedTokens.some(st => st.address === b.address);
+      
+      if (aIsSelected && !bIsSelected) {
+        return -1; // a comes first
+      }
+      if (!aIsSelected && bIsSelected) {
+        return 1; // b comes first
+      }
+      // If both are selected or both are unselected, sort by symbol
+      return a.symbol.localeCompare(b.symbol);
+    });
+  }, [allTokensForFilter, tokenSearch, selectedTokens]);
 
   const filteredPools = useMemo(() => {
     // Reset displayed count when search changes
