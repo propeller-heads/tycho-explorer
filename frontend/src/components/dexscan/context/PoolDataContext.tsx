@@ -14,6 +14,7 @@ interface PoolDataContextValue {
   isUsingMockData: boolean;
   highlightedPoolId: string | null;
   websocketUrl: string;
+  defaultWebSocketUrl: string; // Added - the default URL from env or fallback
   connectToWebSocket: (url: string, chain?: string) => void;
   disconnectWebSocket: () => void;
   highlightPool: (poolId: string | null) => void;
@@ -163,9 +164,11 @@ const DEFAULT_CHAIN = 'Ethereum';
 
 export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   // Initialize state and variables
-  const savedWebSocketUrl = localStorage.getItem('websocket_url') || 'ws://localhost:3000/ws';
+  const defaultWebSocketUrl = import.meta.env.VITE_WEBSOCKET_URL;
+  const savedWebSocketUrl = localStorage.getItem('websocket_url') || defaultWebSocketUrl;
   const savedChain = localStorage.getItem('selected_chain') || DEFAULT_CHAIN;
-  
+  console.log("defaultWebSocketUrl:", defaultWebSocketUrl);
+  console.log("savedWebSocketUrl:", savedWebSocketUrl);
   const [state, dispatch] = useReducer(poolDataReducer, {
     pools: {},
     isConnected: false,
@@ -451,6 +454,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       isUsingMockData: false,
       highlightedPoolId: state.highlightedPoolId,
       websocketUrl: state.websocketUrl,
+      defaultWebSocketUrl, // Added - expose the default URL
       blockNumber: state.blockNumber,
       selectedChain: state.selectedChain,
       lastBlockTimestamp: state.lastBlockTimestamp, // Added
@@ -466,6 +470,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     state.isConnected, 
     state.highlightedPoolId,
     state.websocketUrl,
+    defaultWebSocketUrl, // Added to dependencies
     state.blockNumber,
     state.selectedChain,
     state.lastBlockTimestamp, // Added

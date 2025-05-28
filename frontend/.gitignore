@@ -28,3 +28,8 @@ tychonaut
 
 .vite
 **/CLAUDE.local.md
+
+# Environment variables
+.env
+.env.local
+.env.production

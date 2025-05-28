@@ -31,17 +31,20 @@ export const WebSocketConfig = ({
   const { 
     connectToWebSocket: contextConnect, 
     websocketUrl: contextUrl, 
+    defaultWebSocketUrl: contextDefaultUrl,
     isConnected: contextIsConnected,
     selectedChain: contextSelectedChain,
     availableChains
   } = usePoolData();
   
   // Use props if provided, otherwise use context values
-  const defaultUrl = externalDefaultUrl || contextUrl;
+  // Priority: external prop > context current URL > context default URL
+  const defaultUrl = externalDefaultUrl || contextUrl || contextDefaultUrl;
   const isConnected = externalIsConnected !== undefined ? externalIsConnected : contextIsConnected;
   const onConnect = externalOnConnect || contextConnect;
   
   const [wsUrl, setWsUrl] = useState<string>(defaultUrl);
+  console.log("wsUrl:", wsUrl);
   const [selectedChain, setSelectedChain] = useState<string>(contextSelectedChain);
   
   // Update URL input when default URL changes (e.g. from localStorage)
