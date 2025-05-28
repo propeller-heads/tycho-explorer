@@ -1,4 +1,5 @@
 use std::sync::Once;
+use std::env;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 use tycho_simulation::tycho_core::models::Chain;
 
@@ -17,9 +18,12 @@ pub fn setup_tracing() {
 
 pub fn get_default_url(chain: &Chain) -> Option<String> {
     match chain {
-        Chain::Ethereum => Some("tycho-beta.propellerheads.xyz".to_string()),
-        Chain::Base => Some("tycho-base-beta.propellerheads.xyz".to_string()),
-        Chain::Unichain => Some("tycho-unichain-beta.propellerheads.xyz".to_string()),
+        Chain::Ethereum => Some(env::var("TYCHO_ETHEREUM_URL")
+            .unwrap_or_else(|_| "tycho-beta.propellerheads.xyz".to_string())),
+        Chain::Base => Some(env::var("TYCHO_BASE_URL")
+            .unwrap_or_else(|_| "tycho-base-beta.propellerheads.xyz".to_string())),
+        Chain::Unichain => Some(env::var("TYCHO_UNICHAIN_URL")
+            .unwrap_or_else(|_| "tycho-unichain-beta.propellerheads.xyz".to_string())),
         Chain::ZkSync => None,
         Chain::Starknet => None,
         Chain::Arbitrum => None,
