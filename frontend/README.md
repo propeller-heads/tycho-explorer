@@ -26,7 +26,7 @@ Use `.env` to configure e.g. the websocket server url that this app uses to fetc
 
 # Mobile
 
-The app is made to be mobile friendly but as it stands there are UI quirks with Chrome. It works well on Firefox.
+The app is fully mobile-friendly and works well on both Chrome and Firefox browsers.
 
 # Logo loading
 

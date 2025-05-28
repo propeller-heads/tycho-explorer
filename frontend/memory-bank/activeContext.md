@@ -76,6 +76,46 @@
 
 **CRITICAL**: This ensures edge tooltips work on mobile regardless of initialization order.
 
+### Recent Development Updates (2025-05-28 - Latest Session)
+
+#### UI Consistency Improvements
+1. **Token Filter Sorting Consistency**:
+   - **Issue**: List View token filter didn't sort selected tokens first, unlike Graph View
+   - **Solution**: Updated `PoolListFilterBar.tsx` filteredTokens logic to match Graph View behavior
+   - **Implementation**:
+     ```typescript
+     // In PoolListFilterBar.tsx
+     const filteredTokens = useMemo(() => {
+       // First filter tokens based on search
+       const filtered = allTokensForFilter.filter(token => /* search logic */);
+       
+       // Then sort to put selected tokens first
+       return filtered.sort((a, b) => {
+         const aIsSelected = selectedTokens.some(st => st.address === a.address);
+         const bIsSelected = selectedTokens.some(st => st.address === b.address);
+         
+         if (aIsSelected && !bIsSelected) return -1; // a comes first
+         if (!aIsSelected && bIsSelected) return 1; // b comes first
+         // If both are selected or both are unselected, sort by symbol
+         return a.symbol.localeCompare(b.symbol);
+       });
+     }, [allTokensForFilter, tokenSearch, selectedTokens]);
+     ```
+   - **Critical**: This pattern should be preserved for UI consistency across all views
+
+2. **Environment Variables Configuration**:
+   - Added WebSocket URL configuration via environment variables
+   - Created `.env` and `.env.example` files
+   - Priority: localStorage > env variable > hardcoded default
+   - Updated TypeScript definitions in `vite-env.d.ts`
+   - Context always shows current active URL for transparency
+
+3. **Mobile Sidebar Styling**:
+   - Pool detail sidebar now has glass-like opaque background on mobile
+   - Mobile: `bg-[rgba(20,10,35,0.98)] backdrop-blur-[104px]`
+   - Desktop: `bg-[rgba(255,255,255,0.01)] backdrop-blur-[200px]`
+   - Maintains readability while preserving visual aesthetics
+
 ### Recent Development Updates (2025-05-27 - Latest Session - Mobile Friendliness)
 
 #### Mobile-Friendly Implementation (Completed)
@@ -121,11 +161,15 @@
    - Proper type imports from vis-network library
 
 6. **Mobile Table Scrolling Fix**:
-   - Fixed touch scrolling issue in Pool List View table
-   - Implemented conditional rendering: native scrolling on mobile, ScrollArea on desktop
-   - Added `-webkit-overflow-scrolling: touch` for smooth iOS scrolling
+   - Fixed touch scrolling issue in Pool List View table that was affecting Chrome Android
+   - **Solution**: Replaced table structure with div-based layout on mobile to avoid Chrome bugs
+   - Removed sticky table headers on mobile (Chrome Android bug with sticky + overflow)
+   - Added Chrome-specific fixes:
+     - `display: 'block'` for proper block formatting context
+     - `position: 'relative'` for positioning context
+     - Simpler overflow structure without nested containers
    - Maintained infinite scroll functionality on both platforms
-   - Users can now swipe up/down naturally to scroll through the table on mobile
+   - **Result**: Touch scrolling now works perfectly on both Chrome and Firefox mobile browsers
 
 ### Recent Development Updates (2025-05-27 - Earlier Session)
 
@@ -371,6 +415,7 @@ Example:
 - **Number Precision**: Never truncate amounts in Swap Simulator - show full precision
 - **Popover Styling**: Use transparent borders with warm cream colors
 - **Checkbox Styling**: Folly red (#FF3366) for checked state with white checkmark
+- **Filter Token Sorting**: ALWAYS sort selected tokens first in filter popovers for consistency between views
 
 ## Learnings and Project Insights
 

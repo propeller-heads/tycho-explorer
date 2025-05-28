@@ -62,6 +62,23 @@
   - Focused border: `#FF3366` (folly red) with 2px width
   - Smooth transition effects on focus/blur
 
+### Recent Accomplishments (2025-05-28 - Latest Session)
+
+#### UI Consistency and Configuration
+- **Token Filter Sorting**: Fixed List View token filter to sort selected tokens first, matching Graph View behavior
+  - Updated `PoolListFilterBar.tsx` to sort filtered tokens with selected items at top
+  - Added proper dependency tracking in useMemo for reactive updates
+  - Ensures consistent UX across all views
+- **Environment Variables**: Implemented WebSocket URL configuration
+  - Created `.env` and `.env.example` files with `VITE_WEBSOCKET_URL`
+  - Updated TypeScript definitions in `vite-env.d.ts`
+  - Priority: localStorage > env variable > hardcoded default
+  - UI always shows current active URL from context state
+- **Mobile Sidebar Styling**: Enhanced pool detail sidebar for mobile
+  - Glass-like opaque background on mobile: `bg-[rgba(20,10,35,0.98)]`
+  - Maintains semi-transparent style on desktop
+  - Improves readability on mobile while preserving aesthetics
+
 ### Recent Accomplishments (2025-05-27 - Latest Session)
 
 #### 🚨 CRITICAL: Graph View Layout Preservation Fix
@@ -121,11 +138,12 @@
   - Resolved all type errors in GraphView.tsx
   - Used VisNode/VisEdge type aliases to avoid conflicts with browser's Node type
   - All components now pass strict type checking
-- **Mobile Table Scrolling**:
-  - Fixed touch scrolling in Pool List View table that wasn't working on mobile
-  - Implemented conditional rendering: native div with overflow-auto on mobile, ScrollArea on desktop
-  - Added WebKit-specific properties for smooth iOS scrolling
-  - Users can now naturally swipe to scroll through the table on mobile devices
+- **Mobile Table Scrolling (Chrome Fix)**:
+  - Fixed touch scrolling in Pool List View table that wasn't working on Chrome Android
+  - Replaced table structure with div-based layout on mobile to avoid Chrome-specific bugs
+  - Removed sticky headers on mobile due to Chrome Android bug with sticky + overflow
+  - Implemented proper block formatting context and simpler overflow structure
+  - **Result**: Touch scrolling now works perfectly on both Chrome and Firefox mobile browsers
 
 ### Recent Accomplishments (2025-05-26)
 - **Color System Overhaul**: Successfully transitioned entire UI from purple/blue theme to TC Design warm cream/beige palette
