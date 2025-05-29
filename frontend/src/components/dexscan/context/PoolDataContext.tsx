@@ -222,6 +222,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     if (chain) {
       localStorage.setItem('selected_chain', chain);
       dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
+      // Clear pool data when switching chains
+      console.log('🟣 [CHAIN] Clearing pool data for chain switch to:', chain);
+      dispatch({ type: 'RESET_STATE' });
     }
     
     // Manual reconnection is handled directly

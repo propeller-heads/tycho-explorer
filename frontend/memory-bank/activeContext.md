@@ -78,6 +78,45 @@
 
 ### Recent Development Updates (2025-05-28 - Latest Session)
 
+#### Multi-Chain Support Implementation
+1. **Chain Switching Functionality**:
+   - **Feature**: Added support for switching between Ethereum, Base, and Unichain
+   - **Implementation**: 
+     ```typescript
+     const handleChainChange = (value: string) => {
+       console.log('🟣 [CHAIN] Switching to chain:', value);
+       setSelectedChain(value);
+       const chainConfig = CHAIN_CONFIG[value as keyof typeof CHAIN_CONFIG];
+       if (chainConfig && chainConfig.wsUrl) {
+         console.log('🟣 [CHAIN] Using WebSocket URL:', chainConfig.wsUrl);
+         setWsUrl(chainConfig.wsUrl);
+         // Automatically reconnect with new chain if already connected
+         if (isConnected) {
+           console.log('🟣 [CHAIN] Auto-reconnecting to new chain...');
+           onConnect(chainConfig.wsUrl, value);
+         }
+       } else {
+         console.error('🔴 [CHAIN] No URL configured for chain:', value);
+       }
+     };
+     ```
+   - **Critical**: MUST preserve this exact implementation for chain switching
+   - **Pool Data Clearing**: When switching chains, PoolDataContext dispatches RESET_STATE to clear previous chain's data
+   - **Auto-reconnect**: If already connected, automatically connects to new chain's WebSocket
+   
+2. **Chain Configuration**:
+   - Created `/src/config/chains.ts` with chain-specific WebSocket URLs
+   - Environment variables: VITE_WEBSOCKET_URL_ETHEREUM, VITE_WEBSOCKET_URL_BASE, VITE_WEBSOCKET_URL_UNICHAIN
+   - **Important**: Radix UI Select component had event handling issues, replaced with native HTML select
+
+3. **Docker Multi-Service Architecture**:
+   - Three separate tycho-api instances (ports 3001, 3002, 3003)
+   - One frontend that can switch between all chains
+   - Health checks use root endpoint `/` not `/health`
+   - No default values in docker-compose.yml - all config from .env
+
+### Recent Development Updates (2025-05-28 - Earlier Session)
+
 #### UI Consistency Improvements
 1. **Token Filter Sorting Consistency**:
    - **Issue**: List View token filter didn't sort selected tokens first, unlike Graph View
@@ -389,6 +428,20 @@ The Pool List View UI has undergone significant color system updates to align wi
 
 ## Important Patterns and Preferences
 
+### Configuration Management
+- **NO DEFAULT VALUES**: Never include default values in configuration files (docker-compose.yml, etc.)
+- **Rationale**: All configuration must come from environment variables (.env files)
+- **Implementation**: Use `${VARIABLE_NAME}` without `:-default` syntax
+- **Example**: 
+  ```yaml
+  # WRONG
+  TYCHO_API_KEY: ${TYCHO_API_KEY:-sampletoken}
+  
+  # CORRECT
+  TYCHO_API_KEY: ${TYCHO_API_KEY}
+  ```
+- **Critical**: This ensures explicit configuration and prevents accidental use of development defaults in production
+
 ### CSS Gradient Border Technique
 When implementing gradient borders with border-radius:
 1. Create wrapper div with gradient background and padding
@@ -416,6 +469,7 @@ Example:
 - **Popover Styling**: Use transparent borders with warm cream colors
 - **Checkbox Styling**: Folly red (#FF3366) for checked state with white checkmark
 - **Filter Token Sorting**: ALWAYS sort selected tokens first in filter popovers for consistency between views
+- **Chain Selector**: Use native HTML select instead of Radix UI Select due to event handling issues in dropdown panels
 
 ## Learnings and Project Insights
 

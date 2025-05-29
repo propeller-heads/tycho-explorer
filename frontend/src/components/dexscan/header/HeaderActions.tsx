@@ -6,7 +6,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 // Import SVG and PNG assets
 import CallMadeIcon from '@/assets/figma_header_icons/call_made.svg';
-import EthereumLogo from '@/assets/figma_header_icons/ethereum-logo.png'; // Default/fallback chain logo
+import EthereumLogo from '@/assets/figma_header_icons/ethereum-logo.png';
+import UnichainLogo from '@/assets/figma_header_icons/unichain-logo.svg';
+import BaseLogo from '@/assets/figma_header_icons/base-logo.png';
 // Import UI components
 import { Button } from '@/components/ui/button';
 // Import icons from lucide-react
@@ -36,7 +38,7 @@ const WS_ICON_BASE_CLASSES = "h-4 w-4";
 interface WebSocketIndicatorProps {
   websocketUrl: string;
   isConnected: boolean;
-  connectToWebSocket: (url: string) => void;
+  connectToWebSocket: (url: string, chain?: string) => void;
   selectedChain: string;
   chainLogo: string;
 }
@@ -166,7 +168,14 @@ const HeaderActions: React.FC = () => {
     selectedChain,
   } = usePoolData();
 
-  const chainLogo = selectedChain === 'Ethereum' ? EthereumLogo : EthereumLogo;
+  // Map chain name to corresponding logo
+  const chainLogoMap: { [key: string]: string } = {
+    'Ethereum': EthereumLogo,
+    'Unichain': UnichainLogo,
+    'Base': BaseLogo,
+  };
+  
+  const chainLogo = chainLogoMap[selectedChain] || EthereumLogo;
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">

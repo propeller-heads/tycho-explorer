@@ -2,13 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { usePoolData } from './context/PoolDataContext';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+import { CHAIN_CONFIG } from '@/config/chains';
 
 interface WebSocketConfigProps {
   onConnect?: (url: string, chain?: string) => void;
@@ -47,6 +41,13 @@ export const WebSocketConfig = ({
   console.log("wsUrl:", wsUrl);
   const [selectedChain, setSelectedChain] = useState<string>(contextSelectedChain);
   
+  console.log('🔵 [DEBUG] WebSocketConfig render:', {
+    selectedChain,
+    contextSelectedChain,
+    availableChains,
+    isConnected
+  });
+  
   // Update URL input when default URL changes (e.g. from localStorage)
   useEffect(() => {
     setWsUrl(defaultUrl);
@@ -68,7 +69,20 @@ export const WebSocketConfig = ({
   };
 
   const handleChainChange = (value: string) => {
+    console.log('🟣 [CHAIN] Switching to chain:', value);
     setSelectedChain(value);
+    const chainConfig = CHAIN_CONFIG[value as keyof typeof CHAIN_CONFIG];
+    if (chainConfig && chainConfig.wsUrl) {
+      console.log('🟣 [CHAIN] Using WebSocket URL:', chainConfig.wsUrl);
+      setWsUrl(chainConfig.wsUrl);
+      // Automatically reconnect with new chain if already connected
+      if (isConnected) {
+        console.log('🟣 [CHAIN] Auto-reconnecting to new chain...');
+        onConnect(chainConfig.wsUrl, value);
+      }
+    } else {
+      console.error('🔴 [CHAIN] No URL configured for chain:', value);
+    }
   };
   
   return (
@@ -76,31 +90,20 @@ export const WebSocketConfig = ({
       {/* Chain selection */}
       <div className="mb-2">
         <label className="text-xs text-muted-foreground mb-1 block">Chain</label>
-        <Select
+        <select
           value={selectedChain}
-          onValueChange={handleChainChange}
-          disabled={selectedChain !== 'Ethereum'} // Only Ethereum is selectable for now
+          onChange={(e) => {
+            console.log('🟢 [DEBUG] Native select onChange:', e.target.value);
+            handleChainChange(e.target.value);
+          }}
+          className="w-full text-xs h-10 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] border-transparent text-[#FFF4E0] transition-colors px-3 rounded-md"
         >
-          <SelectTrigger 
-            className="text-xs h-10 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] border-transparent text-[#FFF4E0] transition-colors"
-          >
-            <SelectValue placeholder="Select chain" />
-          </SelectTrigger>
-          <SelectContent 
-            className="bg-[rgba(255,244,224,0.04)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.2)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]"
-          >
-            {availableChains.map(chain => (
-              <SelectItem 
-                key={chain} 
-                value={chain}
-                disabled={chain !== 'Ethereum'} // Only Ethereum is selectable for now
-                className="text-[#FFF4E0] hover:bg-[rgba(255,244,224,0.06)] focus:bg-[rgba(255,244,224,0.06)]"
-              >
-                {chain}{chain !== 'Ethereum' && ' (Coming soon)'}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          {availableChains.map(chain => (
+            <option key={chain} value={chain}>
+              {chain}
+            </option>
+          ))}
+        </select>
       </div>
       
       {/* WebSocket URL and connect button */}
