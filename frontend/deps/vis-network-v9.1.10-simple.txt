@@ -1,0 +1,315 @@
+# vis-network v9.1.10 - Simplified Documentation
+
+This document provides a summarized overview of the vis-network library for dynamic, browser-based network visualizations.
+
+## Network Overview
+`vis-network` displays networks (graphs) consisting of nodes and edges. It supports custom shapes, styles, colors, sizes, images, and more. It uses HTML canvas for rendering and can handle thousands of nodes/edges, with clustering support for larger networks.
+
+## Construction
+`var network = new vis.Network(container, data, options);`
+- `container` (HTMLElement): The DOM element to draw the network in.
+- `data` (Object): An object containing `nodes` and `edges`. Nodes and edges can be a `vis.DataSet` or an `Array`.
+- `options` (Object): An object to customize the network's appearance and behavior.
+
+**Example:**
+```javascript
+// create an array with nodes
+var nodes = new vis.DataSet([
+    {id: 1, label: 'Node 1'},
+    {id: 2, label: 'Node 2'},
+    {id: 3, label: 'Node 3'}
+]);
+
+// create an array with edges
+var edges = new vis.DataSet([
+    {from: 1, to: 3},
+    {from: 1, to: 2}
+]);
+
+var container = document.getElementById('mynetwork');
+var data = { nodes: nodes, edges: edges };
+var options = {}; // Optional
+var network = new vis.Network(container, data, options);
+```
+
+## Data Format
+
+### Nodes
+Nodes are typically objects with at least an `id`.
+**Key Properties:**
+- `id` (String | Number): **Required**. Unique identifier for the node.
+- `label` (String): Text displayed on or near the node.
+- `shape` (String): Node shape (e.g., 'ellipse', 'circle', 'box', 'image', 'dot', 'star', 'icon', 'custom'). Default: 'ellipse'.
+- `color` (String | Object): Node color. Can be a string (e.g., 'red', '#FF0000') or an object:
+    - `background` (String)
+    - `border` (String)
+    - `highlight` (Object | String): Color on selection.
+    - `hover` (Object | String): Color on hover.
+- `size` (Number): Size of the node (for shapes like 'dot', 'image'). Default: 25.
+- `font` (String | Object): Label font styling (e.g., '14px arial red' or object with `size`, `face`, `color`, `strokeWidth`, `strokeColor`, `multi`, `bold`, `ital`, `mono` etc.).
+- `image` (String | Object): URL of an image if shape is 'image' or 'circularImage'. Can be an object `{unselected: 'url1', selected: 'url2'}`.
+- `brokenImage` (String): Fallback image URL if `image` fails to load.
+- `icon` (Object): For shape 'icon'. Properties: `face` (font family, e.g., 'FontAwesome'), `code` (unicode string), `size`, `color`, `weight`.
+- `group` (String | Number): Assigns node to a group for shared styling.
+- `level` (Number): For hierarchical layout, determines the node's level.
+- `x` (Number): Initial X-coordinate (canvas space).
+- `y` (Number): Initial Y-coordinate (canvas space).
+- `fixed` (Boolean | Object): If true, node position is fixed. Object `{x:true, y:false}` fixes only one axis.
+- `value` (Number): Used for scaling node size.
+- `title` (String | HTMLElement): HTML tooltip shown on hover.
+- `mass` (Number): For physics simulation. Default: 1.
+- `physics` (Boolean): If false, node is not part of physics simulation. Default: true.
+- `chosen` (Boolean | Object): Customizes appearance on select/hover.
+- `labelHighlightBold` (Boolean): If true, label becomes bold on selection. Default: true.
+- `borderWidth` (Number): Width of the node border. Default: 1.
+- `borderWidthSelected` (Number): Border width when selected. Default: 2.
+- `shadow` (Boolean | Object): Enables/configures node shadow.
+- `ctxRenderer` (Function): Custom rendering function if shape is 'custom'.
+
+### Edges
+Edges connect two nodes, defined by `from` and `to` properties.
+**Key Properties:**
+- `from` (String | Number): **Required**. ID of the source node.
+- `to` (String | Number): **Required**. ID of the target node.
+- `id` (String | Number): Optional. Unique identifier for the edge.
+- `arrows` (String | Object): Defines arrowheads. String: 'to, from, middle'. Object: `{to: {enabled: true, scaleFactor: 1, type: 'arrow'}, middle: {...}, from: {...}}`. Arrow types: 'arrow', 'bar', 'circle', 'image'.
+- `label` (String): Text displayed on the edge.
+- `color` (String | Object): Edge color. Similar structure to node color, also supports `inherit: 'from' | 'to' | 'both' | true | false`.
+- `font` (String | Object): Edge label font styling. Similar to node font. `align` can be 'horizontal', 'top', 'middle', 'bottom'.
+- `smooth` (Boolean | Object): Configures smooth curves for edges.
+    - `enabled` (Boolean): Default: true.
+    - `type` (String): 'dynamic', 'continuous', 'discrete', 'diagonalCross', 'straightCross', 'horizontal', 'vertical', 'curvedCW', 'curvedCCW', 'cubicBezier'. Default: 'dynamic'.
+    - `roundness` (Number): 0.0 to 1.0. Default: 0.5.
+    - `forceDirection` (String | Boolean): For 'cubicBezier', e.g., 'horizontal', 'vertical', 'none'.
+- `dashes` (Boolean | Array): If true, draws dashed line. Array for custom pattern: `[dash, gap, dash, gap, ...]`.
+- `width` (Number): Edge width. Default: 1.
+- `value` (Number): Used for scaling edge width.
+- `title` (String | HTMLElement): HTML tooltip shown on hover.
+- `physics` (Boolean): If false, edge is not part of physics simulation. Default: true.
+- `chosen` (Boolean | Object): Customizes appearance on select/hover.
+- `labelHighlightBold` (Boolean): If true, label becomes bold on selection. Default: true.
+- `arrowStrikethrough` (Boolean): If false, edge stops at arrow. Default: true.
+- `selfReferenceSize` (Number, DEPRECATED): Use `selfReference.size`.
+- `selfReference` (Object): Configures self-referencing loops. Properties: `size` (radius), `angle` (in radians), `renderBehindTheNode` (boolean).
+- `shadow` (Boolean | Object): Enables/configures edge shadow.
+- `endPointOffset` (Object): `{from: Number, to: Number}`. Adjusts endpoints relative to node border. Requires `arrowStrikethrough: true`.
+
+## Key Options (Global Configuration)
+Options are passed during network construction or via `setOptions()`.
+
+### Global Network Options
+- `autoResize` (Boolean): Auto-redraw on container resize. Default: true.
+- `width` (String): Canvas width (e.g., '100%', '600px'). Default: '100%'.
+- `height` (String): Canvas height. Default: '100%'.
+- `locale` (String): Language for UI elements (e.g., manipulation controls). Default: 'en'.
+- `locales` (Object): Custom translations.
+- `clickToUse` (Boolean): If true, network is active only after a click on it. Default: false.
+
+### `nodes` Module Options
+(Global defaults for all nodes)
+- See Node Properties above for common options like `shape`, `size`, `color`, `font`, `borderWidth`, `shadow`, `scaling`, `physics`, `fixed`.
+
+### `edges` Module Options
+(Global defaults for all edges)
+- See Edge Properties above for common options like `arrows`, `color`, `font`, `smooth`, `dashes`, `width`, `scaling`, `shadow`, `physics`.
+
+### `layout` Module Options
+- `randomSeed` (Number | String): Seed for initial random node placement (non-hierarchical).
+- `improvedLayout` (Boolean): Use Kamada Kawai for initial layout (for networks > 100 nodes, uses clustering). Default: true.
+- `clusterThreshold` (Number): Node count threshold for `improvedLayout` clustering. Default: 150.
+- `hierarchical` (Boolean | Object): Enables hierarchical layout.
+    - `enabled` (Boolean): Default: false.
+    - `direction` (String): 'UD', 'DU', 'LR', 'RL'. Default: 'UD'.
+    - `sortMethod` (String): 'hubsize' or 'directed'. Default: 'hubsize'.
+    - `levelSeparation` (Number): Distance between levels. Default: 150.
+    - `nodeSpacing` (Number): Min distance between nodes on free axis. Default: 100.
+    - `treeSpacing` (Number): Distance between trees. Default: 200.
+    - `blockShifting` (Boolean): Reduce whitespace. Default: true.
+    - `edgeMinimization` (Boolean): Reduce total edge length. Default: true.
+    - `parentCentralization` (Boolean): Center parent nodes. Default: true.
+    - `shakeTowards` (String): 'roots' or 'leaves'. Default: 'leaves'.
+
+### `physics` Module Options
+- `enabled` (Boolean): Toggle physics simulation. Default: true.
+- `solver` (String): Physics solver. 'barnesHut' (default), 'forceAtlas2Based', 'repulsion', 'hierarchicalRepulsion'.
+- `barnesHut` (Object): Parameters for BarnesHut solver (fastest for non-hierarchical).
+    - `theta` (Number): Accuracy vs. speed. Default: 0.5.
+    - `gravitationalConstant` (Number): Repulsion strength (negative value). Default: -2000.
+    - `centralGravity` (Number): Pull towards center. Default: 0.3.
+    - `springLength` (Number): Edge spring rest length. Default: 95.
+    - `springConstant` (Number): Edge spring sturdiness. Default: 0.04.
+    - `damping` (Number): Velocity carry-over (0-1). Default: 0.09.
+    - `avoidOverlap` (Number): Node overlap avoidance (0-1). Default: 0.
+- `forceAtlas2Based` (Object): Parameters for ForceAtlas2 solver.
+    - (Similar parameters to barnesHut, but different gravity model and mass calculation).
+- `repulsion` (Object): Parameters for basic repulsion solver.
+    - `nodeDistance` (Number): Range of repulsion. Default: 100.
+- `hierarchicalRepulsion` (Object): Parameters for hierarchical repulsion solver.
+- `stabilization` (Boolean | Object): Stabilize network on load.
+    - `enabled` (Boolean): Default: true.
+    - `iterations` (Number): Max iterations for stabilization. Default: 1000.
+    - `fit` (Boolean): Zoom to fit after stabilization. Default: true. (Set to `false` to preserve user zoom on data updates).
+    - `updateInterval` (Number): Iterations between `stabilizationProgress` events. Default: 50.
+    - `onlyDynamicEdges` (Boolean): Only stabilize dynamic smooth edges, freezing nodes. Default: false.
+- `maxVelocity` (Number): Max node velocity. Default: 50.
+- `minVelocity` (Number): Velocity below which network is considered stable. Default: 0.1.
+- `timestep` (Number): Physics simulation time step. Default: 0.5.
+- `adaptiveTimestep` (Boolean): Intelligently adapt timestep during stabilization. Default: true.
+
+### `interaction` Module Options
+- `dragNodes` (Boolean): Allow nodes to be dragged. Default: true.
+- `dragView` (Boolean): Allow view to be panned. Default: true.
+- `hover` (Boolean): Enable hover effects on nodes/edges. Default: false.
+- `selectable` (Boolean): Allow nodes/edges to be selected. Default: true.
+- `zoomView` (Boolean): Allow view to be zoomed. Default: true.
+- `tooltipDelay` (Number): Delay in ms before tooltip appears. Default: 300.
+- `navigationButtons` (Boolean): Show navigation UI buttons. Default: false.
+- `keyboard` (Boolean | Object): Enable keyboard navigation/manipulation.
+    - `enabled` (Boolean): Default: false.
+    - `speed` (Object): `{x, y, zoom}` speeds.
+    - `bindToWindow` (Boolean): Bind to window or network div. Default: true.
+- `multiselect` (Boolean): Ctrl+click or long-press adds to selection. Default: false.
+- `hideEdgesOnDrag` (Boolean): Hide edges while dragging view. Default: false.
+- `hideNodesOnDrag` (Boolean): Hide nodes while dragging view. Default: false.
+- `selectConnectedEdges` (Boolean): Highlight connected edges on node selection. Default: true.
+- `hoverConnectedEdges` (Boolean): Highlight connected edges on node hover. Default: true.
+
+### `manipulation` Module Options
+- `enabled` (Boolean): Show manipulation UI. Default: false.
+- `initiallyActive` (Boolean): If true, toolbar is visible when `enabled` is true. Default: false.
+- `addNode` (Boolean | Function): Enable/handle add node. `function(nodeData, callback)`.
+- `addEdge` (Boolean | Function): Enable/handle add edge. `function(edgeData, callback)`.
+- `editNode` (Function): Handle edit node. `function(nodeData, callback)`. Required for edit node UI.
+- `editEdge` (Boolean | Function | Object): Enable/handle edit edge. `function(edgeData, callback)`. Object can specify `editWithoutDrag`.
+- `deleteNode` (Boolean | Function): Enable/handle delete node. `function({nodes, edges}, callback)`.
+- `deleteEdge` (Boolean | Function): Enable/handle delete edge. `function({nodes, edges}, callback)`.
+- `controlNodeStyle` (Object): Style for control points during edge editing.
+
+### `groups` Module Options
+- `useDefaultGroups` (Boolean): Cycle through default styles for undefined groups. Default: true.
+- `[groupName]` (Object): Define styles for a specific group. Node options can be used here.
+  **Example:** `groups: { myGroup: { color: { background: 'red' }, shape: 'star' } }`
+
+### `configure` Module Options
+- `enabled` (Boolean): Show configuration UI. Default: true if other configure options set.
+- `filter` (String | Array | Boolean | Function): Filter which options appear in UI.
+- `container` (HTMLElement): Custom DOM element for configurator.
+- `showButton` (Boolean): Show "generate options" button. Default: true.
+
+## Key Methods
+
+### Global
+- `destroy()`: Removes network from DOM, cleans up.
+- `setData({nodes, edges})`: Replaces all data.
+- `setOptions(options)`: Updates network options.
+- `on(event, callback)`: Adds event listener.
+- `off(event, callback)`: Removes event listener.
+- `once(event, callback)`: Adds event listener that fires once.
+
+### Canvas & Viewport
+- `canvasToDOM({x, y})`: Converts canvas coords to DOM coords.
+- `DOMtoCanvas({x, y})`: Converts DOM coords to canvas coords.
+- `redraw()`: Forces a redraw.
+- `setSize(width, height)`: Sets canvas size.
+- `getScale()`: Returns current zoom scale.
+- `getViewPosition()`: Returns `{x, y}` of view center (canvas space).
+- `fit([options])`: Zooms to fit all nodes (or specified nodes). Options: `nodes` (Array), `animation` (Boolean | Object).
+- `focus(nodeId, [options])`: Locks view onto a node. Options: `scale`, `offset`, `locked`, `animation`.
+- `moveTo(options)`: Animates/moves camera. Options: `position`, `scale`, `offset`, `animation`.
+- `releaseNode()`: Unfocuses from a node.
+
+### Selection
+- `getSelection()`: Returns `{nodes: [...], edges: [...]}` of selected IDs.
+- `getSelectedNodes()`: Returns array of selected node IDs.
+- `getSelectedEdges()`: Returns array of selected edge IDs.
+- `getNodeAt({x, y})`: Returns nodeId at DOM coordinates, or undefined.
+- `getEdgeAt({x, y})`: Returns edgeId at DOM coordinates, or undefined.
+- `selectNodes(nodeIds, [highlightEdges])`: Selects specified nodes.
+- `selectEdges(edgeIds)`: Selects specified edges.
+- `setSelection({nodes: [...], edges: [...]}, [options])`: Sets selection. Options: `unselectAll`, `highlightEdges`.
+- `unselectAll()`: Clears selection.
+
+### Physics & Layout
+- `startSimulation()`: Starts physics simulation.
+- `stopSimulation()`: Stops physics simulation.
+- `stabilize([iterations])`: Manually runs stabilization.
+- `getSeed()`: Returns the random seed used for layout.
+- `storePositions()`: Saves current node X/Y positions to the DataSet (if nodes are from DataSet).
+
+### Information & Manipulation
+- `getPositions([nodeIds])`: Returns `{nodeId: {x,y}, ...}` for specified/all nodes.
+- `getPosition(nodeId)`: Returns `{x,y}` for a single node. Throws error if not found.
+- `moveNode(nodeId, x, y)`: Programmatically moves a node (canvas coords).
+- `getBoundingBox(nodeId)`: Returns `{top, left, right, bottom}` for a node.
+- `getConnectedNodes(nodeId | edgeId, [direction])`: Returns connected node IDs. `direction`: 'from', 'to'.
+- `getConnectedEdges(nodeId)`: Returns connected edge IDs.
+- `enableEditMode()`, `disableEditMode()`, `addNodeMode()`, `editNode()`, `addEdgeMode()`, `editEdgeMode()`, `deleteSelected()`: Programmatic manipulation controls.
+
+### Clustering
+- `cluster([options])`: Clusters nodes based on `options.joinCondition`.
+- `clusterByConnection(nodeId, [options])`: Clusters a node and its direct connections.
+- `clusterByHubsize([hubsize], [options])`: Clusters nodes with many connections.
+- `clusterOutliers([options])`: Clusters nodes with only one connection.
+- `openCluster(nodeId, [options])`: Opens a cluster. `options.releaseFunction` for custom node positioning.
+- `findNode(nodeId)`: Returns array representing cluster path to a node (e.g., `['clusterA', 'clusterB', 'originalNodeId']`).
+- `getNodesInCluster(clusterNodeId)`: Returns IDs of nodes within a cluster.
+- `isCluster(nodeId)`: Returns true if nodeId is a cluster.
+- `getBaseEdges(clusteredEdgeId)`: Returns original edge ID(s) for a clustered edge.
+- `updateEdge(startEdgeId, options)`: Updates an original edge and all its clustered representations.
+- `updateClusteredNode(clusteredNodeId, options)`: Updates a cluster node itself.
+
+### Configuration
+- `getOptionsFromConfigurator()`: Returns options object based on configurator UI changes.
+
+## Key Events
+(Callback `params` object typically includes `nodes`, `edges`, `event`, `pointer: {DOM, canvas}`)
+
+### User Interaction
+- `click`, `doubleClick`, `oncontext` (right-click), `hold`: Mouse/touch actions. `params` includes `items` (clicked elements).
+- `release`: Fired after canvas drawing is complete.
+- `select`, `selectNode`, `selectEdge`: Fired on selection changes by user.
+- `deselectNode`, `deselectEdge`: Fired on deselection. `params` includes `previousSelection`.
+- `dragStart`, `dragging`, `dragEnd`: Fired during node/view dragging.
+- `controlNodeDragging`, `controlNodeDragEnd`: Fired during manipulation edge creation/editing. `params` includes `controlEdge`.
+- `hoverNode`, `blurNode`: Fired on node hover if `interaction.hover: true`. `params: {node: nodeId}`.
+- `hoverEdge`, `blurEdge`: Fired on edge hover if `interaction.hover: true`. `params: {edge: edgeId}`.
+- `zoom`: Fired on zoom. `params: {direction: '+/-', scale: Number, pointer: {x,y}}`.
+- `showPopup`, `hidePopup`: Fired when tooltip is shown/hidden. `showPopup` params: `itemId`.
+
+### Physics
+- `startStabilizing`: Physics simulation starts.
+- `stabilizationProgress`: During 'hidden' stabilization. `params: {iterations, total}`.
+- `stabilizationIterationsDone`: 'Hidden' stabilization finishes (max iterations or stable).
+- `stabilized`: Network stable or `stopSimulation()` called. `params: {iterations}`.
+
+### Rendering & View
+- `initRedraw`: Before redrawing begins, after simulation step.
+- `beforeDrawing`: After canvas clear/transform, before nodes/edges draw. `params: CanvasRenderingContext2D`.
+- `afterDrawing`: After all drawing complete. `params: CanvasRenderingContext2D`.
+- `animationFinished`: When a view animation (e.g., from `moveTo`, `focus`) finishes.
+- `resize`: Canvas size changed. `params: {width, height, oldWidth, oldHeight}`.
+
+### Configuration
+- `configChange`: User changed an option in the configurator UI. `params: optionsObject`.
+
+## Data Import
+
+### From Gephi
+`vis.parseGephiNetwork(gephiJSON, [parserOptions])`
+- `gephiJSON` (Object): JSON exported from Gephi.
+- `parserOptions` (Object):
+    - `nodes.fixed` (Boolean): If true, nodes keep Gephi positions. Default: true.
+    - `nodes.parseColor` (Boolean): If true, vis.js parses Gephi color. Default: false.
+    - `edges.inheritColor` (Boolean): If true, ignore Gephi edge color. Default: false.
+- Returns `{nodes: [...], edges: [...]}`.
+
+### From DOT language
+`vis.parseDOTNetwork(dotString)`
+- `dotString` (String): Network data in DOT language.
+- Returns `{nodes: [...], edges: [...], options: {...}}`. The `options` object contains layout directives from the DOT string.
+
+**Example DOT:**
+```javascript
+var DOTstring = 'digraph {1 -> 2; 2 -> 3;}';
+var parsedData = vis.parseDOTNetwork(DOTstring);
+var network = new vis.Network(container, {nodes: parsedData.nodes, edges: parsedData.edges}, parsedData.options);

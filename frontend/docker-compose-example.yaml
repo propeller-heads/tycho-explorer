@@ -1,0 +1,115 @@
+services:
+  # Ethereum Mainnet Tycho API
+  tycho-api-ethereum:
+    build: 
+      context: ./tycho-api
+      dockerfile: Dockerfile
+    container_name: tycho-api-ethereum
+    ports:
+      - "3001:3000"
+    environment:
+      TYCHO_API_KEY: ${TYCHO_API_KEY}
+      TYCHO_ETHEREUM_URL: ${TYCHO_ETHEREUM_URL}
+      RPC_URL: ${RPC_URL_ETHEREUM}
+      RUST_LOG: ${RUST_LOG}
+    command: ["--tvl-threshold", "30", "--chain", "ethereum", "--port", "3000"]
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Ethereum API health check failed' && exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.swift.service=tycho-api"
+      - "com.swift.chain=ethereum"
+  
+  # Base Mainnet Tycho API
+  tycho-api-base:
+    build: 
+      context: ./tycho-api
+      dockerfile: Dockerfile
+    container_name: tycho-api-base
+    ports:
+      - "3002:3000"
+    environment:
+      TYCHO_API_KEY: ${TYCHO_API_KEY}
+      TYCHO_BASE_URL: ${TYCHO_BASE_URL}
+      RPC_URL: ${RPC_URL_BASE}
+      RUST_LOG: ${RUST_LOG}
+    command: ["--tvl-threshold", "30", "--chain", "base", "--port", "3000"]
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Base API health check failed' && exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.swift.service=tycho-api"
+      - "com.swift.chain=base"
+  
+  # Unichain Mainnet Tycho API
+  tycho-api-unichain:
+    build: 
+      context: ./tycho-api
+      dockerfile: Dockerfile
+    container_name: tycho-api-unichain
+    ports:
+      - "3003:3000"
+    environment:
+      TYCHO_API_KEY: ${TYCHO_API_KEY}
+      TYCHO_UNICHAIN_URL: ${TYCHO_UNICHAIN_URL}
+      RPC_URL: ${RPC_URL_UNICHAIN}
+      RUST_LOG: ${RUST_LOG}
+    command: ["--tvl-threshold", "30", "--chain", "unichain", "--port", "3000"]
+    networks:
+      - swift-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Unichain API health check failed' && exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.swift.service=tycho-api"
+      - "com.swift.chain=unichain"
+  
+  # Frontend Application
+  swift-price-oracle:
+    build: 
+      context: ./swift-price-oracle
+      dockerfile: Dockerfile
+      args:
+        - BUILDKIT_PROGRESS=plain
+        - VITE_WEBSOCKET_URL=${VITE_WEBSOCKET_URL}
+        - VITE_WEBSOCKET_URL_ETHEREUM=${VITE_WEBSOCKET_URL_ETHEREUM}
+        - VITE_WEBSOCKET_URL_BASE=${VITE_WEBSOCKET_URL_BASE}
+        - VITE_WEBSOCKET_URL_UNICHAIN=${VITE_WEBSOCKET_URL_UNICHAIN}
+    container_name: swift-price-oracle
+    ports:
+      - "8080:80"
+    depends_on:
+      tycho-api-ethereum:
+        condition: service_healthy
+      tycho-api-base:
+        condition: service_healthy
+      tycho-api-unichain:
+        condition: service_healthy
+    environment:
+      VITE_WEBSOCKET_URL_ETHEREUM: ${VITE_WEBSOCKET_URL_ETHEREUM}
+      VITE_WEBSOCKET_URL_BASE: ${VITE_WEBSOCKET_URL_BASE}
+      VITE_WEBSOCKET_URL_UNICHAIN: ${VITE_WEBSOCKET_URL_UNICHAIN}
+      VITE_WEBSOCKET_URL: ${VITE_WEBSOCKET_URL}
+    networks:
+      - swift-network
+    labels:
+      - "com.swift.service=frontend"
+
+networks:
+  swift-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.debug: "true"
