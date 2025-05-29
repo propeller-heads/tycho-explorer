@@ -38,7 +38,7 @@ RUN echo "🔵 [BUILD] Checking dist directory:" && ls -la dist/ || echo "🔴 [
 # Production stage
 FROM ubuntu:24.04
 RUN echo "🔵 [PROD] Setting up Ubuntu 24.04 with nginx..."
-RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y nginx ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
