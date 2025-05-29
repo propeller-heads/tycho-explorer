@@ -7614,7 +7614,7 @@ dependencies = [
 [[package]]
 name = "tycho-simulation"
 version = "0.103.0"
-source = "git+https://github.com/propeller-heads/tycho-simulation?rev=aed9864#aed9864768e245e92a684fde020286dc17c112e5"
+source = "git+https://github.com/propeller-heads/tycho-simulation?tag=0.103.0#aed9864768e245e92a684fde020286dc17c112e5"
 dependencies = [
  "alloy",
  "alloy-primitives",
