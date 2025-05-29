@@ -18,12 +18,9 @@ pub fn setup_tracing() {
 
 pub fn get_default_url(chain: &Chain) -> Option<String> {
     match chain {
-        Chain::Ethereum => Some(env::var("TYCHO_ETHEREUM_URL")
-            .unwrap_or_else(|_| "tycho-beta.propellerheads.xyz".to_string())),
-        Chain::Base => Some(env::var("TYCHO_BASE_URL")
-            .unwrap_or_else(|_| "tycho-base-beta.propellerheads.xyz".to_string())),
-        Chain::Unichain => Some(env::var("TYCHO_UNICHAIN_URL")
-            .unwrap_or_else(|_| "tycho-unichain-beta.propellerheads.xyz".to_string())),
+        Chain::Ethereum => env::var("TYCHO_ETHEREUM_URL").ok(),
+        Chain::Base => env::var("TYCHO_BASE_URL").ok(),
+        Chain::Unichain => env::var("TYCHO_UNICHAIN_URL").ok(),
         Chain::ZkSync => None,
         Chain::Starknet => None,
         Chain::Arbitrum => None,

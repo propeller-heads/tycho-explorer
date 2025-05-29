@@ -1,0 +1,49 @@
+# Development Dockerfile for swift-price-oracle
+# Uses bun dev server with hot module replacement
+
+FROM oven/bun:latest
+WORKDIR /app
+
+# Accept build arguments for Vite environment variables
+ARG VITE_WEBSOCKET_URL
+ARG VITE_WEBSOCKET_URL_ETHEREUM
+ARG VITE_WEBSOCKET_URL_BASE
+ARG VITE_WEBSOCKET_URL_UNICHAIN
+
+# Set them as environment variables
+ENV VITE_WEBSOCKET_URL=$VITE_WEBSOCKET_URL
+ENV VITE_WEBSOCKET_URL_ETHEREUM=$VITE_WEBSOCKET_URL_ETHEREUM
+ENV VITE_WEBSOCKET_URL_BASE=$VITE_WEBSOCKET_URL_BASE
+ENV VITE_WEBSOCKET_URL_UNICHAIN=$VITE_WEBSOCKET_URL_UNICHAIN
+
+# Log the development setup
+RUN echo "🔵 [DEV] Setting up frontend development environment..."
+RUN echo "🔷 [DEV ENV] VITE_WEBSOCKET_URL: $VITE_WEBSOCKET_URL"
+RUN echo "🔷 [DEV ENV] VITE_WEBSOCKET_URL_ETHEREUM: $VITE_WEBSOCKET_URL_ETHEREUM"
+RUN echo "🔷 [DEV ENV] VITE_WEBSOCKET_URL_BASE: $VITE_WEBSOCKET_URL_BASE"
+RUN echo "🔷 [DEV ENV] VITE_WEBSOCKET_URL_UNICHAIN: $VITE_WEBSOCKET_URL_UNICHAIN"
+
+# Copy package files
+COPY package.json bun.lockb ./
+RUN echo "🔵 [DEV] Installing dependencies with bun..."
+RUN bun install || (echo "🔴 [ERROR] Failed to install dependencies" && exit 1)
+RUN echo "🟢 [DEV] Dependencies installed"
+
+# Copy source code (will be overridden by volume mounts for hot reload)
+COPY . .
+
+# Expose Vite dev server port
+EXPOSE 5173
+
+# Add startup script with proper host binding for container access
+RUN echo '#!/bin/bash\n\
+echo "🟢 [DEV STARTUP] Starting swift-price-oracle development server..."\n\
+echo "🔷 [DEV] WebSocket URLs:"\n\
+echo "  - VITE_WEBSOCKET_URL_ETHEREUM: $VITE_WEBSOCKET_URL_ETHEREUM"\n\
+echo "  - VITE_WEBSOCKET_URL_BASE: $VITE_WEBSOCKET_URL_BASE"\n\
+echo "  - VITE_WEBSOCKET_URL_UNICHAIN: $VITE_WEBSOCKET_URL_UNICHAIN"\n\
+echo "🟣 [NETWORK] Development server will listen on http://0.0.0.0:5173"\n\
+echo "🔵 [DEV] Starting Vite dev server with hot module replacement..."\n\
+exec bun run dev --host 0.0.0.0' > /start-dev.sh && chmod +x /start-dev.sh
+
+ENTRYPOINT ["/start-dev.sh"]
