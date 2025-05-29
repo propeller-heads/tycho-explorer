@@ -1,0 +1,141 @@
+services:
+  # Ethereum Mainnet Tycho API (Development)
+  tycho-api-ethereum:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.dev
+    container_name: tycho-api-ethereum-dev
+    ports:
+      - "4001:3000"
+    environment:
+      TYCHO_API_KEY: ${TYCHO_API_KEY}
+      TYCHO_ETHEREUM_URL: ${TYCHO_ETHEREUM_URL}
+      RPC_URL: ${RPC_URL_ETHEREUM}
+      RUST_LOG: ${RUST_LOG:-debug}
+      RUST_BACKTRACE: 1
+    command: ["--tvl-threshold", "30", "--chain", "ethereum", "--port", "3000"]
+    volumes:
+      # Mount source code for development
+      - ./api/src:/app/src:ro
+      - ./api/Cargo.toml:/app/Cargo.toml:ro
+      - ./api/Cargo.lock:/app/Cargo.lock:ro
+    networks:
+      - tycho-network-dev
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Ethereum API health check failed' && exit 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "com.swift.service=tycho-api"
+      - "com.swift.chain=ethereum"
+      - "com.swift.env=development"
+  
+  # Base Mainnet Tycho API (Development)
+  tycho-api-base:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.dev
+    container_name: tycho-api-base-dev
+    ports:
+      - "4002:3000"
+    environment:
+      TYCHO_API_KEY: ${TYCHO_API_KEY}
+      TYCHO_BASE_URL: ${TYCHO_BASE_URL}
+      RPC_URL: ${RPC_URL_BASE}
+      RUST_LOG: ${RUST_LOG:-debug}
+      RUST_BACKTRACE: 1
+    command: ["--tvl-threshold", "30", "--chain", "base", "--port", "3000"]
+    volumes:
+      # Mount source code for development
+      - ./api/src:/app/src:ro
+      - ./api/Cargo.toml:/app/Cargo.toml:ro
+      - ./api/Cargo.lock:/app/Cargo.lock:ro
+    networks:
+      - tycho-network-dev
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Base API health check failed' && exit 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "com.swift.service=tycho-api"
+      - "com.swift.chain=base"
+      - "com.swift.env=development"
+  
+  # Unichain Mainnet Tycho API (Development)
+  tycho-api-unichain:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.dev
+    container_name: tycho-api-unichain-dev
+    ports:
+      - "4003:3000"
+    environment:
+      TYCHO_API_KEY: ${TYCHO_API_KEY}
+      TYCHO_UNICHAIN_URL: ${TYCHO_UNICHAIN_URL}
+      RPC_URL: ${RPC_URL_UNICHAIN}
+      RUST_LOG: ${RUST_LOG:-debug}
+      RUST_BACKTRACE: 1
+    command: ["--tvl-threshold", "30", "--chain", "unichain", "--port", "3000"]
+    volumes:
+      # Mount source code for development
+      - ./api/src:/app/src:ro
+      - ./api/Cargo.toml:/app/Cargo.toml:ro
+      - ./api/Cargo.lock:/app/Cargo.lock:ro
+    networks:
+      - tycho-network-dev
+    healthcheck:
+      test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Unichain API health check failed' && exit 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    labels:
+      - "com.swift.service=tycho-api"
+      - "com.swift.chain=unichain"
+      - "com.swift.env=development"
+  
+  # Frontend Application (Development)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        - BUILDKIT_PROGRESS=plain
+        - VITE_WEBSOCKET_URL=${VITE_WEBSOCKET_URL}
+        - VITE_WEBSOCKET_URL_ETHEREUM=${VITE_WEBSOCKET_URL_ETHEREUM}
+        - VITE_WEBSOCKET_URL_BASE=${VITE_WEBSOCKET_URL_BASE}
+        - VITE_WEBSOCKET_URL_UNICHAIN=${VITE_WEBSOCKET_URL_UNICHAIN}
+    container_name: tycho-explorer-frontend-dev
+    ports:
+      - "5173:5173"  # Vite default dev server port
+    depends_on:
+      - tycho-api-ethereum
+      - tycho-api-base
+      - tycho-api-unichain
+    environment:
+      VITE_WEBSOCKET_URL_ETHEREUM: ${VITE_WEBSOCKET_URL_ETHEREUM}
+      VITE_WEBSOCKET_URL_BASE: ${VITE_WEBSOCKET_URL_BASE}
+      VITE_WEBSOCKET_URL_UNICHAIN: ${VITE_WEBSOCKET_URL_UNICHAIN}
+      VITE_WEBSOCKET_URL: ${VITE_WEBSOCKET_URL}
+    volumes:
+      # Mount source code for hot reloading
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    networks:
+      - tycho-network-dev
+    labels:
+      - "com.swift.service=frontend"
+      - "com.swift.env=development"
+
+networks:
+  tycho-network-dev:
+    driver: bridge
+    driver_opts:
+      com.docker.network.debug: "true"
