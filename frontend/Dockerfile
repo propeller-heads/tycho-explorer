@@ -36,25 +36,18 @@ RUN echo "🟢 [BUILD] Frontend build completed successfully"
 RUN echo "🔵 [BUILD] Checking dist directory:" && ls -la dist/ || echo "🔴 [ERROR] dist directory not found!"
 
 # Production stage
-FROM ubuntu:24.04
-RUN echo "🔵 [PROD] Setting up Ubuntu 24.04 with nginx..."
-RUN apt-get update && apt-get install -y nginx ca-certificates && rm -rf /var/lib/apt/lists/*
+FROM nginx:alpine
+RUN echo "🔵 [PROD] Setting up nginx:alpine with built-in SSL support..."
 
 # Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
 RUN echo "🟢 [PROD] Static files copied to nginx directory"
 
 # Copy nginx config
-COPY nginx.conf /etc/nginx/sites-available/default
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN echo "🟢 [PROD] Nginx configuration applied"
 
-# Add startup script for logging
-RUN echo '#!/bin/bash\n\
-echo "🟢 [STARTUP] Starting nginx server on port 80..."\n\
-echo "🔷 [ENV] VITE_WEBSOCKET_URL_ETHEREUM: $VITE_WEBSOCKET_URL_ETHEREUM"\n\
-echo "🔷 [ENV] VITE_WEBSOCKET_URL_BASE: $VITE_WEBSOCKET_URL_BASE"\n\
-echo "🔷 [ENV] VITE_WEBSOCKET_URL_UNICHAIN: $VITE_WEBSOCKET_URL_UNICHAIN"\n\
-nginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
-
 EXPOSE 80
-CMD ["/start.sh"]
+
+# nginx:alpine already has a proper entrypoint, just use it
+CMD ["nginx", "-g", "daemon off;"]
