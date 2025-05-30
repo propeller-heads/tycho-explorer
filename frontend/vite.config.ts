@@ -1,12 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8080,
+    host: "0.0.0.0",
+    port: 5173,
     proxy: {
       '/api/coingecko': {
         target: 'https://api.coingecko.com/api/v3',
@@ -16,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   preview: {
-    host: "::",
+    host: "0.0.0.0",
     port: 8080,
     proxy: {
       '/api/coingecko': {
@@ -31,8 +32,8 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
-      "@te": path.resolve(__dirname, "./src/components/dexscan"),
+      "@": fileURLToPath(new URL('./src', import.meta.url)),
+      "@te": fileURLToPath(new URL('./src/components/dexscan', import.meta.url)),
     },
   },
   build: {
@@ -54,5 +55,6 @@ export default defineConfig(({ mode }) => ({
   // Optimize dependencies
   optimizeDeps: {
     include: ['react', 'react-dom', 'vis-network', 'vis-data'],
+    // Remove esbuildOptions as it's deprecated in Vite 6
   },
 }));

@@ -2,7 +2,7 @@ pub mod state;
 
 use futures::StreamExt;
 use tokio::{sync::mpsc, task::JoinHandle};
-use tracing::info;
+use tracing::{info, debug, error};
 use tycho_simulation::{
     evm::{
         engine_db::tycho_db::PreCachedDB,
@@ -96,8 +96,15 @@ pub fn start_simulation_processor(
     let tycho_api_key = tycho_api_key.to_string();
 
     tokio::spawn(async move {
+        info!("Simulation processor task started");
+        
         // Start the client task to process messages from Tycho
         let client_task = tokio::spawn(async move {
+            info!("Starting Tycho client task");
+            info!("Connecting to Tycho URL: {}", tycho_url);
+            info!("Chain: {:?}", chain);
+            
+            debug!("Loading tokens from Tycho...");
             let all_tokens = load_all_tokens(
                 tycho_url.as_str(),
                 false,
@@ -107,11 +114,14 @@ pub fn start_simulation_processor(
                 Some(1),
             )
             .await;
-            info!("Loaded {} tokens", all_tokens.len());
+            info!("Successfully loaded {} tokens", all_tokens.len());
 
             let tvl_filter =
                 ComponentFilter::with_tvl_range(tvl_threshold - tvl_buffer, tvl_threshold);
-            let mut protocol_stream = register_exchanges(
+            info!("TVL filter range: {} - {}", tvl_threshold - tvl_buffer, tvl_threshold);
+            
+            debug!("Building protocol stream...");
+            let protocol_stream_builder = register_exchanges(
                 ProtocolStreamBuilder::new(&tycho_url, chain),
                 &chain,
                 tvl_filter,
@@ -119,18 +129,40 @@ pub fn start_simulation_processor(
             .auth_key(Some(tycho_api_key.clone()))
             .skip_state_decode_failures(true)
             .set_tokens(all_tokens)
-            .await
-            .build()
-            .await
-            .expect("Failed building protocol stream");
+            .await;
+            
+            info!("Building protocol stream...");
+            let mut protocol_stream = match protocol_stream_builder.build().await {
+                Ok(stream) => {
+                    info!("Successfully built protocol stream");
+                    stream
+                },
+                Err(e) => {
+                    error!("Failed to build protocol stream: {}", e);
+                    return Err(anyhow::anyhow!("Failed to build protocol stream: {}", e));
+                }
+            };
 
+            info!("Starting to process block updates...");
             // Loop through block updates
+            let mut update_count = 0;
             while let Some(msg) = protocol_stream.next().await {
-                if let Ok(update) = msg {
-                    tx.send(update).await.expect("Failed to send update");
+                match msg {
+                    Ok(update) => {
+                        update_count += 1;
+                        debug!("Received block update #{}", update_count);
+                        if let Err(e) = tx.send(update).await {
+                            error!("Failed to send update: {}", e);
+                            break;
+                        }
+                    },
+                    Err(e) => {
+                        error!("Error receiving update: {}", e);
+                    }
                 }
             }
-
+            
+            info!("Protocol stream ended after {} updates", update_count);
             anyhow::Result::<()>::Ok(())
         });
 

@@ -78,6 +78,6 @@
     "terser": "^5.39.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "npm:rolldown-vite@latest"
+    "vite": "^6.0.0"
   }
 }

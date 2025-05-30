@@ -1,18 +1,31 @@
 # Development Setup
 
-This guide explains how to run the Swift Price Oracle stack in development mode with hot reloading.
+This guide explains how to run the Tycho Explorer stack in development mode with hot reloading.
+
+## Important: NO DEFAULT VALUES
+
+**⚠️ This project has a strict NO DEFAULTS policy!**
+- You MUST explicitly provide all required parameters
+- There are NO default values anywhere in the codebase
+- TVL threshold must ALWAYS be specified when running API services
 
 ## Quick Start
 
-1. **Copy environment variables:**
+1. **Setup environment files:**
    ```bash
-   cp .env.example .env
-   # Edit .env with your API keys and RPC URLs
+   # Production environment: .env
+   # Development environment: .env.dev
+   # Edit with your API keys and RPC URLs
    ```
 
 2. **Start development services:**
    ```bash
-   docker-compose -f docker-compose.dev.yml up
+   # Using Makefile (recommended)
+   make up DEV=1 TVL=30
+   
+   # Individual services
+   make ethereum-api DEV=1 TVL=30
+   make base-api DEV=1 TVL=100
    ```
 
 3. **Access the services:**
@@ -43,21 +56,35 @@ This guide explains how to run the Swift Price Oracle stack in development mode 
 
 ## Development Commands
 
+### Using Makefile (Recommended)
+
 ```bash
-# Start all services
-docker-compose -f docker-compose.dev.yml up
+# Start all services - TVL REQUIRED!
+make up DEV=1 TVL=30
 
-# Start specific service
-docker-compose -f docker-compose.dev.yml up swift-price-oracle
+# Start individual services - TVL REQUIRED!
+make ethereum-api DEV=1 TVL=30
+make base-api DEV=1 TVL=50
+make unichain-api DEV=1 TVL=100
 
-# Rebuild after dependency changes
-docker-compose -f docker-compose.dev.yml build --no-cache
+# Stop services
+make down DEV=1
 
-# View logs
-docker-compose -f docker-compose.dev.yml logs -f tycho-api-ethereum
+# Clean volumes
+make clean DEV=1
 
-# Stop all services
-docker-compose -f docker-compose.dev.yml down
+# Production mode (uses .env instead of .env.dev)
+make ethereum-api TVL=30
+```
+
+### Direct Docker Commands
+
+```bash
+# If you prefer not to use the Makefile
+TVL_THRESHOLD=30 docker-compose -f docker-compose.dev.yml --env-file .env.dev up
+
+# Individual service
+TVL_THRESHOLD=30 docker-compose -f docker-compose.dev.yml --env-file .env.dev up tycho-api-ethereum
 ```
 
 ## Differences from Production
@@ -67,12 +94,20 @@ docker-compose -f docker-compose.dev.yml down
 | Build Mode | Debug (Rust), Dev (Vite) | Release (Rust), Production (Vite) |
 | Hot Reload | ✅ Enabled | ❌ Disabled |
 | Port (Frontend) | 5173 | 8080 |
+| Port (APIs) | 4001-4003 | 3001-3003 |
 | Health Checks | 10s interval | 30s interval |
 | Logging | Debug level | Info level |
 | Volume Mounts | ✅ Source code | ❌ None |
 | Container Names | *-dev suffix | Standard names |
+| Environment File | .env.dev | .env |
+| TVL Threshold | MUST be specified | MUST be specified |
 
 ## Troubleshooting
+
+**"TVL_THRESHOLD: parameter null or not set" error?**
+- You MUST specify TVL when running API services
+- Example: `make ethereum-api DEV=1 TVL=30`
+- This project has NO default values!
 
 **Rust API not reloading?**
 - Check that cargo-watch is running inside the container
@@ -80,7 +115,7 @@ docker-compose -f docker-compose.dev.yml down
 
 **Frontend not accessible?**
 - Vite binds to 0.0.0.0 for container access
-- Check WebSocket URLs in .env match your setup
+- Check WebSocket URLs in .env.dev match dev ports (4001-4003)
 
 **Slow initial startup?**
 - First build downloads and compiles dependencies

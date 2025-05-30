@@ -1,5 +1,6 @@
 # Environment files
 .env
+.env.dev
 .env.local
 .env.*.local
 
@@ -26,7 +27,6 @@ frontend/node_modules/
 
 # API specific
 api/target/
-api/Cargo.lock
 
 # Docker
 .docker/

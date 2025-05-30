@@ -12,6 +12,7 @@ use std::{env, str::FromStr};
 use tokio::sync::mpsc;
 use tycho_simulation::tycho_core::models::Chain;
 use utils::setup::setup_tracing;
+use tracing::{info, error};
 
 #[derive(Parser)]
 struct Cli {
@@ -34,27 +35,38 @@ async fn main() -> anyhow::Result<()> {
     dotenv().ok();
     setup_tracing();
 
+    info!("Starting tycho-api...");
+
     let cli = Cli::parse();
+    info!("CLI args: chain={}, port={}, tvl_threshold={}, tvl_buffer={}", 
+        cli.chain, cli.port, cli.tvl_threshold, cli.tvl_buffer);
+    
     let chain =
         Chain::from_str(&cli.chain).unwrap_or_else(|_| panic!("Unknown chain {}", cli.chain));
+    info!("Parsed chain: {:?}", chain);
 
-    let tycho_url = env::var("TYCHO_URL").unwrap_or_else(|_| {
-        utils::setup::get_default_url(&chain)
-            .unwrap_or_else(|| panic!("Unknown URL for chain {}", cli.chain))
-    });
+    let tycho_url = env::var("TYCHO_URL")
+        .unwrap_or_else(|_| panic!("TYCHO_URL environment variable not set"));
+    info!("TYCHO_URL: {}", tycho_url);
 
-    let tycho_api_key = env::var("TYCHO_API_KEY").unwrap_or_else(|_| "sampletoken".to_string());
+    let tycho_api_key = env::var("TYCHO_API_KEY")
+        .unwrap_or_else(|_| panic!("TYCHO_API_KEY environment variable not set"));
+    info!("TYCHO_API_KEY: {}...", &tycho_api_key.chars().take(10).collect::<String>());
 
     // Create shared state for the simulation
     let simulation_state = SimulationState::new();
+    info!("Created simulation state");
 
     // Create communication channels
     let (simulation_tx, simulation_rx) = mpsc::channel(32);
+    info!("Created communication channels");
 
     // Start the API server
+    info!("Starting API server on port {}", cli.port);
     let api_server = start_api_server(cli.port, simulation_state.clone(), simulation_tx.clone());
 
     // Start the simulation processor
+    info!("Starting simulation processor...");
     let simulation_task = simulation::start_simulation_processor(
         simulation_state.clone(),
         simulation_tx,
@@ -67,9 +79,18 @@ async fn main() -> anyhow::Result<()> {
     );
 
     let tasks = vec![api_server, simulation_task];
+    info!("All tasks started, waiting for completion...");
 
     // Wait for all tasks to complete
-    let (result, _, _) = select_all(tasks).await;
+    let (result, task_index, remaining) = select_all(tasks).await;
+    
+    match &result {
+        Ok(_) => info!("Task {} completed successfully", task_index),
+        Err(e) => error!("Task {} failed with error: {}", task_index, e),
+    }
+    
+    // Log remaining tasks
+    info!("Shutting down {} remaining tasks", remaining.len());
 
     let _ = result?;
     Ok(())
