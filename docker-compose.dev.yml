@@ -9,7 +9,6 @@ services:
       - "4001:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_URL: ${TYCHO_ETHEREUM_URL}
       RPC_URL: ${RPC_URL_ETHEREUM}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
@@ -42,7 +41,6 @@ services:
       - "4002:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_URL: ${TYCHO_BASE_URL}
       RPC_URL: ${RPC_URL_BASE}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
@@ -75,7 +73,6 @@ services:
       - "4003:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_URL: ${TYCHO_UNICHAIN_URL}
       RPC_URL: ${RPC_URL_UNICHAIN}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
