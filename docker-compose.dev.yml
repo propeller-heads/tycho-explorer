@@ -9,11 +9,11 @@ services:
       - "4001:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_ETHEREUM_URL: ${TYCHO_ETHEREUM_URL}
+      TYCHO_URL: ${TYCHO_ETHEREUM_URL}
       RPC_URL: ${RPC_URL_ETHEREUM}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
-    command: ["--tvl-threshold", "30", "--chain", "ethereum", "--port", "3000"]
+    command: ["/bin/sh", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain ethereum --port 3000 --tycho-url ${TYCHO_ETHEREUM_URL}'"]
     volumes:
       # Mount source code for development
       - ./api/src:/app/src:ro
@@ -42,11 +42,11 @@ services:
       - "4002:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_BASE_URL: ${TYCHO_BASE_URL}
+      TYCHO_URL: ${TYCHO_BASE_URL}
       RPC_URL: ${RPC_URL_BASE}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
-    command: ["--tvl-threshold", "30", "--chain", "base", "--port", "3000"]
+    command: ["/bin/sh", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain base --port 3000 --tycho-url ${TYCHO_BASE_URL}'"]
     volumes:
       # Mount source code for development
       - ./api/src:/app/src:ro
@@ -75,11 +75,11 @@ services:
       - "4003:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_UNICHAIN_URL: ${TYCHO_UNICHAIN_URL}
+      TYCHO_URL: ${TYCHO_UNICHAIN_URL}
       RPC_URL: ${RPC_URL_UNICHAIN}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
-    command: ["--tvl-threshold", "30", "--chain", "unichain", "--port", "3000"]
+    command: ["/bin/sh", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain unichain --port 3000 --tycho-url ${TYCHO_UNICHAIN_URL}'"]
     volumes:
       # Mount source code for development
       - ./api/src:/app/src:ro
@@ -113,9 +113,12 @@ services:
     ports:
       - "5173:5173"  # Vite default dev server port
     depends_on:
-      - tycho-api-ethereum
-      - tycho-api-base
-      - tycho-api-unichain
+      tycho-api-ethereum:
+        condition: service_healthy
+      tycho-api-base:
+        condition: service_healthy
+      tycho-api-unichain:
+        condition: service_healthy
     environment:
       VITE_WEBSOCKET_URL_ETHEREUM: ${VITE_WEBSOCKET_URL_ETHEREUM}
       VITE_WEBSOCKET_URL_BASE: ${VITE_WEBSOCKET_URL_BASE}

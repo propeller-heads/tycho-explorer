@@ -33,26 +33,6 @@ RUN echo "🔵 [DEV] Initial debug build..."
 RUN cargo build 2>&1 | tee /tmp/cargo-build.log || (echo "🔴 [ERROR] Build failed" && cat /tmp/cargo-build.log && exit 1)
 RUN echo "🟢 [DEV] Initial build completed"
 
-# Create startup script for development
-RUN echo '#!/bin/bash\n\
-echo "🟢 [DEV STARTUP] Starting tycho-api in development mode..."\n\
-echo "🔷 [ENV] TYCHO_API_KEY: ${TYCHO_API_KEY:0:10}..."\n\
-echo "🔷 [ENV] Chain URLs configured:"\n\
-echo "  - TYCHO_ETHEREUM_URL: $TYCHO_ETHEREUM_URL"\n\
-echo "  - TYCHO_BASE_URL: $TYCHO_BASE_URL"\n\
-echo "  - TYCHO_UNICHAIN_URL: $TYCHO_UNICHAIN_URL"\n\
-echo "🔷 [ENV] RPC_URL: ${RPC_URL:0:30}..."\n\
-echo "🔷 [ENV] RUST_LOG: $RUST_LOG"\n\
-echo "🔷 [ENV] RUST_BACKTRACE: $RUST_BACKTRACE"\n\
-echo "🟣 [NETWORK] Service will listen on port 3000"\n\
-echo "🔵 [DEV] Starting with cargo-watch for auto-reload..."\n\
-# Build the cargo run command with all arguments\n\
-ARGS="$@"\n\
-if [ -z "$ARGS" ]; then\n\
-    exec cargo watch -x "run"\n\
-else\n\
-    exec cargo watch -x "run -- $ARGS"\n\
-fi' > /start-dev.sh && chmod +x /start-dev.sh
-
 EXPOSE 3000
-ENTRYPOINT ["/start-dev.sh"]
+
+# Command will be provided by docker-compose
