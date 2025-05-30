@@ -1,103 +1,134 @@
-# Usage: make [target] [DEV=1] [TVL=value] [SERVICE=name] [BUILD=1] [DEPS=0]
-# Examples: make up DEV=1 TVL=30 BUILD=1, make up SERVICE=tycho-api-ethereum TVL=100
-# IMPORTANT: NO DEFAULT VALUES IN THIS PROJECT - TVL must be explicitly set!
+# Tycho Explorer Makefile - Simple Docker Commands
+# =================================================
+# This Makefile helps you run Docker commands more easily.
+# Instead of typing long docker-compose commands, you can use short 'make' commands.
 
-# Available chains
+# How to use:
+# -----------
+# make <command> [options]
+# 
+# Examples:
+#   make up                    # Start all services in production mode
+#   make up DEV=1              # Start all services in development mode (with hot reload)
+#   make up DEV=1 SERVICE=frontend  # Start only frontend in dev mode
+#   make down                  # Stop all running services
+
+# === Configuration Variables ===
+
+# List of blockchain networks we support
 CHAINS = ethereum base unichain
+
+# Build service names by adding 'tycho-api-' prefix to each chain
+# Result: tycho-api-ethereum, tycho-api-base, tycho-api-unichain
 API_SERVICES = $(addprefix tycho-api-,$(CHAINS))
+API_SERVICES_DEV = $(addsuffix -dev,$(API_SERVICES))
+
+# All services in our application
 ALL_SERVICES = $(API_SERVICES) frontend
+ALL_SERVICES_DEV = $(API_SERVICES_DEV) frontend-dev
 
-# Check TVL for API targets (when SERVICE is an API or no SERVICE specified)
-ifneq ($(filter up,$(MAKECMDGOALS)),)
-  ifneq ($(SERVICE),frontend)
-    ifndef TVL
-      $(error ERROR: TVL is required! Usage: make up TVL=30 [SERVICE=name])
-    endif
-  endif
-endif
+# === Environment Setup ===
+# DEV=1 switches between development and production modes
 
-# Export TVL for docker-compose
-export TVL_THRESHOLD=$(TVL)
-
-# Set compose command based on DEV flag
 ifdef DEV
+	# Development mode: use dev config files and show logs in terminal
 	DC = docker-compose -f docker-compose.dev.yml --env-file .env.dev
-	ENV = dev
+	MODE_DESC = Development mode (hot reload enabled)
 else
+	# Production mode: use production config files and run in background
 	DC = docker-compose --env-file .env
-	ENV = prod
+	MODE_DESC = Production mode
 endif
 
-# Port helpers
-port-ethereum-$(ENV) = $(if $(DEV),4001,3001)
-port-base-$(ENV) = $(if $(DEV),4002,3002)
-port-unichain-$(ENV) = $(if $(DEV),4003,3003)
-port-frontend-$(ENV) = $(if $(DEV),5173,8080)
+# === Main Commands ===
 
-# Default target - show help
+# Default command when you just type 'make'
 help:
-	@echo "Tycho Explorer - Docker Commands"
-	@echo "================================"
+	@echo "╔════════════════════════════════════════════════════════════════╗"
+	@echo "║               Tycho Explorer - Docker Commands                  ║"
+	@echo "╚════════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "Usage: make [target] [DEV=1] [TVL=value] [SERVICE=name] [BUILD=1] [DEPS=0]"
+	@echo "BASIC COMMANDS:"
+	@echo "  make up       → Start all services"
+	@echo "  make down     → Stop all services"
+	@echo "  make logs     → View logs (use SERVICE=name for specific service)"
+	@echo "  make build    → Build/rebuild Docker images"
+	@echo "  make clean    → Remove everything (containers, images, volumes)"
 	@echo ""
-	@echo "Commands:"
-	@echo "  make up          - Start services"
-	@echo "  make down        - Stop services"
-	@echo "  make build       - Build services (no cache)"
-	@echo "  make clean       - Clean everything (volumes, images, cache)"
-	@echo "  make logs        - Follow service logs"
-	@echo "  make ps          - Show running services"
-	@echo "  make ports       - Show service ports"
-	@echo "  make apis        - Start all API services"
+	@echo "OPTIONS:"
+	@echo "  DEV=1         → Use development mode (hot reload, logs in terminal)"
+	@echo "                  Without DEV=1, runs in production mode (background)"
 	@echo ""
-	@echo "Parameters:"
-	@echo "  DEV=1           - Use development mode"
-	@echo "  TVL=value       - Set TVL threshold (REQUIRED for APIs)"
-	@echo "  SERVICE=name    - Specific service (e.g., tycho-api-ethereum)"
-	@echo "  BUILD=1         - Rebuild without cache before starting"
-	@echo "  DEPS=0          - Start without dependencies (dev mode defaults to no deps)"
+	@echo "  SERVICE=name  → Target a specific service instead of all"
+	@echo "                  When specified, runs without dependencies"
 	@echo ""
-	@echo "Examples:"
-	@echo "  make up DEV=1 TVL=30                          - Start all services"
-	@echo "  make up DEV=1 TVL=30 BUILD=1                  - Rebuild & start all"
-	@echo "  make up DEV=1 TVL=30 SERVICE=tycho-api-ethereum - Start just Ethereum"
-	@echo "  make up SERVICE=frontend                       - Start just frontend (prod)"
+	@echo "  BUILD=1       → Force rebuild images before starting"
 	@echo ""
-	@echo "Services: tycho-api-ethereum, tycho-api-base, tycho-api-unichain, frontend"
+	@echo "AVAILABLE SERVICES:"
+	@echo "  Production:"
+	@echo "    • tycho-api-ethereum  (API for Ethereum network)"
+	@echo "    • tycho-api-base      (API for Base network)"
+	@echo "    • tycho-api-unichain  (API for Unichain network)"
+	@echo "    • frontend            (Web interface)"
+	@echo "  Development (DEV=1):"
+	@echo "    • tycho-api-ethereum-dev"
+	@echo "    • tycho-api-base-dev"
+	@echo "    • tycho-api-unichain-dev"
+	@echo "    • frontend-dev"
+	@echo ""
+	@echo "EXAMPLES:"
+	@echo "  make up DEV=1                           # Start everything in dev mode"
+	@echo "  make up DEV=1 SERVICE=frontend-dev      # Start only frontend in dev mode"
+	@echo "  make up BUILD=1                         # Rebuild and start in production"
+	@echo "  make logs SERVICE=tycho-api-ethereum    # View logs for Ethereum API (prod)"
+	@echo "  make logs DEV=1 SERVICE=tycho-api-ethereum-dev  # View logs for Ethereum API (dev)"
+	@echo "  make down                               # Stop everything"
+	@echo ""
+	@echo "Current mode: $(MODE_DESC)"
 
-# Main commands
+# Start services
+# - If BUILD=1 is set, rebuild images first
+# - If SERVICE is set, start only that service without dependencies
+# - If DEV=1 is set, run in foreground (see logs), otherwise run in background
 up:
-	$(if $(BUILD),$(DC) build --no-cache $(SERVICE))
-	$(DC) up $(if $(filter 0,$(DEPS)),--no-deps,) $(if $(DEV),,-d) $(SERVICE)
+	@echo "Starting services in $(MODE_DESC)..."
+	$(if $(BUILD),@echo "Rebuilding images first..." && $(DC) build $(SERVICE))
+	$(DC) up $(if $(SERVICE),--no-deps,) $(if $(DEV),,-d) $(SERVICE)
+	@echo "✓ Services started successfully"
 
+# Stop all services and remove containers
 down:
+	@echo "Stopping all services..."
 	$(DC) down
+	@echo "✓ All services stopped"
 
-build:
-	$(DC) build --no-cache $(SERVICE)
-
-clean:
-	$(DC) down -v
-	docker system prune -af --volumes
-
-# Convenience commands
+# View logs
+# - If SERVICE is set, show logs for that service only
+# - Otherwise show logs for all services
+# - Always follow logs with -f flag
 logs:
+	@echo "Showing logs for $(if $(SERVICE),$(SERVICE),all services)..."
+	@echo "Press Ctrl+C to exit"
 	$(DC) logs -f $(SERVICE)
 
-ps:
-	$(DC) ps
+# Build or rebuild Docker images
+# - Uses cache for faster builds
+# - If SERVICE is set, build only that service
+build:
+	@echo "Building $(if $(SERVICE),$(SERVICE),all services)..."
+	$(DC) build $(SERVICE)
+	@echo "✓ Build complete"
 
-ports:
-	@echo "Current ports ($(ENV) mode):"
-	@echo "  Ethereum API: localhost:$(port-ethereum-$(ENV))"
-	@echo "  Base API:     localhost:$(port-base-$(ENV))"
-	@echo "  Unichain API: localhost:$(port-unichain-$(ENV))"
-	@echo "  Frontend:     localhost:$(port-frontend-$(ENV))"
+# Clean up everything - remove containers, volumes, and images
+# WARNING: This will delete all data!
+clean:
+	@echo "⚠️  WARNING: This will remove all containers, images, and volumes!"
+	@echo "Press Ctrl+C within 5 seconds to cancel..."
+	@sleep 5
+	@echo "Cleaning up everything..."
+	$(DC) down -v
+	docker system prune -af --volumes
+	@echo "✓ Cleanup complete"
 
-# Service groups
-apis:
-	$(if $(BUILD),$(DC) build --no-cache $(API_SERVICES))
-	$(DC) up $(if $(filter 0,$(DEPS)),--no-deps,) $(if $(DEV),,-d) $(API_SERVICES)
-
-.PHONY: help up down build clean logs ps ports apis
+# Tell Make these aren't real files
+.PHONY: help up down logs build clean

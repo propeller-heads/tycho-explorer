@@ -16,28 +16,24 @@ ENV VITE_WEBSOCKET_URL_UNICHAIN=$VITE_WEBSOCKET_URL_UNICHAIN
 
 # Log the build process
 RUN echo "🔵 [BUILD] Starting frontend build process..."
-RUN echo "🔷 [BUILD ENV] VITE_WEBSOCKET_URL: $VITE_WEBSOCKET_URL"
-RUN echo "🔷 [BUILD ENV] VITE_WEBSOCKET_URL_ETHEREUM: $VITE_WEBSOCKET_URL_ETHEREUM"
-RUN echo "🔷 [BUILD ENV] VITE_WEBSOCKET_URL_BASE: $VITE_WEBSOCKET_URL_BASE"
-RUN echo "🔷 [BUILD ENV] VITE_WEBSOCKET_URL_UNICHAIN: $VITE_WEBSOCKET_URL_UNICHAIN"
 
 # Copy package files
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 RUN echo "🔵 [BUILD] Installing dependencies with bun..."
 RUN bun install --frozen-lockfile || (echo "🔴 [ERROR] Failed to install dependencies" && exit 1)
 
 # Copy source code
 COPY . .
 RUN echo "🔵 [BUILD] Building production bundle..."
-RUN echo "🔵 [BUILD] Current directory contents:" && ls -la
-RUN echo "🔵 [BUILD] Package.json scripts:" && cat package.json | grep -A5 '"scripts"'
-RUN bun run build 2>&1 | tee /tmp/build.log || (echo "🔴 [ERROR] Build failed. Full error log:" && cat /tmp/build.log && exit 1)
+RUN bun run build || (echo "🔴 [ERROR] Build failed" && exit 1)
 RUN echo "🟢 [BUILD] Frontend build completed successfully"
-RUN echo "🔵 [BUILD] Checking dist directory:" && ls -la dist/ || echo "🔴 [ERROR] dist directory not found!"
 
 # Production stage
 FROM nginx:alpine
-RUN echo "🔵 [PROD] Setting up nginx:alpine with built-in SSL support..."
+RUN echo "🔵 [PROD] Setting up nginx for production..."
+
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html

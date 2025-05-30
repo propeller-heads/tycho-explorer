@@ -28,6 +28,9 @@ struct Cli {
     /// API server port
     #[clap(long, default_value = "3000")]
     pub port: u16,
+    /// Tycho server URL
+    #[clap(long)]
+    pub tycho_url: String,
 }
 
 #[tokio::main]
@@ -38,20 +41,18 @@ async fn main() -> anyhow::Result<()> {
     info!("Starting tycho-api...");
 
     let cli = Cli::parse();
-    info!("CLI args: chain={}, port={}, tvl_threshold={}, tvl_buffer={}", 
-        cli.chain, cli.port, cli.tvl_threshold, cli.tvl_buffer);
+    info!("CLI args: chain={}, port={}, tvl_threshold={}, tvl_buffer={}, tycho_url={}", 
+        cli.chain, cli.port, cli.tvl_threshold, cli.tvl_buffer, cli.tycho_url);
     
-    let chain =
-        Chain::from_str(&cli.chain).unwrap_or_else(|_| panic!("Unknown chain {}", cli.chain));
-    info!("Parsed chain: {:?}", chain);
+    let chain = Chain::from_str(&cli.chain).unwrap_or_else(|_| panic!("Unknown chain {}", cli.chain));
 
-    let tycho_url = env::var("TYCHO_URL")
-        .unwrap_or_else(|_| panic!("TYCHO_URL environment variable not set"));
-    info!("TYCHO_URL: {}", tycho_url);
+    let tycho_url = if cli.tycho_url.is_empty() {
+        panic!("TYCHO_URL cannot be empty")
+    } else {
+        &cli.tycho_url
+    };
 
-    let tycho_api_key = env::var("TYCHO_API_KEY")
-        .unwrap_or_else(|_| panic!("TYCHO_API_KEY environment variable not set"));
-    info!("TYCHO_API_KEY: {}...", &tycho_api_key.chars().take(10).collect::<String>());
+    let tycho_api_key = env::var("TYCHO_API_KEY").unwrap_or_else(|_| panic!("TYCHO_API_KEY environment variable not set"));
 
     // Create shared state for the simulation
     let simulation_state = SimulationState::new();

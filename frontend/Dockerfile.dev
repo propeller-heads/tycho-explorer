@@ -1,4 +1,4 @@
-# Development Dockerfile for swift-price-oracle
+# Development Dockerfile for tycho-explorer frontend
 # Uses bun dev server with hot module replacement
 
 FROM oven/bun:latest

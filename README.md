@@ -14,11 +14,11 @@ cp .env.example .env        # Production config
 cp .env.example .env.dev    # Development config
 # Edit both files with your API keys
 
-# Start development environment (TVL parameter is required!)
-make up DEV=1 TVL=30
+# Start development environment
+make up DEV=1
 
 # Or start specific service without dependencies
-make up DEV=1 SERVICE=frontend DEPS=0
+make up DEV=1 SERVICE=frontend-dev
 ```
 
 ## ⚠️ Known Issues
@@ -26,9 +26,10 @@ make up DEV=1 SERVICE=frontend DEPS=0
 ### Frontend Access on macOS
 On macOS, `localhost:5173` may not work due to IPv6/IPv4 issues with Vite. Use `http://127.0.0.1:5173` instead.
 
-### Required Parameters
-- **TVL is REQUIRED** for API services - there are NO DEFAULT VALUES by design
-- Example: `make up DEV=1 TVL=30` (not just `make up DEV=1`)
+### Environment Configuration
+- **TVL_THRESHOLD** is now configured in .env files (no longer a CLI parameter)
+- Development uses .env.dev, production uses .env
+- All configuration is handled via environment variables and CLI arguments
 
 ## Project Structure
 
@@ -59,15 +60,15 @@ tycho-explorer/
 ### Makefile Commands
 
 ```bash
-# Start all services in development mode (TVL required for APIs)
-make up DEV=1 TVL=30
+# Start all services in development mode
+make up DEV=1
 
-# Start specific service
-make up DEV=1 SERVICE=frontend DEPS=0
-make up DEV=1 TVL=30 SERVICE=tycho-api-ethereum
+# Start specific service (automatically runs without dependencies)
+make up DEV=1 SERVICE=frontend-dev
+make up DEV=1 SERVICE=tycho-api-ethereum-dev
 
-# Build services
-make build DEV=1 SERVICE=frontend
+# Build services (uses cache by default)
+make build DEV=1 SERVICE=frontend-dev
 
 # View logs
 make logs SERVICE=frontend
@@ -83,11 +84,27 @@ make help
 ```
 
 ### Parameters
-- `DEV=1` - Use development mode (hot reload, debug logging)
-- `TVL=value` - TVL threshold in millions (REQUIRED for API services)
-- `SERVICE=name` - Target specific service
+- `DEV=1` - Use development mode (hot reload, debug logging, no resource limits)
+- `SERVICE=name` - Target specific service (auto-disables dependencies)
 - `BUILD=1` - Rebuild before starting
-- `DEPS=0` - Start without dependencies
+
+### Development vs Production
+- **Development**: Services have `-dev` suffix, no resource limits, hot reloading
+- **Production**: Resource limits (4GB for APIs, 2GB for frontend), optimized builds
+
+## Docker Architecture
+
+### Key Design Decisions
+1. **No ENTRYPOINT/CMD in Dockerfiles** - All commands specified in docker-compose
+2. **CLI Arguments over Environment Variables** - TYCHO_URL passed as `--tycho-url` argument
+3. **Simplified Dockerfiles** - No complex startup scripts, direct execution
+4. **Resource Limits** - Production only (4GB for APIs, 2GB for frontend)
+5. **Service Naming** - Dev services have `-dev` suffix to allow parallel execution
+
+### Configuration Flow
+```
+.env/.env.dev → docker-compose → CLI arguments → Application
+```
 
 ## Documentation
 
@@ -136,13 +153,16 @@ TYCHO_ETHEREUM_URL=tycho-beta.propellerheads.xyz
 TYCHO_BASE_URL=tycho-base-beta.propellerheads.xyz
 TYCHO_UNICHAIN_URL=tycho-unichain-beta.propellerheads.xyz
 
-# RPC URLs (replace YOUR_KEY with actual API keys for Base and Unichain)
+# RPC URLs (replace YOUR_KEY with actual API keys)
 RPC_URL_ETHEREUM=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
 RPC_URL_BASE=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
 RPC_URL_UNICHAIN=https://unichain.g.alchemy.com/v2/YOUR_KEY
 
 # Logging
-RUST_LOG=info,tower_http=debug
+RUST_LOG=info
+
+# TVL Threshold (in ETH)
+TVL_THRESHOLD=30
 
 # Frontend WebSocket URLs (for browser access - use localhost with exposed ports)
 VITE_WEBSOCKET_URL_ETHEREUM=ws://localhost:3001/ws
@@ -205,15 +225,15 @@ Run three separate instances for each chain:
 ```bash
 # Terminal 1 - Ethereum
 cd tycho-api
-cargo run -- --tvl-threshold 30 --chain ethereum --port 3001
+cargo run -- --tvl-threshold 30 --chain ethereum --port 3001 --tycho-url tycho-beta.propellerheads.xyz
 
 # Terminal 2 - Base
 cd tycho-api
-cargo run -- --tvl-threshold 30 --chain base --port 3002
+cargo run -- --tvl-threshold 30 --chain base --port 3002 --tycho-url tycho-base-beta.propellerheads.xyz
 
 # Terminal 3 - Unichain
 cd tycho-api
-cargo run -- --tvl-threshold 30 --chain unichain --port 3003
+cargo run -- --tvl-threshold 30 --chain unichain --port 3003 --tycho-url tycho-unichain-beta.propellerheads.xyz
 ```
 
 ## Running Pool Explorer
@@ -226,6 +246,9 @@ bun install
 VITE_WEBSOCKET_URL_ETHEREUM=ws://localhost:3001/ws
 VITE_WEBSOCKET_URL_BASE=ws://localhost:3002/ws
 VITE_WEBSOCKET_URL_UNICHAIN=ws://localhost:3003/ws
+
+# Set TVL threshold
+TVL_THRESHOLD=30
 
 # Development mode
 bun run dev

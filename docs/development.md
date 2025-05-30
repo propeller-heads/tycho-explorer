@@ -2,12 +2,12 @@
 
 This guide explains how to run the Tycho Explorer stack in development mode with hot reloading.
 
-## Important: NO DEFAULT VALUES
+## Configuration Philosophy
 
-**⚠️ This project has a strict NO DEFAULTS policy!**
-- You MUST explicitly provide all required parameters
-- There are NO default values anywhere in the codebase
-- TVL threshold must ALWAYS be specified when running API services
+**This project uses explicit configuration:**
+- Configuration via environment files (.env for prod, .env.dev for dev)
+- CLI arguments passed through docker-compose
+- No complex startup scripts in Docker images
 
 ## Quick Start
 
@@ -21,11 +21,11 @@ This guide explains how to run the Tycho Explorer stack in development mode with
 2. **Start development services:**
    ```bash
    # Using Makefile (recommended)
-   make up DEV=1 TVL=30
+   make up DEV=1
    
-   # Individual services
-   make ethereum-api DEV=1 TVL=30
-   make base-api DEV=1 TVL=100
+   # Individual services (automatically runs without dependencies)
+   make up DEV=1 SERVICE=tycho-api-ethereum-dev
+   make up DEV=1 SERVICE=frontend-dev
    ```
 
 3. **Access the services:**
@@ -103,9 +103,11 @@ TVL_THRESHOLD=30 docker-compose -f docker-compose.dev.yml --env-file .env.dev up
 | Health Checks | 10s interval | 30s interval |
 | Logging | Debug level | Info level |
 | Volume Mounts | ✅ Source code | ❌ None |
+| Service Names | *-dev suffix | Standard names |
 | Container Names | *-dev suffix | Standard names |
 | Environment File | .env.dev | .env |
-| TVL Threshold | MUST be specified | MUST be specified |
+| Resource Limits | None (unlimited) | 4GB (APIs), 2GB (Frontend) |
+| Docker Network | tycho-network-dev | tycho-network |
 
 ## Troubleshooting
 
@@ -116,10 +118,10 @@ TVL_THRESHOLD=30 docker-compose -f docker-compose.dev.yml --env-file .env.dev up
 - Vite has known issues with IPv6 on macOS
 - Your browser tries IPv6 (::1) first, but Vite may not respond correctly
 
-**"TVL_THRESHOLD: parameter null or not set" error?**
-- You MUST specify TVL when running API services
-- Example: `make up DEV=1 TVL=30 SERVICE=tycho-api-ethereum`
-- This project has NO default values by design!
+**"TYCHO_URL not set" or similar errors?**
+- Check that TVL_THRESHOLD is set in your .env.dev file
+- Ensure all required environment variables are configured
+- The app now uses CLI arguments for configuration (e.g., --tycho-url)
 
 **Rust API not reloading?**
 - Check that cargo-watch is running inside the container
@@ -134,7 +136,7 @@ TVL_THRESHOLD=30 docker-compose -f docker-compose.dev.yml --env-file .env.dev up
 **Slow initial startup?**
 - First build downloads and compiles dependencies
 - Subsequent starts use cached layers
-- Use `DEPS=0` to avoid starting unnecessary services
+- Services automatically run without dependencies when SERVICE is specified
 
 **Permission issues?**
 - Volume mounts use your local file permissions
@@ -142,7 +144,14 @@ TVL_THRESHOLD=30 docker-compose -f docker-compose.dev.yml --env-file .env.dev up
 
 ### Tips for Faster Development
 
-1. **Start only what you need**: `make up DEV=1 SERVICE=frontend DEPS=0`
+1. **Start only what you need**: `make up DEV=1 SERVICE=frontend-dev`
 2. **Use the simplified Makefile**: All commands are now unified
-3. **Check logs quickly**: `make logs SERVICE=frontend`
+3. **Check logs quickly**: `make logs DEV=1 SERVICE=frontend-dev`
 4. **Clean when in doubt**: `make clean` removes all Docker artifacts
+
+### Docker Architecture
+
+1. **No ENTRYPOINT/CMD in Dockerfiles** - Commands come from docker-compose
+2. **Configuration via CLI args** - e.g., `--tycho-url` instead of env vars
+3. **Dev services use `-dev` suffix** - Allows running dev and prod simultaneously
+4. **Resource limits in prod only** - Dev has unlimited resources for flexibility

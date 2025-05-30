@@ -1,6 +1,6 @@
 services:
   # Ethereum Mainnet Tycho API (Development)
-  tycho-api-ethereum:
+  tycho-api-ethereum-dev:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
@@ -32,7 +32,7 @@ services:
       - "com.swift.env=development"
   
   # Base Mainnet Tycho API (Development)
-  tycho-api-base:
+  tycho-api-base-dev:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
@@ -64,7 +64,7 @@ services:
       - "com.swift.env=development"
   
   # Unichain Mainnet Tycho API (Development)
-  tycho-api-unichain:
+  tycho-api-unichain-dev:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
@@ -96,7 +96,7 @@ services:
       - "com.swift.env=development"
   
   # Frontend Application (Development)
-  frontend:
+  frontend-dev:
     build: 
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -110,11 +110,11 @@ services:
     ports:
       - "5173:5173"  # Vite default dev server port
     depends_on:
-      tycho-api-ethereum:
+      tycho-api-ethereum-dev:
         condition: service_healthy
-      tycho-api-base:
+      tycho-api-base-dev:
         condition: service_healthy
-      tycho-api-unichain:
+      tycho-api-unichain-dev:
         condition: service_healthy
     environment:
       VITE_WEBSOCKET_URL_ETHEREUM: ${VITE_WEBSOCKET_URL_ETHEREUM}

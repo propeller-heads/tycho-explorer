@@ -5,14 +5,17 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: tycho-api-ethereum
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     ports:
       - "3001:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_ETHEREUM_URL: ${TYCHO_ETHEREUM_URL}
       RPC_URL: ${RPC_URL_ETHEREUM}
-      RUST_LOG: ${RUST_LOG}
-    command: ["--tvl-threshold", "30", "--chain", "ethereum", "--port", "3000"]
+      RUST_LOG: ${RUST_LOG:-info}
+    command: ["/usr/local/bin/tycho-api", "--tvl-threshold", "${TVL_THRESHOLD}", "--chain", "ethereum", "--port", "3000", "--tycho-url", "${TYCHO_ETHEREUM_URL}"]
     networks:
       - tycho-network
     healthcheck:
@@ -31,14 +34,17 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: tycho-api-base
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     ports:
       - "3002:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_BASE_URL: ${TYCHO_BASE_URL}
       RPC_URL: ${RPC_URL_BASE}
-      RUST_LOG: ${RUST_LOG}
-    command: ["--tvl-threshold", "30", "--chain", "base", "--port", "3000"]
+      RUST_LOG: ${RUST_LOG:-info}
+    command: ["/usr/local/bin/tycho-api", "--tvl-threshold", "${TVL_THRESHOLD}", "--chain", "base", "--port", "3000", "--tycho-url", "${TYCHO_BASE_URL}"]
     networks:
       - tycho-network
     healthcheck:
@@ -57,14 +63,17 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: tycho-api-unichain
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     ports:
       - "3003:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      TYCHO_UNICHAIN_URL: ${TYCHO_UNICHAIN_URL}
       RPC_URL: ${RPC_URL_UNICHAIN}
-      RUST_LOG: ${RUST_LOG}
-    command: ["--tvl-threshold", "30", "--chain", "unichain", "--port", "3000"]
+      RUST_LOG: ${RUST_LOG:-info}
+    command: ["/usr/local/bin/tycho-api", "--tvl-threshold", "${TVL_THRESHOLD}", "--chain", "unichain", "--port", "3000", "--tycho-url", "${TYCHO_UNICHAIN_URL}"]
     networks:
       - tycho-network
     healthcheck:
@@ -89,6 +98,10 @@ services:
         - VITE_WEBSOCKET_URL_BASE=${VITE_WEBSOCKET_URL_BASE}
         - VITE_WEBSOCKET_URL_UNICHAIN=${VITE_WEBSOCKET_URL_UNICHAIN}
     container_name: tycho-explorer-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
     ports:
       - "8080:80"
     depends_on:
