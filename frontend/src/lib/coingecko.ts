@@ -98,8 +98,8 @@ export async function getCoinId(symbol: string): Promise<string | null> {
 
         while (attempts < MAX_ATTEMPTS) {
           try {
-            console.log(`[CoinGecko] Attempting to fetch: /api/coingecko/coins/list (Attempt: ${attempts + 1})`);
-            const response = await fetch('/api/coingecko/coins/list');
+            console.log(`[CoinGecko] Attempting to fetch: https://api.coingecko.com/api/v3/coins/list (Attempt: ${attempts + 1})`);
+            const response = await fetch('https://api.coingecko.com/api/v3/coins/list');
             console.log('[CoinGecko] Response for /coins/list:', response.status, response.statusText);
             if (response.ok) {
               fetchedData = (await response.json()) as CoinGeckoCoin[];
@@ -119,7 +119,7 @@ export async function getCoinId(symbol: string): Promise<string | null> {
               await new Promise(r => setTimeout(r, delay));
             } else {
               // Other HTTP error or max retries for 429 reached
-              console.error(`CoinGecko API error (coins/list via proxy): ${response.status} ${response.statusText}`);
+              console.error(`CoinGecko API error (coins/list): ${response.status} ${response.statusText}`);
               break; // Exit retry loop
             }
           } catch (error) {
@@ -243,13 +243,13 @@ async function processImageQueue() {
     let imageUrl: string | null = null; // Declare imageUrl here
 
     try {
-      console.log(`[CoinGecko] Queue: Attempting to fetch: /api/coingecko/coins/${coinId}`);
-      // Fetch the coin details via the proxy
-      const response = await fetch(`/api/coingecko/coins/${coinId}`);
+      console.log(`[CoinGecko] Queue: Attempting to fetch: https://api.coingecko.com/api/v3/coins/${coinId}`);
+      // Fetch the coin details directly from CoinGecko API
+      const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
       console.log(`[CoinGecko] Queue: Response for /coins/${coinId}: ${response.status} ${response.statusText}`);
 
       if (!response.ok) {
-        console.error(`CoinGecko API error (coins/${coinId} via proxy): ${response.status} ${response.statusText}`);
+        console.error(`CoinGecko API error (coins/${coinId}): ${response.status} ${response.statusText}`);
         // Do NOT cache null/failure in localStorage or in-memory if it's an API error
         reject(new Error(`API error: ${response.status}`)); // Reject the promise
       } else { // response.ok was true
