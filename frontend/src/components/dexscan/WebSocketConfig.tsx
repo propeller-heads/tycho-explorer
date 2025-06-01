@@ -95,7 +95,7 @@ export const WebSocketConfig = ({
             console.log('🟢 [DEBUG] Native select onChange:', e.target.value);
             handleChainChange(e.target.value);
           }}
-          className="w-full text-xs h-10 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] border-transparent text-[#FFF4E0] transition-colors px-3 rounded-md"
+          className="w-full text-base sm:text-xs h-10 bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] border-transparent text-[#FFF4E0] transition-colors px-3 rounded-md"
         >
           {availableChains.map(chain => (
             <option key={chain} value={chain}>

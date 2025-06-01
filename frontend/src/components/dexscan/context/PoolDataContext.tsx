@@ -263,7 +263,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         try {
           const data: WebSocketMessage = JSON.parse(event.data);
 
-          console.log('Websocket data:', data);
+          console.log('Websocket: data:', data);
           
           // Debug log to see message structure
           console.log('🔳 WebSocket message:', {
