@@ -542,6 +542,34 @@ Example:
 - **Filter Token Sorting**: ALWAYS sort selected tokens first in filter popovers for consistency between views
 - **Chain Selector**: Use native HTML select instead of Radix UI Select due to event handling issues in dropdown panels
 
+### Recent Development Updates (2025-06-01)
+
+#### 🚨 CRITICAL FIX - WebSocket Connection Termination (COMPLETED)
+**PROBLEM**: When switching chains, the old WebSocket connection was not properly terminating, causing data from multiple chains to appear simultaneously.
+
+**ROOT CAUSE**: Event handlers (onmessage, onerror, onclose, onopen) were not being removed before closing the WebSocket, allowing them to continue processing messages even after disconnection.
+
+**SOLUTION IMPLEMENTED**:
+1. **Updated disconnectWebSocket** in PoolDataContext.tsx:
+   ```typescript
+   // Remove all event handlers before closing to prevent any lingering messages
+   socketRef.current.onopen = null;
+   socketRef.current.onmessage = null;
+   socketRef.current.onerror = null;
+   socketRef.current.onclose = null;
+   
+   // Close the connection
+   socketRef.current.close();
+   ```
+
+2. **Key Implementation Details**:
+   - Uses `socketRef` to track the current WebSocket instance
+   - Nullifies all event handlers BEFORE closing the connection
+   - This prevents any race conditions where old handlers might fire
+   - Ensures clean termination when switching chains or reconnecting
+
+**CRITICAL**: This fix ensures that users only receive data from the currently selected chain.
+
 ## Learnings and Project Insights
 
 1. **Figma Design Accuracy**: The TC Design uses a very specific warm color palette that must be matched exactly
@@ -551,3 +579,4 @@ Example:
 5. **WebSocket Data Flow**: The WebSocket server sends initial pool data but doesn't include price updates with new blocks
 6. **vis-network Edge Updates**: Edge widening requires careful management of DataSet updates and proper tracking of pool update blocks
 7. **Debugging Complex Data Flows**: Color-coded console logging (🔷, 🔶, 🔸, etc.) helps trace data through multiple system layers
+8. **WebSocket Lifecycle Management**: Always remove event handlers before closing WebSocket connections to prevent lingering callbacks from processing data

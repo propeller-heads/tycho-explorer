@@ -206,6 +206,18 @@
 
 The application is now properly structured as a monorepo with clear separation between frontend and backend services. Docker deployment is fully configured for both development and production environments. The Pool List View is functionally complete with the TC Design color system fully implemented. Multi-chain support allows switching between Ethereum, Base, and Unichain networks. The UI matches the Figma design's warm aesthetic with proper text colors, borders, and glass effects.
 
+### Recent Accomplishments (2025-06-01)
+
+#### WebSocket Connection Management
+- **Fixed WebSocket termination issue**: Old connections were not properly closing when switching chains
+  - Root cause: Event handlers remained active after disconnection
+  - Solution: Nullify all event handlers (onopen, onmessage, onerror, onclose) before closing
+  - Result: Clean termination ensures users only see data from selected chain
+- **Improved connection lifecycle**:
+  - Uses `socketRef` to track current WebSocket instance
+  - Prevents race conditions during chain switching
+  - Ensures single active connection per session
+
 ## Known Issues
 
 1. **Logo Loading**: CoinGecko API rate limits can cause slow logo loading

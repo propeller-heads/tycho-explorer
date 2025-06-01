@@ -69,9 +69,19 @@ Key patterns:
 
 7.  **`WebSocketConfig.tsx`**:
     *   Provides UI for configuring the WebSocket connection.
+    *   Supports chain selection and automatic reconnection when switching chains.
+    *   Uses native HTML select for chain dropdown due to event handling issues with Radix UI.
 
 8.  **`PoolDataContext.tsx` (within `context/`)**:
     *   Manages WebSocket connection and pool data.
+    *   **Critical WebSocket Management**:
+        *   Uses `socketRef` to track current WebSocket instance
+        *   Proper cleanup in `disconnectWebSocket()`:
+            - Nullifies ALL event handlers before closing
+            - Prevents race conditions and lingering callbacks
+            - Ensures clean termination when switching chains
+        *   Chain switching always clears pool data with `RESET_STATE`
+        *   Single WebSocket connection per session - no concurrent connections
 
 ## Data Flow
 

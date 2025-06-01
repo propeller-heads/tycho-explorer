@@ -188,8 +188,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
-  
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const socketRef = useRef<WebSocket | null>(null); // Add ref to track current socket
   const [updateScheduled, setUpdateScheduled] = useState(false);
   const [autoConnected, setAutoConnected] = useState(false);
   
@@ -197,9 +196,19 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   
   // Define disconnectWebSocket first to avoid the reference error
   const disconnectWebSocket = useCallback(() => {
-    if (socket) {
-      socket.close();
-      setSocket(null);
+    // Use ref instead of state to ensure we always close the current socket
+    if (socketRef.current) {
+      console.log('🔴 Closing WebSocket connection');
+      
+      // Remove all event handlers before closing to prevent any lingering messages
+      socketRef.current.onopen = null;
+      socketRef.current.onmessage = null;
+      socketRef.current.onerror = null;
+      socketRef.current.onclose = null;
+      
+      // Close the connection
+      socketRef.current.close();
+      socketRef.current = null;
       dispatch({ 
         type: 'SET_CONNECTION_STATE', 
         payload: { isConnected: false } 
@@ -211,21 +220,19 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       // Reset auto-connection state to allow manual reconnection
       setAutoConnected(false);
     }
-  }, [socket]);
+  }, []); // Remove socket from dependencies since we use ref
   
   
   // Removed auto-reconnection function
   
   // Update the connection function to reset reconnection state
-  const connectToWebSocket = useCallback((url: string, chain?: string) => {
-    // If chain is provided, update the selected chain
-    if (chain) {
-      localStorage.setItem('selected_chain', chain);
-      dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
-      // Clear pool data when switching chains
-      console.log('🟣 [CHAIN] Clearing pool data for chain switch to:', chain);
-      dispatch({ type: 'RESET_STATE' });
-    }
+  const connectToWebSocket = useCallback((url: string, chain: string) => {
+    // Update the selected chain
+    localStorage.setItem('selected_chain', chain);
+    dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
+    // Clear pool data when switching chains
+    console.log('🟣 [CHAIN] Clearing pool data for chain switch to:', chain);
+    dispatch({ type: 'RESET_STATE' });
     
     // Manual reconnection is handled directly
     
@@ -238,7 +245,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       
       // Create new WebSocket connection
       const ws = new WebSocket(url);
-      setSocket(ws);
+      socketRef.current = ws;
       setAutoConnected(true); // Mark as auto-connected
       dispatch({ type: 'SET_WEBSOCKET_URL', payload: url });
 
@@ -362,6 +369,9 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         
         // Reset auto-connection state
         setAutoConnected(false);
+        
+        // Clear socket ref on error
+        socketRef.current = null;
       };
 
       ws.onclose = () => {
@@ -376,7 +386,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         // Reset auto-connection state
         setAutoConnected(false);
         
-        setSocket(null);
+        socketRef.current = null; // Clear ref
       };
     } catch (error) {
       console.error('Error connecting to WebSocket:', error);
@@ -435,10 +445,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     // Only connect once to avoid infinite connection attempts
     if (!autoConnected && !state.isConnected) {
       console.log('Auto-connecting to WebSocket:', state.websocketUrl);
-      connectToWebSocket(state.websocketUrl);
+      connectToWebSocket(state.websocketUrl, state.selectedChain);
       setAutoConnected(true);
     }
-  }, [autoConnected, connectToWebSocket, state.isConnected, state.websocketUrl]);
+  }, [autoConnected, state.isConnected, state.websocketUrl]);
 
   const highlightPool = useCallback((poolId: string | null) => {
     dispatch({ type: 'SET_HIGHLIGHTED_POOL', payload: poolId });
