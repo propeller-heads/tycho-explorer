@@ -23,7 +23,6 @@ export const WebSocketConfig = ({
 }: WebSocketConfigProps) => {
   // Get context data
   const { 
-    connectToWebSocket: contextConnect, 
     websocketUrl: contextUrl, 
     defaultWebSocketUrl: contextDefaultUrl,
     isConnected: contextIsConnected,
@@ -35,7 +34,7 @@ export const WebSocketConfig = ({
   // Priority: external prop > context current URL > context default URL
   const defaultUrl = externalDefaultUrl || contextUrl || contextDefaultUrl;
   const isConnected = externalIsConnected !== undefined ? externalIsConnected : contextIsConnected;
-  const onConnect = externalOnConnect || contextConnect;
+  const onConnect = externalOnConnect;
   
   const [wsUrl, setWsUrl] = useState<string>(defaultUrl);
   console.log("wsUrl:", wsUrl);

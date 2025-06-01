@@ -162,7 +162,6 @@ const WebSocketIndicator: React.FC<WebSocketIndicatorProps> = ({
 const HeaderActions: React.FC = () => {
   const {
     websocketUrl,
-    defaultWebSocketUrl,
     isConnected,
     connectToWebSocket,
     selectedChain,

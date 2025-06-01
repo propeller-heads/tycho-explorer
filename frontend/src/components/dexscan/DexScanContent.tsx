@@ -21,14 +21,9 @@ const DexScanContentMain = () => {
   const poolListContainerRef = useRef<HTMLDivElement>(null);
 
   const {
-    websocketUrl,
-    isConnected,
     poolsArray,
     highlightedPoolId,
-    connectToWebSocket,
-    highlightPool,
-    blockNumber,
-    selectedChain
+    highlightPool
   } = usePoolData();
 
   // Update the URL when the tab changes
