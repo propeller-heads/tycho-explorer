@@ -13,9 +13,8 @@ This guide explains how to run the Tycho Explorer stack in development mode with
 
 1. **Setup environment files:**
    ```bash
-   # Production environment: .env
-   # Development environment: .env.dev
-   # Edit with your API keys and RPC URLs
+   cp .env.example .env.dev
+   # Edit .env.dev with your API keys and RPC URLs
    ```
 
 2. **Start development services:**
@@ -43,6 +42,10 @@ This guide explains how to run the Tycho Explorer stack in development mode with
 ### 📁 Volume Mounts
 - Source code is mounted into containers for live updates
 - Node modules are preserved to avoid conflicts
+- **Shared cargo volumes** speed up compilation:
+  - `cargo-cache`: Downloaded dependencies (shared)
+  - `cargo-registry`: Git dependencies (shared)
+  - `cargo-target`: Compiled artifacts (shared)
 
 ### 🐛 Debug Mode
 - Rust services run in debug mode (faster builds, more verbose)
@@ -50,9 +53,12 @@ This guide explains how to run the Tycho Explorer stack in development mode with
 - `RUST_LOG=debug` for detailed logging
 
 ### ⚡ Faster Startup
-- Reduced health check intervals
-- Shorter startup periods
-- No production optimizations
+- **Sequential startup** prevents compilation conflicts:
+  - Ethereum API compiles first
+  - Base & Unichain wait and reuse compiled artifacts
+  - Frontend only waits for Ethereum
+- Extended health check periods (3 minutes) for initial compilation
+- Shared build artifacts between services
 
 ## Development Commands
 

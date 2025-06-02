@@ -20,6 +20,8 @@ CHAINS = ethereum base unichain
 
 # Build service names by adding 'tycho-api-' prefix to each chain
 # Result: tycho-api-ethereum, tycho-api-base, tycho-api-unichain
+# NOTE: In production, all API services share the same Docker image (tycho-explorer/api:latest)
+#       Only the first service builds it, others reuse it with different CLI arguments
 API_SERVICES = $(addprefix tycho-api-,$(CHAINS))
 API_SERVICES_DEV = $(addsuffix -dev,$(API_SERVICES))
 
@@ -65,16 +67,16 @@ help:
 	@echo "  BUILD=1       → Force rebuild images before starting"
 	@echo ""
 	@echo "AVAILABLE SERVICES:"
-	@echo "  Production:"
-	@echo "    • tycho-api-ethereum  (API for Ethereum network)"
-	@echo "    • tycho-api-base      (API for Base network)"
-	@echo "    • tycho-api-unichain  (API for Unichain network)"
-	@echo "    • frontend            (Web interface)"
-	@echo "  Development (DEV=1):"
-	@echo "    • tycho-api-ethereum-dev"
-	@echo "    • tycho-api-base-dev"
-	@echo "    • tycho-api-unichain-dev"
-	@echo "    • frontend-dev"
+	@echo "  Production (all API services use same image):"
+	@echo "    • tycho-api-ethereum  (API for Ethereum network, port 3001)"
+	@echo "    • tycho-api-base      (API for Base network, port 3002)"
+	@echo "    • tycho-api-unichain  (API for Unichain network, port 3003)"
+	@echo "    • frontend            (Web interface, port 8080)"
+	@echo "  Development (DEV=1, with hot reload):"
+	@echo "    • tycho-api-ethereum-dev  (port 4001)"
+	@echo "    • tycho-api-base-dev      (port 4002)"
+	@echo "    • tycho-api-unichain-dev  (port 4003)"
+	@echo "    • frontend-dev            (port 5173)"
 	@echo ""
 	@echo "EXAMPLES:"
 	@echo "  make up DEV=1                           # Start everything in dev mode"
@@ -114,6 +116,7 @@ logs:
 # Build or rebuild Docker images
 # - Uses cache for faster builds
 # - If SERVICE is set, build only that service
+# - In production, all API services share the same image (built once)
 build:
 	@echo "Building $(if $(SERVICE),$(SERVICE),all services)..."
 	$(DC) build $(SERVICE)
