@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:latest as builder
+FROM rust:1.87 as builder
 WORKDIR /app
 
 RUN echo "🔵 [BUILD] Starting Rust build process..."

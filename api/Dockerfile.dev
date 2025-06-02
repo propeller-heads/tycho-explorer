@@ -1,37 +1,22 @@
 # Development Dockerfile for tycho-api
 # Uses cargo watch for hot reloading and builds in debug mode
 
-FROM rust:latest
+FROM rust:1.87
 WORKDIR /app
 
 RUN echo "🔵 [DEV] Setting up development environment..."
 
+# Install build dependencies for Debian
+RUN apt-get update && apt-get install -y \
+    libssl-dev \
+    pkg-config \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install cargo-watch for hot reloading
 RUN cargo install cargo-watch
 RUN echo "🟢 [DEV] cargo-watch installed"
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    curl \
-    bash \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy dependency files first for better caching
-COPY Cargo.toml Cargo.lock ./
-RUN echo "🔵 [DEV] Building dependencies in debug mode..."
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-RUN cargo build 2>&1 | tee /tmp/cargo-deps.log || (echo "🔴 [ERROR] Dependency build failed" && cat /tmp/cargo-deps.log && exit 1)
-RUN rm -rf src
-RUN echo "🟢 [DEV] Dependencies cached"
-
-# Copy source code (will be overridden by volume mount)
-COPY . .
-
-# Build the application once to ensure everything works
-RUN echo "🔵 [DEV] Initial debug build..."
-RUN cargo build 2>&1 | tee /tmp/cargo-build.log || (echo "🔴 [ERROR] Build failed" && cat /tmp/cargo-build.log && exit 1)
-RUN echo "🟢 [DEV] Initial build completed"
 
 EXPOSE 3000
 
