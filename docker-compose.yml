@@ -4,6 +4,7 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile
+    image: tycho-explorer/api:latest
     container_name: tycho-api-ethereum
     deploy:
       resources:
@@ -29,10 +30,9 @@ services:
       - "com.swift.chain=ethereum"
   
   # Base Mainnet Tycho API
+  # All services use the SAME image
   tycho-api-base:
-    build: 
-      context: ./api
-      dockerfile: Dockerfile
+    image: tycho-explorer/api:latest
     container_name: tycho-api-base
     deploy:
       resources:
@@ -58,10 +58,9 @@ services:
       - "com.swift.chain=base"
   
   # Unichain Mainnet Tycho API
+  # All services use the SAME image
   tycho-api-unichain:
-    build: 
-      context: ./api
-      dockerfile: Dockerfile
+    image: tycho-explorer/api:latest
     container_name: tycho-api-unichain
     deploy:
       resources:
