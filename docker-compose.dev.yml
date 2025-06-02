@@ -1,3 +1,8 @@
+volumes:
+  cargo-cache:
+  cargo-registry:
+  cargo-target:
+
 services:
   # Ethereum Mainnet Tycho API (Development)
   tycho-api-ethereum-dev:
@@ -20,14 +25,18 @@ services:
       - ./api/src:/app/src:ro
       - ./api/Cargo.toml:/app/Cargo.toml:ro
       - ./api/Cargo.lock:/app/Cargo.lock:ro
+      # Share cargo cache and build artifacts
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-registry:/usr/local/cargo/git
+      - cargo-target:/app/target
     networks:
       - tycho-network-dev
     healthcheck:
       test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Ethereum API health check failed' && exit 1)"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
+      interval: 30s
+      timeout: 10s
+      retries: 4
+      start_period: 180s
     labels:
       - "com.swift.service=tycho-api"
       - "com.swift.chain=ethereum"
@@ -39,6 +48,9 @@ services:
       context: ./api
       dockerfile: Dockerfile.dev
     container_name: tycho-api-base-dev
+    depends_on:
+      tycho-api-ethereum-dev:
+        condition: service_healthy
     ports:
       - "4002:3000"
     environment:
@@ -54,14 +66,18 @@ services:
       - ./api/src:/app/src:ro
       - ./api/Cargo.toml:/app/Cargo.toml:ro
       - ./api/Cargo.lock:/app/Cargo.lock:ro
+      # Share cargo cache and build artifacts
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-registry:/usr/local/cargo/git
+      - cargo-target:/app/target
     networks:
       - tycho-network-dev
     healthcheck:
       test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Base API health check failed' && exit 1)"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
+      interval: 30s
+      timeout: 10s
+      retries: 4
+      start_period: 180s
     labels:
       - "com.swift.service=tycho-api"
       - "com.swift.chain=base"
@@ -73,6 +89,9 @@ services:
       context: ./api
       dockerfile: Dockerfile.dev
     container_name: tycho-api-unichain-dev
+    depends_on:
+      tycho-api-ethereum-dev:
+        condition: service_healthy
     ports:
       - "4003:3000"
     environment:
@@ -88,14 +107,18 @@ services:
       - ./api/src:/app/src:ro
       - ./api/Cargo.toml:/app/Cargo.toml:ro
       - ./api/Cargo.lock:/app/Cargo.lock:ro
+      # Share cargo cache and build artifacts
+      - cargo-cache:/usr/local/cargo/registry
+      - cargo-registry:/usr/local/cargo/git
+      - cargo-target:/app/target
     networks:
       - tycho-network-dev
     healthcheck:
       test: ["CMD", "bash", "-c", "curl -f http://localhost:3000/ || (echo '🔴 [HEALTH] Unichain API health check failed' && exit 1)"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
+      interval: 30s
+      timeout: 10s
+      retries: 4
+      start_period: 180s
     labels:
       - "com.swift.service=tycho-api"
       - "com.swift.chain=unichain"
@@ -117,10 +140,6 @@ services:
       - "5173:5173"  # Vite default dev server port
     depends_on:
       tycho-api-ethereum-dev:
-        condition: service_healthy
-      tycho-api-base-dev:
-        condition: service_healthy
-      tycho-api-unichain-dev:
         condition: service_healthy
     environment:
       VITE_WEBSOCKET_URL_ETHEREUM: ${VITE_WEBSOCKET_URL_ETHEREUM}
