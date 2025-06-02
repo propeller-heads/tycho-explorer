@@ -7,6 +7,7 @@ import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
 import { callSimulationAPI } from './simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
 import { renderHexId } from '@/lib/utils';
+import { usePoolData } from './context/PoolDataContext';
 
 
 // Call real simulation API
@@ -14,9 +15,10 @@ const simulateSwap = async (
   poolId: string, 
   tokenIn: string, 
   amountIn: number,
-  poolFee: string
+  poolFee: string,
+  selectedChain: string
 ) => {
-  const result = await callSimulationAPI(tokenIn, poolId, amountIn);
+  const result = await callSimulationAPI(tokenIn, poolId, amountIn, selectedChain);
   if (!result || !result.success) {
     throw new Error('Simulation failed');
   }
@@ -163,12 +165,22 @@ interface SwapSimulatorProps {
 }
 
 const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool }) => {
+  const { selectedChain } = usePoolData();
   const [sellAmount, setSellAmount] = useState<string>("1");
   const [buyAmount, setBuyAmount] = useState<string>("");
   // Initialize with first available tokens
   const [sellTokenAddress, setSellTokenAddress] = useState<string>(tokens[0]?.address || '');
   
   const [buyTokenAddress, setBuyTokenAddress] = useState<string>(tokens[1]?.address || '');
+  
+  // Debug initial mount
+  console.warn('[PROD-DEBUG] SwapSimulator mounted:', {
+    poolId,
+    tokensLength: tokens?.length,
+    fee,
+    selectedChain,
+    tokens: tokens?.map(t => ({ address: t.address, symbol: t.symbol }))
+  });
   
   // Update token selection when pool changes
   useEffect(() => {
@@ -189,6 +201,14 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
   const sellToken = tokens.find(t => t.address === sellTokenAddress);
   const buyToken = tokens.find(t => t.address === buyTokenAddress);
 
+  console.warn('[PROD-DEBUG] Token lookup:', {
+    sellTokenAddress,
+    buyTokenAddress,
+    sellTokenFound: !!sellToken,
+    buyTokenFound: !!buyToken,
+    sellAmount,
+    parsedAmount: parseFloat(sellAmount)
+  });
   console.log("sim: sell, buy ", sellToken, buyToken, tokens);
 
   const handleSwapDirection = () => {
@@ -212,14 +232,27 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
   useEffect(() => {
     // Auto-simulate when sellAmount, sellToken, or buyToken changes
     const performSimulation = async () => {
+      console.warn('[PROD-DEBUG] SwapSimulator performSimulation triggered');
+      console.warn('[PROD-DEBUG] Inputs:', {
+        sellToken: sellToken?.address,
+        buyToken: buyToken?.address,
+        sellAmount,
+        poolId,
+        fee,
+        selectedChain
+      });
+      
       if (!sellToken || !buyToken || !sellAmount || parseFloat(sellAmount) <= 0) {
+        console.warn('[PROD-DEBUG] Missing required inputs, skipping simulation');
         setBuyAmount("");
         setExchangeRate(null);
         setNetAmount(null);
         return;
       }
       try {
-        const result = await simulateSwap(poolId, sellToken.address, parseFloat(sellAmount), fee);
+        console.warn('[PROD-DEBUG] Calling simulateSwap...');
+        const result = await simulateSwap(poolId, sellToken.address, parseFloat(sellAmount), fee, selectedChain);
+        console.warn('[PROD-DEBUG] simulateSwap result:', result);
         // Keep the raw output value for display consistency
         setBuyAmount(result.amountOut);
         setExchangeRate(result.exchangeRate);
@@ -227,11 +260,11 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
         // Set net amount to same as output amount (no gas deduction)
         setNetAmount(result.amountOut);
       } catch (e) {
-        console.error("Simulation failed:", e);
+        console.error("[PROD-DEBUG] Simulation failed:", e);
       }
     };
     performSimulation();
-  }, [sellAmount, sellToken, buyToken, poolId, fee]);
+  }, [sellAmount, sellToken, buyToken, poolId, fee, selectedChain]);
 
 
   return (
@@ -269,6 +302,7 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
           </Button>
         </div>
       </div>
+
 
       {/* Simulation Details - Matching Figma design */}
       <div className="space-y-2">

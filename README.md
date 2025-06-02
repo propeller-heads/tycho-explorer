@@ -102,3 +102,4 @@ See the `docs/` directory for detailed documentation:
 - Docker & Docker Compose
 - Tycho API key
 - RPC URLs for supported chains
+- API endpoint configuration for REST calls

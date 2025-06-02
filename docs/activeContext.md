@@ -2,6 +2,50 @@
 
 ## Current Work Focus
 
+### 🚨 CRITICAL FIX - Simulation API Endpoint Configuration (2025-06-02)
+
+**PROBLEM**: Simulation API calls were failing with connection refused because frontend was calling `/api/simulate` on port 3000 (which doesn't exist).
+
+**ROOT CAUSE**: 
+1. Frontend hardcoded `/api/simulate` endpoint
+2. No proxy configuration in Vite or Nginx
+3. API services run on different ports (3001-3003 prod, 4001-4003 dev)
+4. Frontend didn't know which chain-specific API to call
+
+**SOLUTION IMPLEMENTED**:
+1. **Environment-based API configuration**:
+   - Added `VITE_API_ETHEREUM_URL`, `VITE_API_BASE_URL`, `VITE_API_UNICHAIN_URL` to env files
+   - Production uses relative paths: `/api/ethereum`, `/api/base`, `/api/unichain`
+   - Development uses absolute URLs: `http://localhost:4001`, etc.
+
+2. **Updated simulationApi.ts**:
+   ```typescript
+   const getApiUrl = (chain: string): string => {
+     const urls: Record<string, string | undefined> = {
+       ethereum: import.meta.env.VITE_API_ETHEREUM_URL,
+       base: import.meta.env.VITE_API_BASE_URL,
+       unichain: import.meta.env.VITE_API_UNICHAIN_URL
+     };
+     // No defaults - explicit configuration required
+   };
+   ```
+
+3. **Chain-aware API calls**:
+   - `callSimulationAPI` and `getLimits` now require `selectedChain` parameter
+   - SwapSimulator gets chain from PoolDataContext
+   - API URL selected based on current chain
+
+4. **Nginx routing for production**:
+   ```nginx
+   location /api/ethereum/ {
+     proxy_pass http://tycho-api-ethereum:3000/;
+   }
+   ```
+
+**CRITICAL**: No default values - all API URLs must be explicitly configured in environment files.
+
+## Current Work Focus (Continued)
+
 ### 🚨 CRITICAL - Monorepo Restructure (2025-05-29)
 
 **COMPLETED**: Major restructuring from scattered directories to clean monorepo:
@@ -512,6 +556,9 @@ The Pool List View UI has undergone significant color system updates to align wi
   TYCHO_API_KEY: ${TYCHO_API_KEY}
   ```
 - **Critical**: This ensures explicit configuration and prevents accidental use of development defaults in production
+- **API URLs**: All API endpoints must be explicitly configured via environment variables
+  - No hardcoded URLs or fallback defaults in code
+  - Throw clear errors if configuration is missing
 
 ### CSS Gradient Border Technique
 When implementing gradient borders with border-radius:

@@ -135,6 +135,9 @@ services:
         - VITE_WEBSOCKET_URL_ETHEREUM=${VITE_WEBSOCKET_URL_ETHEREUM}
         - VITE_WEBSOCKET_URL_BASE=${VITE_WEBSOCKET_URL_BASE}
         - VITE_WEBSOCKET_URL_UNICHAIN=${VITE_WEBSOCKET_URL_UNICHAIN}
+        - VITE_API_ETHEREUM_URL=${VITE_API_ETHEREUM_URL}
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+        - VITE_API_UNICHAIN_URL=${VITE_API_UNICHAIN_URL}
     container_name: tycho-explorer-frontend-dev
     ports:
       - "5173:5173"  # Vite default dev server port
@@ -146,6 +149,9 @@ services:
       VITE_WEBSOCKET_URL_BASE: ${VITE_WEBSOCKET_URL_BASE}
       VITE_WEBSOCKET_URL_UNICHAIN: ${VITE_WEBSOCKET_URL_UNICHAIN}
       VITE_WEBSOCKET_URL: ${VITE_WEBSOCKET_URL}
+      VITE_API_ETHEREUM_URL: ${VITE_API_ETHEREUM_URL}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+      VITE_API_UNICHAIN_URL: ${VITE_API_UNICHAIN_URL}
     volumes:
       # Mount source code for hot reloading
       - ./frontend/src:/app/src

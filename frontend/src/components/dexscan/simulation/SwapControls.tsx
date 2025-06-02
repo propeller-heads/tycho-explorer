@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState, useEffect } from 'react';
-import { ArrowUpDown, Play, ChevronDown } from 'lucide-react';
+import { ArrowUpDown, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePoolData } from '../context/PoolDataContext';
@@ -41,7 +41,7 @@ export const SwapControls = ({
   const [inputValue, setInputValue] = useState(amount.toString());
   const [isLoading, setIsLoading] = useState(false);
   const [apiSimulationResult, setApiSimulationResult] = useState<SimulationResponse | null>(null);
-  const { pools } = usePoolData();
+  const { pools, selectedChain } = usePoolData();
   const [poolFee, setPoolFee] = useState<string>('0%');
   const [limits, setLimits] = useState<LimitsResponse | null>(null);
   const [sliderValue, setSliderValue] = useState<number[]>([0]);
@@ -65,7 +65,8 @@ export const SwapControls = ({
         const limitsResult = await getLimits(
           tokens[selectedSourceIndex].address,
           tokens[selectedTargetIndex].address,
-          poolId
+          poolId,
+          selectedChain
         );
         
         if (limitsResult) {
@@ -197,7 +198,8 @@ export const SwapControls = ({
       const result = await callSimulationAPI(
         sourceTokenAddress,
         poolId,
-        amount
+        amount,
+        selectedChain
       );
 
       if (result && result.success) {

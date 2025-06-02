@@ -10,15 +10,48 @@ export interface SimulationResponse {
   gas_estimate: string;
 }
 
+// Get API URL for a specific chain
+const getApiUrl = (chain: string): string => {
+  const urls: Record<string, string | undefined> = {
+    ethereum: import.meta.env.VITE_API_ETHEREUM_URL,
+    base: import.meta.env.VITE_API_BASE_URL,
+    unichain: import.meta.env.VITE_API_UNICHAIN_URL
+  };
+  
+  console.warn('[PROD-DEBUG] getApiUrl - chain:', chain);
+  console.warn('[PROD-DEBUG] getApiUrl - available URLs:', urls);
+  console.warn('[PROD-DEBUG] getApiUrl - import.meta.env:', import.meta.env);
+  
+  const url = urls[chain.toLowerCase()];
+  if (!url) {
+    throw new Error(`No API URL configured for chain: ${chain}. URLs: ${JSON.stringify(urls)}. Please set VITE_API_${chain.toUpperCase()}_URL in your environment.`);
+  }
+  
+  console.warn('[PROD-DEBUG] getApiUrl - selected URL:', url);
+  return url;
+};
+
 // Function to call the simulation API
 export const callSimulationAPI = async (
   tokenInAddress: string,
   poolId: string,
-  amount: number
+  amount: number,
+  selectedChain: string
 ): Promise<SimulationResponse | null> => {
   try {
-
-    const response = await fetch('http://localhost:3000/api/simulate',
+    console.warn('[PROD-DEBUG] callSimulationAPI - called with:', {
+      tokenInAddress,
+      poolId,
+      amount,
+      selectedChain
+    });
+    
+    const apiUrl = getApiUrl(selectedChain);
+    const fullUrl = `${apiUrl}/api/simulate`;
+    console.warn('[PROD-DEBUG] callSimulationAPI - fullUrl:', fullUrl);
+    console.warn('[PROD-DEBUG] callSimulationAPI - payload:', { sell_token: tokenInAddress, pools: [poolId], amount });
+    
+    const response = await fetch(fullUrl,
       {
         method: 'POST',
         headers: {
@@ -34,14 +67,17 @@ export const callSimulationAPI = async (
       }
     );
 
+    console.warn('[PROD-DEBUG] callSimulationAPI - response status:', response.status);
+    
     if (!response.ok) {
       throw new Error(`API call failed with status: ${response.status}`);
     }
 
     const data = await response.json();
+    console.warn('[PROD-DEBUG] callSimulationAPI - response data:', data);
     return data;
   } catch (error) {
-    console.error("Error calling simulation API:", error);
+    console.warn("[PROD-DEBUG] Error calling simulation API:", error);
     return null;
   }
 };
@@ -59,11 +95,13 @@ export interface LimitsRequest {
   pool_address: string;
 }
 
+// CURRENTLY NOT SUPPORTED
 // Function to call the get_limits API
 export const getLimits = async (
   sell_token: string,
   buy_token: string,
-  pool_address: string
+  pool_address: string,
+  selectedChain: string
 ): Promise<LimitsResponse | null> => {
   try {
     // Flip tokens to get reliable max_output
@@ -75,7 +113,8 @@ export const getLimits = async (
     
     console.log('Calling get_limits API with flipped tokens for reliable max_output:', req);
 
-    const response = await fetch('http://localhost:3000/api/limits',
+    const apiUrl = getApiUrl(selectedChain);
+    const response = await fetch(`${apiUrl}/api/limits`,
       {
         method: 'POST',
         headers: {
