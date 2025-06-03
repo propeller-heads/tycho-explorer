@@ -54,6 +54,10 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
   const [tokenSearchFocused, setTokenSearchFocused] = useState(false);
   // const [protocolSearch, setProtocolSearch] = useState('');
   
+  // State for popover open/close
+  const [tokenPopoverOpen, setTokenPopoverOpen] = useState(false);
+  const [protocolPopoverOpen, setProtocolPopoverOpen] = useState(false);
+  
   // State for infinite scroll in popovers
   const [displayedTokensCount, setDisplayedTokensCount] = useState(100);
   const TOKENS_BATCH_SIZE = 100;
@@ -102,14 +106,14 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-3"> {/* Responsive layout */}
       <div className="flex flex-wrap items-center gap-2"> {/* Allow wrapping on mobile */}
         {/* Token Filter */}
-        <Popover>
+        <Popover open={tokenPopoverOpen} onOpenChange={setTokenPopoverOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedTokens, 'token')}
-              <LucideChevronDown className="ml-1 h-3 w-3" />
+              <LucideChevronDown className={`ml-1 h-3 w-3 transition-transform duration-200 ${tokenPopoverOpen ? 'rotate-180' : ''}`} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
+          <PopoverContent align="start" className="w-72 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <div className="p-2">
               <div 
                 className="relative flex items-center"
@@ -175,14 +179,14 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         </Popover>
 
         {/* Protocol Filter */}
-        <Popover>
+        <Popover open={protocolPopoverOpen} onOpenChange={setProtocolPopoverOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedProtocols, 'protocol')}
-              <LucideChevronDown className="ml-1 h-3 w-3" />
+              <LucideChevronDown className={`ml-1 h-3 w-3 transition-transform duration-200 ${protocolPopoverOpen ? 'rotate-180' : ''}`} />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-64 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
+          <PopoverContent align="start" className="w-64 p-0 bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]">
             <ScrollArea className="h-[200px] p-2">
               {allProtocolsForFilter.length === 0 && <p className="text-xs text-[rgba(255,244,224,0.4)] text-center py-2">No protocols available.</p>}
               {allProtocolsForFilter.map(protocol => {
