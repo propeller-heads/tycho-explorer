@@ -117,6 +117,7 @@ interface GraphViewProps {
   tokenNodes: Array<{ id: string; label: string; symbol?: string }>;
   poolEdges: Array<{ id: string; from: string; to: string; protocol: string; width?: number; color?: string }>;
   rawPoolsData: Record<string, PoolType>; // Use the more complete PoolType here
+  selectedChain: string; // Chain for external links
 }
 
 // Class to manage the network and position cache
@@ -125,6 +126,7 @@ class GraphManager {
   private nodesDataset: DataSet<VisNode> | null = null;
   private edgesDataset: DataSet<VisEdge> | null = null;
   public rawPoolsData: Record<string, PoolType> // Changed RawPool to PoolType
+  public selectedChain: string = 'ethereum'; // Default chain
   private initialized = false;
   private container: HTMLElement | null = null;
   private popupDiv: HTMLElement | null = null; // For node tooltips
@@ -134,8 +136,9 @@ class GraphManager {
   private boundHandleDocumentMousedown: ((event: MouseEvent | TouchEvent) => void) | null = null;
   private networkOptions: ReturnType<typeof getNetworkOptions> | null = null; // Store network options for later use
 
-  initialize(container: HTMLElement, initialNodes: VisNode[], initialEdges: VisEdge[], rawPools: Record<string, PoolType>, isMobile: boolean) {
+  initialize(container: HTMLElement, initialNodes: VisNode[], initialEdges: VisEdge[], rawPools: Record<string, PoolType>, isMobile: boolean, selectedChain: string) {
     this.rawPoolsData = rawPools; // Store raw pools data
+    this.selectedChain = selectedChain; // Store selected chain
     this.boundHandleDocumentMousedown = this.handleDocumentMousedown.bind(this);
     this.container = container;
 
@@ -680,7 +683,7 @@ class GraphManager {
     const formattedFee = `${feeRatePercent.toFixed(4)}%`; // Adjust precision as needed
     
     // Use getExternalLink, fallback to Etherscan
-    const poolLink = getExternalLink(pool) || `https://etherscan.io/address/${poolAddress}`;
+    const poolLink = getExternalLink(pool, this.selectedChain);
     const displayPoolId = renderHexId(pool.id);
     const fullPoolIdToCopy = pool.id; // For the copy button
 
@@ -822,7 +825,7 @@ class GraphManager {
 } // End of GraphManager class
 
 // Main component
-const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsData }) => {
+const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsData, selectedChain }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphManagerRef = useRef<GraphManager | null>(null);
   const isMobile = useIsMobile();
@@ -850,14 +853,15 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
     
     if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
       // First time initialization
-      manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData, isMobile);
+      manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData, isMobile, selectedChain);
     } else if (manager.isInitialized()) {
       // Subsequent updates
       manager.rawPoolsData = rawPoolsData as Record<string, PoolType>; 
+      manager.selectedChain = selectedChain; // Update selected chain
       manager.updateData(tokenNodes, poolEdges, isMobile);
       manager.refreshCurrentTooltipData(); // Refresh tooltip if open
     }
-  }, [tokenNodes, poolEdges, rawPoolsData, isMobile]);
+  }, [tokenNodes, poolEdges, rawPoolsData, isMobile, selectedChain]);
 
   // Add mobile touch handler for edges when on mobile
   useEffect(() => {

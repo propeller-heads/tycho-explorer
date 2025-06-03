@@ -48,7 +48,7 @@ const renderTokensText = (pool: Pool) => {
 };
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
-  const { blockNumber, lastBlockTimestamp, estimatedBlockDuration } = usePoolData();
+  const { blockNumber, lastBlockTimestamp, estimatedBlockDuration, selectedChain } = usePoolData();
   
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [sortConfig, setSortConfig] = useState<{column: string, direction: 'asc' | 'desc'}>({
@@ -280,6 +280,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
           onLoadMore={handleLoadMorePools}
           hasMorePools={displayedPoolsCount < processedPools.length}
           isLoadingMore={isLoadingMore} // Pass new loading state
+          selectedChain={selectedChain} // Pass selected chain
         />
         </div> {/* Close content wrapper */}
       </div>

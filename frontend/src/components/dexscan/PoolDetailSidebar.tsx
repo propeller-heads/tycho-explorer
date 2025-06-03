@@ -3,6 +3,7 @@ import { Pool, Token } from './types';
 import SwapSimulator from './SwapSimulator'; // Import the refactored SwapSimulator
 import { LucideX, ExternalLink } from 'lucide-react';
 import { cn, renderHexId, getExternalLink } from '@/lib/utils';
+import { usePoolData } from './context/PoolDataContext';
 
 interface PoolDetailSidebarProps {
   pool: Pool | null;
@@ -10,12 +11,14 @@ interface PoolDetailSidebarProps {
 }
 
 const PoolDetailSidebar: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) => {
+  const { selectedChain } = usePoolData();
+  
   if (!pool) {
     return null;
   }
 
   const poolTokensText = pool.tokens.map(t => t.symbol).join(' / ');
-  const poolExternalLink = getExternalLink(pool);
+  const poolExternalLink = getExternalLink(pool, selectedChain);
 
   console.log("sidebar: ", pool);
   return (

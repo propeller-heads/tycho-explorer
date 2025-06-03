@@ -33,7 +33,7 @@ const PoolGraphView: React.FC = () => {
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
 
   // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
-  const { pools: rawPoolsForControls } = usePoolData();
+  const { pools: rawPoolsForControls, selectedChain } = usePoolData();
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {
@@ -122,6 +122,7 @@ const PoolGraphView: React.FC = () => {
               tokenNodes={graphDisplayNodes} 
               poolEdges={graphDisplayEdges}
               rawPoolsData={rawPoolsData} // Pass rawPoolsData as a prop
+              selectedChain={selectedChain} // Pass selectedChain as a prop
             />
           </div>
         </>

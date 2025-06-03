@@ -68,6 +68,7 @@ interface PoolTableProps {
   onLoadMore: () => void;
   hasMorePools: boolean;
   isLoadingMore: boolean; // New prop for loading indicator
+  selectedChain: string; // New prop for chain
 }
 
 const PoolTable: React.FC<PoolTableProps> = ({ 
@@ -82,7 +83,8 @@ const PoolTable: React.FC<PoolTableProps> = ({
   summaryData,
   onLoadMore,
   hasMorePools,
-  isLoadingMore
+  isLoadingMore,
+  selectedChain
 }) => {
   const sortableColumns = ['protocol_system', 'static_attributes.fee', 'spotPrice', 'updatedAt'];
   const isMobile = useIsMobile();
@@ -189,7 +191,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                           </div>
                         );
                       } else if (column.id === 'id') {
-                        const linkUrl = getExternalLink(pool);
+                        const linkUrl = getExternalLink(pool, selectedChain);
                         displayValue = (
                           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <Tooltip delayDuration={0}>
