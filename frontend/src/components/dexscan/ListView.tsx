@@ -14,7 +14,6 @@ import { usePoolData } from './context/PoolDataContext';
 interface ListViewFilters { // No export
   selectedTokens: Token[]; // Use imported Token type
   selectedProtocols: string[];
-  selectedPoolIds: string[];
 }
 
 // Updated COLUMNS definition based on plan
@@ -58,8 +57,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   });
   const [filters, setFilters] = useState<ListViewFilters>({
     selectedTokens: [],
-    selectedProtocols: [],
-    selectedPoolIds: []
+    selectedProtocols: []
   });
   const [displayedPoolsCount, setDisplayedPoolsCount] = useState(INITIAL_DISPLAY_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false); // New state for loading indicator
@@ -82,9 +80,6 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     Array.from(new Set(pools.map(pool => pool.protocol_system))).filter(Boolean).sort() as string[], 
   [pools]);
 
-  const allPoolsForFilter = useMemo(() => 
-    [...pools].sort((a, b) => a.id.localeCompare(b.id)),
-  [pools]);
 
   const sortPools = useCallback((poolsToSort: Pool[]) => {
     return [...poolsToSort].sort((a, b) => {
@@ -130,10 +125,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
       const protocolMatch = filters.selectedProtocols.length === 0 ||
         filters.selectedProtocols.includes(pool.protocol_system);
       
-      const poolIdMatch = filters.selectedPoolIds.length === 0 ||
-        filters.selectedPoolIds.includes(pool.id);
-      
-      return tokenMatch && protocolMatch && poolIdMatch;
+      return tokenMatch && protocolMatch;
     });
   }, [filters]);
 
@@ -204,8 +196,7 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   const handleResetFilters = useCallback(() => {
     setFilters({
       selectedTokens: [],
-      selectedProtocols: [],
-      selectedPoolIds: []
+      selectedProtocols: []
     });
     setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT);
   }, []);
@@ -257,15 +248,12 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
         <PoolListFilterBar
           selectedTokens={filters.selectedTokens}
           selectedProtocols={filters.selectedProtocols}
-          selectedPoolIds={filters.selectedPoolIds}
           // Pass specific handlers for type safety
           onTokenSelect={(token, isSelected) => handleFilterChange('selectedTokens', token, isSelected)}
           onProtocolSelect={(protocol, isSelected) => handleFilterChange('selectedProtocols', protocol, isSelected)}
-          onPoolIdSelect={(poolId, isSelected) => handleFilterChange('selectedPoolIds', poolId, isSelected)}
           onResetFilters={handleResetFilters}
           allTokensForFilter={allTokensForFilter}
           allProtocolsForFilter={allProtocolsForFilter}
-          allPoolsForFilter={allPoolsForFilter}
           blockNumber={blockNumber}
           startTime={lastBlockTimestamp} 
           duration={estimatedBlockDuration}
