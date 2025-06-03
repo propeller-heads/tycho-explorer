@@ -22,22 +22,18 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
   return (
     // Header element with responsive layout - stacks on mobile, row on desktop
     <header className="flex flex-col sm:flex-row sm:h-[72px] sm:items-center sm:justify-between bg-transparent px-4 sm:px-6 py-3 sm:py-0 w-full gap-3 sm:gap-0">
-      {/* Mobile Row 1 / Desktop Left-Right Container */}
-      <div className="flex items-center justify-between w-full sm:w-auto">
-        {/* Left Section: Contains the branding (logo and "Explorer" text) */}
-        <div className="flex-shrink-0">
-          {/* Render the HeaderBranding component */}
-          <HeaderBranding />
-        </div>
-
-        {/* Right Section (mobile) / Hidden on desktop: Contains the documentation link and network selector */}
-        <div className="flex-shrink-0 sm:hidden">
-          {/* Render the HeaderActions component */}
-          <HeaderActions />
-        </div>
+      {/* Mobile-only: Row 1 with branding and actions */}
+      <div className="sm:hidden flex items-center justify-between w-full">
+        <HeaderBranding />
+        <HeaderActions />
       </div>
 
-      {/* Mobile Row 2 / Desktop Center Section: Contains the view selector toggle buttons */}
+      {/* Desktop-only: Left section with branding */}
+      <div className="hidden sm:flex flex-shrink-0">
+        <HeaderBranding />
+      </div>
+
+      {/* Mobile Row 3 / Desktop Center Section: Contains the view selector toggle buttons */}
       <div className="flex justify-center w-full sm:max-w-[475px] sm:mx-auto">
         {/* Render the ViewSelector component and pass props */}
         <ViewSelector 
@@ -48,7 +44,7 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
         />
       </div>
 
-      {/* Desktop Right Section (hidden on mobile - already shown above) */}
+      {/* Desktop Right Section */}
       <div className="hidden sm:block flex-shrink-0">
         {/* Render the HeaderActions component */}
         <HeaderActions />

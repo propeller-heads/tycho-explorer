@@ -6,14 +6,14 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // Import SVG and PNG assets
-import CallMadeIcon from '@/assets/figma_header_icons/call_made.svg';
 import EthereumLogo from '@/assets/figma_header_icons/ethereum-logo.png';
 import UnichainLogo from '@/assets/figma_header_icons/unichain-logo.svg';
 import BaseLogo from '@/assets/figma_header_icons/base-logo.png';
 // Import UI components
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 // Import icons from lucide-react
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Check, ExternalLink } from 'lucide-react';
 // Import custom hooks and context consumers
 import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
 
@@ -22,12 +22,10 @@ const DOCS_URL = "https://docs.propellerheads.xyz/";
 const ALT_TEXT_EXTERNAL_LINK = "External link";
 const TEXT_DOCS = "Docs";
 
-// --- CSS Class Constants ---
-const DOCS_LINK_CLASSES = "flex items-center gap-1 text-sm font-normal text-[#FFFFFF] hover:text-[#FFFFFF]/90 transition-colors";
-
 // --- HeaderActions Component ---
 const HeaderActions: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [chainSelectorOpen, setChainSelectorOpen] = React.useState(false);
   const {
     isConnected,
     selectedChain,
@@ -52,53 +50,88 @@ const HeaderActions: React.FC = () => {
     }
   }, [selectedChain, searchParams, setSearchParams]);
 
-  const handleChainChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newChain = e.target.value;
-    setSearchParams({ chain: newChain }, { replace: true });
-    connectToWebSocket(newChain);
+  const handleChainSelect = (chain: string) => {
+    setSearchParams({ chain }, { replace: true });
+    connectToWebSocket(chain);
+    setChainSelectorOpen(false);
   };
 
   return (
-    <div className="flex items-center gap-2 sm:gap-4">
-      <a
-        href={DOCS_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={DOCS_LINK_CLASSES}
-      >
-        <span className="hidden sm:inline">{TEXT_DOCS}</span>
-        <img src={CallMadeIcon} alt={ALT_TEXT_EXTERNAL_LINK} className="h-4 w-4" />
-      </a>
-      
-      {/* Direct chain selector with connection status */}
-      <div className="relative flex items-center">
-        {/* Connection status dot */}
-        <div className={`absolute left-2 w-2 h-2 rounded-full ${
-          isConnected ? 'bg-green-400' : 'bg-red-400'
-        }`} />
-        
-        {/* Chain selector styled as button */}
-        <select
-          value={selectedChain}
-          onChange={handleChainChange}
-          className="appearance-none h-9 pl-5 pr-8 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors cursor-pointer flex items-center gap-2"
-          style={{
-            backgroundImage: `url(${chainLogo})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 8px center',
-            backgroundSize: '20px 20px'
-          }}
+    // Always flex-row with proper spacing
+    <div className="flex flex-row items-center gap-2 sm:gap-4">
+      {/* Chain selector with connection status */}
+      <Popover open={chainSelectorOpen} onOpenChange={setChainSelectorOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="relative h-9 w-full sm:w-auto pl-3 pr-8 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
+          >
+            {/* Connection status dot - smaller on mobile */}
+            <div className={`absolute left-2 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+              isConnected ? 'bg-green-400' : 'bg-red-400'
+            }`} />
+            
+            <span className="flex items-center gap-2 ml-2">
+              {/* On mobile, show only logo. On desktop, show chain name + logo */}
+              <span className="hidden sm:inline">{selectedChain}</span>
+              {chainLogo && (
+                <img src={chainLogo} alt={selectedChain} className="h-5 w-5" />
+              )}
+            </span>
+            
+            <ChevronDown className="absolute right-2 h-4 w-4 text-white/60" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          align="start" 
+          alignOffset={-4}
+          className="w-[180px] p-1 bg-[rgba(255,255,255,0.06)] backdrop-blur-md border border-white/10"
         >
-          {availableChains.map(chain => (
-            <option key={chain} value={chain}>
-              {chain}
-            </option>
-          ))}
-        </select>
-        
-        {/* Dropdown arrow overlay */}
-        <ChevronDown className="absolute right-2 h-4 w-4 pointer-events-none text-white/60" />
-      </div>
+          <div className="flex flex-col">
+            {availableChains.map(chain => {
+              const logo = chainLogoMap[chain];
+              const isSelected = chain === selectedChain;
+              
+              return (
+                <button
+                  key={chain}
+                  onClick={() => handleChainSelect(chain)}
+                  className="flex items-center justify-between px-3 py-2 text-sm text-white hover:bg-white/10 rounded-md transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    {logo && (
+                      <img src={logo} alt={chain} className="h-5 w-5" />
+                    )}
+                    {chain}
+                  </span>
+                  {isSelected && (
+                    <Check className="h-4 w-4 text-white" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+      
+      {/* Docs link - now more explicit with button styling */}
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="h-9 px-3 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
+      >
+        <a
+          href={DOCS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5"
+        >
+          <span>{TEXT_DOCS}</span>
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </Button>
     </div>
   );
 };
