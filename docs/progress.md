@@ -218,6 +218,29 @@ The application is now properly structured as a monorepo with clear separation b
   - Prevents race conditions during chain switching
   - Ensures single active connection per session
 
+### Recent Accomplishments (2025-06-03)
+
+#### WebSocket URL Management Refactor
+- **Removed all localStorage usage** for WebSocket URLs
+  - Eliminated user-configurable URLs completely
+  - WebSocket URLs now strictly from environment variables
+  - Removed `websocketUrl` state from PoolDataContext
+- **Simplified chain switching flow**:
+  - Removed WebSocketConfig component entirely
+  - Implemented direct chain selector in HeaderActions
+  - Single-click chain switching with native HTML select
+  - Connection status shown as colored dot (green/red)
+- **URL state persistence**:
+  - Chain selection stored in URL query parameter (?chain=Base)
+  - Fixed race condition preventing URL-based chain loading
+  - Shareable links with pre-selected chains
+  - Browser navigation (back/forward) switches chains
+- **Cleaner architecture**:
+  - PoolDataContext reads initial chain from URL on mount
+  - HeaderActions only updates URL when chain changes
+  - No prop drilling - components use context directly
+  - Removed ~150 lines of unnecessary component code
+
 ## Known Issues
 
 1. **Logo Loading**: CoinGecko API rate limits can cause slow logo loading

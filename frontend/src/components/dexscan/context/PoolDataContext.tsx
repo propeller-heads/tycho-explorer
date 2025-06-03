@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react';
 import { Pool, WebSocketPool } from '../types';
+import { CHAIN_CONFIG } from '@/config/chains';
 
 interface WebSocketMessage {
   new_pairs?: Record<string, WebSocketPool>;
@@ -13,9 +14,7 @@ interface PoolDataContextValue {
   isConnected: boolean;
   isUsingMockData: boolean;
   highlightedPoolId: string | null;
-  websocketUrl: string;
-  defaultWebSocketUrl: string; // Added - the default URL from env or fallback
-  connectToWebSocket: (url: string, chain?: string) => void;
+  connectToWebSocket: (chain: string) => void;
   disconnectWebSocket: () => void;
   highlightPool: (poolId: string | null) => void;
   blockNumber: number;
@@ -31,7 +30,6 @@ type PoolDataAction =
   | { type: 'UPDATE_POOLS', payload: Record<string, Pool> }
   | { type: 'SET_HIGHLIGHTED_POOL', payload: string | null }
   | { type: 'SET_CONNECTION_STATE', payload: { isConnected: boolean } }
-  | { type: 'SET_WEBSOCKET_URL', payload: string }
   | { type: 'SET_BLOCK_NUMBER', payload: { blockNumber: number; timestamp: number } } // Updated
   | { type: 'SET_SELECTED_CHAIN', payload: string }
   | { type: 'RESET_STATE' };
@@ -41,7 +39,6 @@ interface PoolDataState {
   pools: Record<string, Pool>;
   isConnected: boolean;
   highlightedPoolId: string | null;
-  websocketUrl: string;
   blockNumber: number;
   selectedChain: string;
   lastBlockTimestamp: number | null; // Added
@@ -85,11 +82,6 @@ function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolData
       return {
         ...state,
         isConnected: action.payload.isConnected
-      };
-    case 'SET_WEBSOCKET_URL':
-      return {
-        ...state,
-        websocketUrl: action.payload
       };
     case 'SET_BLOCK_NUMBER': {
       const newTimestamp = action.payload.timestamp;
@@ -163,19 +155,23 @@ const DEFAULT_CHAIN = 'Ethereum';
 // No reconnection logic
 
 export function PoolDataProvider({ children }: { children: React.ReactNode }) {
+  // Check URL for initial chain
+  const getInitialChain = () => {
+    const params = new URLSearchParams(window.location.search);
+    const chainFromUrl = params.get('chain');
+    if (chainFromUrl && AVAILABLE_CHAINS.includes(chainFromUrl)) {
+      return chainFromUrl;
+    }
+    return DEFAULT_CHAIN;
+  };
+
   // Initialize state and variables
-  const defaultWebSocketUrl = import.meta.env.VITE_WEBSOCKET_URL;
-  const savedWebSocketUrl = localStorage.getItem('websocket_url') || defaultWebSocketUrl;
-  const savedChain = localStorage.getItem('selected_chain') || DEFAULT_CHAIN;
-  console.log("defaultWebSocketUrl:", defaultWebSocketUrl);
-  console.log("savedWebSocketUrl:", savedWebSocketUrl);
   const [state, dispatch] = useReducer(poolDataReducer, {
     pools: {},
     isConnected: false,
     highlightedPoolId: null,
-    websocketUrl: savedWebSocketUrl,
     blockNumber: 0,
-    selectedChain: savedChain,
+    selectedChain: getInitialChain(),
     lastBlockTimestamp: null, // Initialize
     estimatedBlockDuration: DEFAULT_ESTIMATED_BLOCK_DURATION, // Initialize
     pendingUpdates: {
@@ -226,28 +222,31 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   // Removed auto-reconnection function
   
   // Update the connection function to reset reconnection state
-  const connectToWebSocket = useCallback((url: string, chain: string) => {
+  const connectToWebSocket = useCallback((chain: string) => {
     // Update the selected chain
-    localStorage.setItem('selected_chain', chain);
     dispatch({ type: 'SET_SELECTED_CHAIN', payload: chain });
+    
+    // Get URL from chain config
+    const chainConfig = CHAIN_CONFIG[chain as keyof typeof CHAIN_CONFIG];
+    if (!chainConfig || !chainConfig.wsUrl) {
+      console.error('No WebSocket URL configured for chain:', chain);
+      return;
+    }
+    
+    const url = chainConfig.wsUrl;
+    
     // Clear pool data when switching chains
     console.log('🟣 [CHAIN] Clearing pool data for chain switch to:', chain);
     dispatch({ type: 'RESET_STATE' });
-    
-    // Manual reconnection is handled directly
     
     // Close existing connection if any
     disconnectWebSocket();
 
     try {
-      // Save URL to localStorage for persistence across refreshes
-      localStorage.setItem('websocket_url', url);
-      
       // Create new WebSocket connection
       const ws = new WebSocket(url);
       socketRef.current = ws;
       setAutoConnected(true); // Mark as auto-connected
-      dispatch({ type: 'SET_WEBSOCKET_URL', payload: url });
 
       ws.onopen = () => {        
         // Set connection state but don't clear existing pool data
@@ -444,11 +443,11 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Only connect once to avoid infinite connection attempts
     if (!autoConnected && !state.isConnected) {
-      console.log('Auto-connecting to WebSocket:', state.websocketUrl);
-      connectToWebSocket(state.websocketUrl, state.selectedChain);
+      console.log('Auto-connecting to WebSocket for chain:', state.selectedChain);
+      connectToWebSocket(state.selectedChain);
       setAutoConnected(true);
     }
-  }, [autoConnected, state.isConnected, state.websocketUrl]);
+  }, [autoConnected, state.isConnected, state.selectedChain, connectToWebSocket]);
 
   const highlightPool = useCallback((poolId: string | null) => {
     dispatch({ type: 'SET_HIGHLIGHTED_POOL', payload: poolId });
@@ -466,8 +465,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       isConnected: state.isConnected,
       isUsingMockData: false,
       highlightedPoolId: state.highlightedPoolId,
-      websocketUrl: state.websocketUrl,
-      defaultWebSocketUrl, // Added - expose the default URL
       blockNumber: state.blockNumber,
       selectedChain: state.selectedChain,
       lastBlockTimestamp: state.lastBlockTimestamp, // Added
@@ -482,8 +479,6 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     poolsArray,
     state.isConnected, 
     state.highlightedPoolId,
-    state.websocketUrl,
-    defaultWebSocketUrl, // Added to dependencies
     state.blockNumber,
     state.selectedChain,
     state.lastBlockTimestamp, // Added

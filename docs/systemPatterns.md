@@ -67,10 +67,12 @@ Key patterns:
 6.  **`SwapSimulator.tsx`**:
     *   Provides an interface to simulate trades on a selected pool.
 
-7.  **`WebSocketConfig.tsx`**:
-    *   Provides UI for configuring the WebSocket connection.
-    *   Supports chain selection and automatic reconnection when switching chains.
-    *   Uses native HTML select for chain dropdown due to event handling issues with Radix UI.
+7.  **`header/HeaderActions.tsx`**:
+    *   Contains a direct chain selector in the header for quick chain switching.
+    *   Shows connection status via colored dot (green = connected, red = disconnected).
+    *   Supports URL state persistence - chain selection is stored in URL query parameter (?chain=Base).
+    *   Chain logo displayed in the selector background.
+    *   Single-click chain switching with native HTML select element.
 
 8.  **`PoolDataContext.tsx` (within `context/`)**:
     *   Manages WebSocket connection and pool data.
@@ -82,10 +84,18 @@ Key patterns:
             - Ensures clean termination when switching chains
         *   Chain switching always clears pool data with `RESET_STATE`
         *   Single WebSocket connection per session - no concurrent connections
+    *   **URL-Based Chain Initialization**:
+        *   Reads `?chain=` parameter on component mount
+        *   Uses URL chain if valid, otherwise defaults to 'Ethereum'
+        *   WebSocket URLs are never stored in localStorage - only derived from environment
+    *   **Chain Configuration**:
+        *   No user-configurable WebSocket URLs
+        *   URLs strictly from environment variables via CHAIN_CONFIG
+        *   Chain selection is the only user choice
 
 ## Data Flow
 
-1.  **Connection**: `WebSocketConfig.tsx` establishes WebSocket connection.
+1.  **Connection**: User selects chain via HeaderActions dropdown → `connectToWebSocket(chain)` called.
 2.  **Data Reception**: `PoolDataContext` receives real-time pool data.
 3.  **State Update**: `PoolDataContext` processes and updates its internal state.
 4.  **Consumption**: Components like `ListView.tsx` consume data from `PoolDataContext`.
@@ -126,7 +136,10 @@ Key patterns:
     *   Folly red accents: `#FF3366` for checkboxes, borders, focus states
     *   Dynamic border focus: 1px default → 2px on focus with smooth transition
     *   Search bars wrapped in div with conditional border styling
-*   **URL-Driven State**: For active tab.
+*   **URL-Driven State**: 
+    *   Active tab selection (pools/graph view)
+    *   Chain selection persisted in query parameter (?chain=Base)
+    *   Enables shareable links with specific chain pre-selected
 *   **Utility Functions**: In `src/lib/`.
 *   **Protocol-Specific Fee Parsing**: 
     *   `parseFeeHexValue` in `poolUtils.ts` handles different fee formats per protocol
