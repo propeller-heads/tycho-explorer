@@ -255,8 +255,8 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
         console.warn('[PROD-DEBUG] Calling simulateSwap...');
         const result = await simulateSwap(poolId, sellToken.address, parseFloat(sellAmount), fee, selectedChain);
         console.warn('[PROD-DEBUG] simulateSwap result:', result);
-        // Keep the raw output value for display consistency
-        setBuyAmount(result.amountOut);
+        // Truncate buy amount to 2 decimals for display
+        setBuyAmount(parseFloat(result.amountOut).toFixed(2));
         setExchangeRate(result.exchangeRate);
         
         // Set net amount to same as output amount (no gas deduction)
