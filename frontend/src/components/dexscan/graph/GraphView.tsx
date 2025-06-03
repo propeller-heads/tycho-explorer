@@ -3,7 +3,7 @@ import { Network, Node as VisNode, Edge as VisEdge } from 'vis-network';
 import { DataSet } from 'vis-data';
 import { parsePoolFee } from '@/lib/poolUtils'; // Import for fee parsing
 import { Pool as PoolType } from '@/components/dexscan/types'; // Import Pool type
-import { getExternalLink, renderHexId, formatTimeAgo } from '@/lib/utils'; // Import getExternalLink, renderHexId, and formatTimeAgo
+import { getExternalLink, renderHexId, formatTimeAgo, getTokenExplorerLink } from '@/lib/utils'; // Import getExternalLink, renderHexId, formatTimeAgo, and getTokenExplorerLink
 import { useIsMobile } from '@/hooks/use-mobile'; // Import mobile detection hook
 
 // Function to get network options based on device type
@@ -509,7 +509,7 @@ class GraphManager {
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <span style="color: rgba(255, 244, 224, 0.64);">Address: </span>
-            <a href="https://etherscan.io/token/${data.address}" 
+            <a href="${getTokenExplorerLink(data.address, this.selectedChain)}" 
                target="_blank" 
                rel="noopener noreferrer"
                style="color: rgba(255, 244, 224, 0.64); text-decoration: underline; word-break: break-all;">${shortAddress}</a>

@@ -56,6 +56,22 @@ const INVALID_TIMESTAMP_FALLBACK = "N/A";
 // Fallback string for date parsing errors
 const PARSE_ERROR_FALLBACK = "Invalid date";
 
+// Generates a block explorer link for a given token based on the chain.
+export const getTokenExplorerLink = (tokenAddress: string, chain: string): string => {
+  // Normalize chain name to lowercase for consistent matching
+  const chainLower = chain.toLowerCase();
+  
+  switch (chainLower) {
+    case 'base':
+      return `https://basescan.org/token/${tokenAddress}`;
+    case 'unichain':
+      return `https://unichain.blockscout.com/token/${tokenAddress}`;
+    case 'ethereum':
+    default:
+      return `https://etherscan.io/token/${tokenAddress}`;
+  }
+};
+
 // = From Problem Analysis to Data Definitions
 // Information: A timestamp string, current time.
 // Representation: Timestamp as string (ISO 8601), current time implicitly from Date.now().

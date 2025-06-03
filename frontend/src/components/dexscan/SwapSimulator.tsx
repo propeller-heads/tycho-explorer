@@ -6,7 +6,7 @@ import { Pool, Token } from './types'; // Assuming Token type includes address, 
 import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
 import { callSimulationAPI } from './simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
-import { renderHexId } from '@/lib/utils';
+import { renderHexId, getTokenExplorerLink } from '@/lib/utils';
 import { usePoolData } from './context/PoolDataContext';
 
 
@@ -41,6 +41,7 @@ interface SwapCardProps {
   onTokenChange: (tokenId: string) => void;
   tokens: Token[];
   isAmountEditable?: boolean;
+  selectedChain: string;
 }
 
 // Helper function to format token symbol
@@ -101,6 +102,7 @@ const SwapCard: React.FC<SwapCardProps> = ({
   onTokenChange,
   tokens,
   isAmountEditable = true,
+  selectedChain,
 }) => {
   return (
     <div className="bg-[rgba(255,255,255,0.02)] p-4 rounded-xl border border-[rgba(255,255,255,0.06)]">
@@ -142,7 +144,7 @@ const SwapCard: React.FC<SwapCardProps> = ({
           </Select>
           {selectedToken && (
             <a
-              href={`https://etherscan.io/token/${selectedToken.address}`}
+              href={getTokenExplorerLink(selectedToken.address, selectedChain)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[rgba(255,255,255,0.64)] hover:text-[#FFFFFF] transition-colors"
@@ -278,6 +280,7 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
             selectedToken={sellToken}
             onTokenChange={setSellTokenAddress}
             tokens={tokens}
+            selectedChain={selectedChain}
           />
           
           <SwapCard
@@ -288,6 +291,7 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
             onTokenChange={setBuyTokenAddress}
             tokens={tokens}
             isAmountEditable={false}
+            selectedChain={selectedChain}
           />
         </div>
         
