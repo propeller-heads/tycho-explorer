@@ -91,7 +91,7 @@ export const ProtocolFilterPopover = ({
                 <label 
                   htmlFor={`protocol-${protocol}`}
                   className={cn(
-                    "text-xs leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer",
+                    "text-xs leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate cursor-pointer flex-1",
                     isSelected ? "font-semibold text-[rgba(255,244,224,1)]" : "font-medium text-[rgba(255,244,224,0.9)]"
                   )}
                 >
