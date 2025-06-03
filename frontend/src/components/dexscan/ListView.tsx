@@ -176,14 +176,20 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
         if (filterKey === 'selectedTokens') {
           const token = value as Token; // Use imported Token type
           if (isSelected) {
-            newFilters.selectedTokens = [...prev.selectedTokens, token];
+            // Check if token already exists before adding to prevent duplicates
+            if (!prev.selectedTokens.some(t => t.address === token.address)) {
+              newFilters.selectedTokens = [...prev.selectedTokens, token];
+            }
           } else {
             newFilters.selectedTokens = prev.selectedTokens.filter(t => t.address !== token.address);
           }
         } else if (filterKey === 'selectedProtocols' || filterKey === 'selectedPoolIds') {
           const item = value as string;
           if (isSelected) {
-            (newFilters[filterKey] as string[]).push(item);
+            // Check if item already exists before adding to prevent duplicates
+            if (!(prev[filterKey] as string[]).includes(item)) {
+              (newFilters[filterKey] as string[]).push(item);
+            }
           } else {
             newFilters[filterKey] = (prev[filterKey] as string[]).filter(i => i !== item);
           }
