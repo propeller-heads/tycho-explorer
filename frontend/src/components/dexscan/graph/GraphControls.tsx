@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 // Badge and X (lucide-react) might be used by new filter displays later, keep for now.
 // import { Badge } from '@/components/ui/badge';
-import { Search, X as LucideX } from 'lucide-react'; // Import X as LucideX
+import { Search } from 'lucide-react';
 import { protocolColors } from './protocolColors'; // Import protocolColors
 
 // Import icons
@@ -262,16 +262,6 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
                     })()
                   : "Select tokens"}
               </span>
-              {selectedTokens.length > 0 && (
-                <LucideX
-                  className="h-4 w-4 cursor-pointer opacity-70 hover:opacity-100"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent Popover from closing
-                    localStorage.removeItem(LS_SELECTED_TOKENS_KEY);
-                    onSelectTokens([]);
-                  }}
-                />
-              )}
               <img
                 src={IconDropdownArrow}
                 alt="select"

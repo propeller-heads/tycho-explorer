@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'; // Added useState, useMemo
-import { LucideX, LucideChevronDown, Search } from 'lucide-react'; // Added Search
+import { LucideChevronDown, Search } from 'lucide-react'; // Added Search
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -106,9 +106,6 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedTokens, 'token')}
-              {selectedTokens.length > 0 && (
-                <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedTokens.forEach(t => onTokenSelect(t, false)); }} />
-              )}
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
@@ -182,9 +179,6 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]">
               {renderSelectedItemsPreview(selectedProtocols, 'protocol')}
-              {selectedProtocols.length > 0 && (
-                <LucideX className="ml-1 h-3 w-3" onClick={(e) => { e.stopPropagation(); selectedProtocols.forEach(p => onProtocolSelect(p, false)); }} />
-              )}
               <LucideChevronDown className="ml-1 h-3 w-3" />
             </Button>
           </PopoverTrigger>
