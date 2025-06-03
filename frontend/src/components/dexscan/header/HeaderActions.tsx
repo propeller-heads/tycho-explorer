@@ -72,9 +72,7 @@ const HeaderActions: React.FC = () => {
               isConnected ? 'bg-green-400' : 'bg-red-400'
             }`} />
             
-            <span className="flex items-center gap-2 ml-2">
-              {/* On mobile, show only logo. On desktop, show chain name + logo */}
-              <span className="hidden sm:inline">{selectedChain}</span>
+            <span className="flex items-center ml-2">
               {chainLogo && (
                 <img src={chainLogo} alt={selectedChain} className="h-5 w-5" />
               )}
