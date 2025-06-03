@@ -132,10 +132,7 @@ export const TokenFilterPopover = ({
             return (
               <div 
                 key={token.address} 
-                className={cn(
-                  "flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer transition-all duration-200",
-                  isSelected && "border-l-2 border-l-[#FF3366] pl-[10px]" // Visual indicator for selected items
-                )}
+                className="flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer transition-all duration-200"
                 onClick={() => onTokenToggle(token, !isSelected)}
               >
                 <Checkbox
