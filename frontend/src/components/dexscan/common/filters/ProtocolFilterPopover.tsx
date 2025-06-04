@@ -26,7 +26,6 @@ export const ProtocolFilterPopover = ({
 
   const buttonLabel = useMemo(() => {
     if (selectedProtocols.length === 0) return buttonText;
-    if (selectedProtocols.length === 1) return selectedProtocols[0];
     return `${selectedProtocols.length} selected`;
   }, [selectedProtocols, buttonText]);
 

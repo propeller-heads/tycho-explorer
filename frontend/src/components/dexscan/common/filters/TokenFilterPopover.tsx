@@ -41,7 +41,6 @@ export const TokenFilterPopover = ({
 
   const buttonLabel = useMemo(() => {
     if (selectedTokens.length === 0) return buttonText;
-    if (selectedTokens.length === 1) return selectedTokens[0].symbol;
     return `${selectedTokens.length} selected`;
   }, [selectedTokens, buttonText]);
 
