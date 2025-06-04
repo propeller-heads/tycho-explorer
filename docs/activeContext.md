@@ -2,6 +2,54 @@
 
 ## Current Work Focus
 
+### 🚨 COMPLETED - Unified Filter System Implementation (2025-06-04)
+
+**PROBLEM**: Filter persistence wasn't working for protocols in List View due to state mutation. Additionally, Graph View developed single-select behavior after persistence was added.
+
+**ROOT CAUSES**:
+1. **List View Bug**: Using `.push()` to mutate arrays instead of creating new ones
+   - React couldn't detect state changes
+   - `useEffect` watching filters didn't trigger
+   - localStorage never updated
+
+2. **Graph View Bug**: Interface mismatch between components
+   - GraphControls expected array replacement: `onSelectTokens(addresses[])`
+   - GraphViewContent tried to reconcile with toggles
+   - Previously selected items got deselected
+
+**SOLUTION IMPLEMENTED**:
+1. **Created Unified Filter System**:
+   - `useFilterManager` hook - single source of truth
+   - `usePersistedFilters` hook - handles localStorage
+   - Consistent toggle interface: `onToggle(item, isSelected)`
+   - Built-in duplicate prevention
+   - Works with addresses internally (simpler state)
+
+2. **Updated Both Views**:
+   - List View: Removed complex `handleFilterChange`, uses direct toggles
+   - Graph View: Updated GraphControls to use toggle interface
+   - Both views now share identical filter behavior
+
+3. **Key Architecture Changes**:
+   ```typescript
+   // Old List View pattern (buggy)
+   (newFilters[filterKey] as string[]).push(item); // Mutation!
+   
+   // New unified pattern
+   toggleProtocol(protocol, isSelected); // Clean toggle
+   ```
+
+**BENEFITS**:
+- No more duplicate entries
+- Consistent behavior between views
+- ~100 lines of code removed
+- Single place to fix bugs
+- Per-chain filter persistence works correctly
+
+**CRITICAL**: The unified system must be maintained. Both views use `useFilterManager` for all filter operations.
+
+## Current Work Focus (Continued)
+
 ### 🚨 CRITICAL FIX - Simulation API Endpoint Configuration (2025-06-02)
 
 **PROBLEM**: Simulation API calls were failing with connection refused because frontend was calling `/api/simulate` on port 3000 (which doesn't exist).
@@ -627,3 +675,6 @@ Example:
 6. **vis-network Edge Updates**: Edge widening requires careful management of DataSet updates and proper tracking of pool update blocks
 7. **Debugging Complex Data Flows**: Color-coded console logging (🔷, 🔶, 🔸, etc.) helps trace data through multiple system layers
 8. **WebSocket Lifecycle Management**: Always remove event handlers before closing WebSocket connections to prevent lingering callbacks from processing data
+9. **React State Mutations**: Never mutate state arrays with `.push()` - React won't detect changes. Always create new arrays.
+10. **Interface Consistency**: When components communicate, ensure they use the same semantic interface (toggle vs replace)
+11. **Unified Patterns**: Consolidating similar features reduces bugs and maintenance burden significantly

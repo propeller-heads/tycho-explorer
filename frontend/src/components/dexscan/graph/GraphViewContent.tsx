@@ -4,6 +4,7 @@ import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
 import { usePoolData } from '../context/PoolDataContext'; // Corrected Import usePoolData
+import { useFilterManager } from '@/hooks/useFilterManager';
 
 // Import graph frame background asset
 import graphFrameBgArtboard from '@/assets/figma_generated/graph_frame_bg_artboard.png';
@@ -28,12 +29,17 @@ interface Pool {
 const PoolGraphView: React.FC = () => {
   // console.log(`DEBUG: GraphViewContent render`);
   
-  // State for filtering with multi-select
-  const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
-  const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
-
   // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
   const { pools: rawPoolsForControls, selectedChain } = usePoolData();
+
+  // Use unified filter management
+  const {
+    selectedTokenAddresses,
+    selectedProtocols,
+    toggleToken,
+    toggleProtocol,
+    resetFilters
+  } = useFilterManager({ viewType: 'graph', chain: selectedChain });
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {
@@ -79,7 +85,7 @@ const PoolGraphView: React.FC = () => {
     currentBlockNumber, // This now comes from useGraphData
     lastBlockTimestamp,   // This now comes from useGraphData
     estimatedBlockDuration // This now comes from useGraphData
-  } = useGraphData(selectedTokens, selectedProtocols);
+  } = useGraphData(selectedTokenAddresses, selectedProtocols);
   
   // Debug log
   React.useEffect(() => {
@@ -87,13 +93,8 @@ const PoolGraphView: React.FC = () => {
       console.log('🟪 GraphViewContent - currentBlockNumber:', currentBlockNumber);
     }
   }, [currentBlockNumber]);
-  
-  // Handle reset
-  const handleReset = () => {
-    setSelectedTokens([]);
-    setSelectedProtocols([]);
-    // setShowGraph will be updated by the useEffect above
-  };
+
+  // No need for array handlers - GraphControls now uses individual toggles
 
   return (
     <div className="h-full flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl relative">
@@ -105,17 +106,17 @@ const PoolGraphView: React.FC = () => {
       <GraphControls 
         tokenList={allAvailableTokenNodes} 
         protocols={uniqueProtocols}
-        selectedTokens={selectedTokens}
+        selectedTokens={selectedTokenAddresses}
         selectedProtocols={selectedProtocols}
-        onSelectTokens={setSelectedTokens}
-        onSelectProtocols={setSelectedProtocols}
-        onReset={handleReset}
+        onTokenToggle={toggleToken}
+        onProtocolToggle={toggleProtocol}
+        onReset={resetFilters}
         currentBlockNumber={currentBlockNumber} // Use block info from useGraphData
         lastBlockTimestamp={lastBlockTimestamp}   // Use block info from useGraphData
         estimatedBlockDuration={estimatedBlockDuration} // Use block info from useGraphData
       />
       
-      {selectedTokens.length > 0 && graphDisplayNodes.length > 0 ? ( // Conditional rendering based on selectedTokens and if nodes exist
+      {selectedTokenAddresses.length > 0 && graphDisplayNodes.length > 0 ? ( // Conditional rendering based on selectedTokens and if nodes exist
         <>
           <div className="flex-1" style={{ minHeight: "0" }}>
             <GraphView

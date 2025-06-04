@@ -48,21 +48,63 @@ Key patterns:
     *   Provides toggle buttons ("Pool List", "Market Graph") for switching between the two main views.
     *   Communicates view changes back to `DexScanContent` via the `setActiveTab` (passed as `onViewChange`) callback.
 
+## Filter System Architecture
+
+### Unified Filter Management
+
+The application uses a unified filter system for both List View and Graph View:
+
+1. **`useFilterManager` Hook** (`frontend/src/hooks/useFilterManager.ts`):
+    * Single source of truth for filter state management across views
+    * Handles persistence automatically via `usePersistedFilters`
+    * Built-in duplicate prevention
+    * Works with token addresses internally for simplicity
+    * Provides consistent interface:
+        ```typescript
+        {
+          selectedTokenAddresses: string[];
+          selectedProtocols: string[];
+          toggleToken: (address: string, isSelected: boolean) => void;
+          toggleProtocol: (protocol: string, isSelected: boolean) => void;
+          resetFilters: () => void;
+        }
+        ```
+
+2. **`usePersistedFilters` Hook** (`frontend/src/hooks/usePersistedFilters.ts`):
+    * Handles localStorage read/write operations
+    * Per-chain persistence with keys like `tycho_listView_selectedProtocols_Ethereum`
+    * Debounced saves (500ms) to prevent excessive writes
+    * Loads filters on mount or chain change
+
+3. **Filter Components** (`frontend/src/components/dexscan/common/filters/`):
+    * `TokenFilterPopover`: Token selection UI with search and infinite scroll
+    * `ProtocolFilterPopover`: Protocol selection UI with alphabetical sorting
+    * Both use consistent `onToggle(item, isSelected)` interface
+
 4.  **`ListView.tsx`**:
     *   Displays pools in a sortable and filterable table with infinite scroll.
-    *   Relies on `TokenIcon.tsx` and `ProtocolLogo.tsx` to initiate their own image fetches (no proactive pre-fetching within `ListView.tsx` itself).
+    *   Uses `useFilterManager` for filter state management:
+        * Stores addresses internally, converts to Token objects for display
+        * Direct toggle handlers: `handleTokenToggle`, `handleProtocolToggle`
+        * No complex generic `handleFilterChange` - simplified architecture
     *   Manages the `displayedPoolsCount` and `isLoadingMore` states for infinite scrolling.
     *   Includes:
-        *   `PoolListFilterBar`: Provides filtering capabilities with infinite scroll in popovers.
+        *   `PoolListFilterBar`: Provides filtering UI, receives Token objects for display
         *   `PoolTable`: The main table for displaying pool data, now supporting infinite scroll.
     *   When a pool is selected, it displays a `PoolDetailSidebar`.
-    *   Handles sorting and filtering.
-    *   **Important**: Passes full pool data to PoolListFilterBar (not just IDs) for enhanced filtering.
+    *   Handles sorting and filtering with memoized operations.
 
 5.  **`GraphViewContent.tsx` (within `graph/`)**:
     *   Responsible for rendering the market graph visualization.
-    *   Image fetching for graph nodes will also use the robust `src/lib/coingecko.ts` module.
+    *   Uses `useFilterManager` for filter state management:
+        * Works directly with token addresses (no object conversion needed)
+        * Passes `toggleToken` and `toggleProtocol` directly to GraphControls
+        * Consistent behavior with ListView
+    *   Image fetching for graph nodes uses the robust `src/lib/coingecko.ts` module.
     *   **Mobile Optimized**: Includes touch interactions, auto-centering, and mobile physics
+    *   **GraphControls Integration**:
+        * GraphControls now uses individual toggle interface (not array replacement)
+        * Prevents single-select bug through proper interface alignment
 
 6.  **`SwapSimulator.tsx`**:
     *   Provides an interface to simulate trades on a selected pool.
@@ -121,9 +163,11 @@ Key patterns:
 ## Key System Patterns
 
 *   **Context API for Global State**: `PoolDataContext` for shared pool data.
+*   **Unified Filter State**: Single `useFilterManager` hook for both views.
 *   **Component Composition**: Standard React practice.
 *   **Props for Configuration and Callbacks**.
 *   **Conditional Rendering**.
+*   **Filter Persistence**: Per-chain localStorage with automatic save/load.
 *   **Infinite Scroll**: 
     *   In `ListView.tsx` and `PoolTable.tsx` for main pool list
     *   **CRITICAL**: BOTH Token AND Pool ID filter popovers in `PoolListFilterBar.tsx` MUST have infinite scroll

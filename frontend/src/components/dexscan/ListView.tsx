@@ -8,13 +8,9 @@ import PoolTable from './pools/PoolTable';
 import PoolListFilterBar from './pools/PoolListFilterBar';
 import PoolDetailSidebar from './PoolDetailSidebar'; // This component will be created later
 import { usePoolData } from './context/PoolDataContext';
+import { useFilterManager } from '@/hooks/useFilterManager';
 
 // TokenForFilter interface is removed. Using 'Token' from './types' directly.
-
-interface ListViewFilters { // No export
-  selectedTokens: Token[]; // Use imported Token type
-  selectedProtocols: string[];
-}
 
 // Updated COLUMNS definition based on plan
 const COLUMNS = [
@@ -55,12 +51,17 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     column: 'protocol_system', // Default sort by a sortable column
     direction: 'asc'
   });
-  const [filters, setFilters] = useState<ListViewFilters>({
-    selectedTokens: [],
-    selectedProtocols: []
-  });
   const [displayedPoolsCount, setDisplayedPoolsCount] = useState(INITIAL_DISPLAY_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false); // New state for loading indicator
+
+  // Use unified filter management
+  const {
+    selectedTokenAddresses,
+    selectedProtocols,
+    toggleToken,
+    toggleProtocol,
+    resetFilters: resetFilterState
+  } = useFilterManager({ viewType: 'list', chain: selectedChain });
 
   // Prepare data for filter popovers
   const allTokensForFilter = useMemo((): Token[] => { // Changed to Token[]
@@ -117,17 +118,25 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     });
   }, [sortConfig]);
 
+  // Convert selected token addresses to Token objects for display
+  const selectedTokenObjects = useMemo(() => 
+    selectedTokenAddresses
+      .map(addr => allTokensForFilter.find(t => t.address === addr))
+      .filter((t): t is Token => t !== undefined),
+    [selectedTokenAddresses, allTokensForFilter]
+  );
+
   const filterPools = useCallback((poolsToFilter: Pool[]) => {
     return poolsToFilter.filter(pool => {
-      const tokenMatch = filters.selectedTokens.length === 0 ||
-        filters.selectedTokens.some(st => pool.tokens.some(pt => pt.address === st.address));
+      const tokenMatch = selectedTokenAddresses.length === 0 ||
+        selectedTokenAddresses.some(addr => pool.tokens.some(pt => pt.address === addr));
       
-      const protocolMatch = filters.selectedProtocols.length === 0 ||
-        filters.selectedProtocols.includes(pool.protocol_system);
+      const protocolMatch = selectedProtocols.length === 0 ||
+        selectedProtocols.includes(pool.protocol_system);
       
       return tokenMatch && protocolMatch;
     });
-  }, [filters]);
+  }, [selectedTokenAddresses, selectedProtocols]);
 
   const processedPools = useMemo(() => {
     const filtered = filterPools(pools);
@@ -169,44 +178,19 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
     setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT); // Reset display count on sort
   }, []);
 
-  const handleFilterChange = useCallback(
-    (filterKey: keyof ListViewFilters, value: any, isSelected?: boolean) => {
-      setFilters(prev => {
-        const newFilters = { ...prev };
-        if (filterKey === 'selectedTokens') {
-          const token = value as Token; // Use imported Token type
-          if (isSelected) {
-            // Check if token already exists before adding to prevent duplicates
-            if (!prev.selectedTokens.some(t => t.address === token.address)) {
-              newFilters.selectedTokens = [...prev.selectedTokens, token];
-            }
-          } else {
-            newFilters.selectedTokens = prev.selectedTokens.filter(t => t.address !== token.address);
-          }
-        } else if (filterKey === 'selectedProtocols' || filterKey === 'selectedPoolIds') {
-          const item = value as string;
-          if (isSelected) {
-            // Check if item already exists before adding to prevent duplicates
-            if (!(prev[filterKey] as string[]).includes(item)) {
-              (newFilters[filterKey] as string[]).push(item);
-            }
-          } else {
-            newFilters[filterKey] = (prev[filterKey] as string[]).filter(i => i !== item);
-          }
-        }
-        return newFilters;
-      });
-      setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT); // Reset display count on filter change
-    }, []);
+  // Handlers that work with the unified filter manager
+  const handleTokenToggle = useCallback((token: Token, isSelected: boolean) => {
+    toggleToken(token.address, isSelected);
+  }, [toggleToken]);
+
+  const handleProtocolToggle = useCallback((protocol: string, isSelected: boolean) => {
+    toggleProtocol(protocol, isSelected);
+  }, [toggleProtocol]);
   
   const handleResetFilters = useCallback(() => {
-    setFilters({
-      selectedTokens: [],
-      selectedProtocols: []
-    });
+    resetFilterState();
     setDisplayedPoolsCount(INITIAL_DISPLAY_COUNT);
-  }, []);
-
+  }, [resetFilterState]);
 
   useEffect(() => {
     if (highlightedPoolId) {
@@ -252,11 +236,11 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
         </div>
         <div className="relative z-10 flex flex-col h-full"> {/* Content wrapper */}
         <PoolListFilterBar
-          selectedTokens={filters.selectedTokens}
-          selectedProtocols={filters.selectedProtocols}
+          selectedTokens={selectedTokenObjects}
+          selectedProtocols={selectedProtocols}
           // Pass specific handlers for type safety
-          onTokenSelect={(token, isSelected) => handleFilterChange('selectedTokens', token, isSelected)}
-          onProtocolSelect={(protocol, isSelected) => handleFilterChange('selectedProtocols', protocol, isSelected)}
+          onTokenSelect={handleTokenToggle}
+          onProtocolSelect={handleProtocolToggle}
           onResetFilters={handleResetFilters}
           allTokensForFilter={allTokensForFilter}
           allProtocolsForFilter={allProtocolsForFilter}

@@ -5,17 +5,15 @@ import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
 import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
 import { Token } from '../types';
 
-// Local storage keys - keep
-const LS_SELECTED_TOKENS_KEY = 'graphView_selectedTokens';
-const LS_SELECTED_PROTOCOLS_KEY = 'graphView_selectedProtocols';
+// Removed local storage keys - now handled by useFilterManager
 
 interface GraphControlsProps {
   tokenList: Array<{ id: string, label: string }>;
   protocols: string[];
   selectedTokens: string[];
   selectedProtocols: string[];
-  onSelectTokens: (tokenIds: string[]) => void;
-  onSelectProtocols: (protocols: string[]) => void;
+  onTokenToggle: (tokenId: string, isSelected: boolean) => void;
+  onProtocolToggle: (protocol: string, isSelected: boolean) => void;
   // onRender: () => void; // Will be removed when auto-render is fully implemented
   onReset: () => void;
   currentBlockNumber: number;
@@ -28,15 +26,15 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   protocols,
   selectedTokens,
   selectedProtocols,
-  onSelectTokens,
-  onSelectProtocols,
+  onTokenToggle,
+  onProtocolToggle,
   // onRender, // Removed as per plan
   onReset,
   currentBlockNumber,
   lastBlockTimestamp,
   estimatedBlockDuration,
 }) => {
-  const [hasLoadedFromStorage, setHasLoadedFromStorage] = useState(false);
+  // Removed hasLoadedFromStorage - now handled by useFilterManager
   
   // Convert between Token type and graph's token structure
   const tokensAsTokenType = useMemo(() => 
@@ -44,6 +42,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
       address: t.id,
       symbol: t.label,
       name: t.label, // Graph view doesn't have separate name
+      decimals: 18, // Default decimals for graph view tokens
     })), [tokenList]
   );
 
@@ -53,51 +52,24 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
       return {
         address: id,
         symbol: token?.label || '',
-        name: token?.label || ''
+        name: token?.label || '',
+        decimals: 18, // Default decimals
       };
     }), [selectedTokens, tokenList]
   );
 
-  // localStorage effect - keep
-  useEffect(() => {
-    if (tokenList.length === 0 || protocols.length === 0 || hasLoadedFromStorage) return;
-    try {
-      const storedTokens = localStorage.getItem(LS_SELECTED_TOKENS_KEY);
-      const storedProtocols = localStorage.getItem(LS_SELECTED_PROTOCOLS_KEY);
-      let loaded = false;
-      if (storedTokens) {
-        const parsed = JSON.parse(storedTokens).filter((id: string) => tokenList.some(token => token.id === id));
-        if (parsed.length > 0) { onSelectTokens(parsed); loaded = true; }
-      }
-      if (storedProtocols) {
-        const parsed = JSON.parse(storedProtocols).filter((p: string) => protocols.includes(p));
-        if (parsed.length > 0) { onSelectProtocols(parsed); loaded = true; }
-      }
-      if (loaded) setHasLoadedFromStorage(true);
-    } catch (e) { console.error('Failed to load selections from localStorage', e); setHasLoadedFromStorage(true); }
-  }, [tokenList, protocols, hasLoadedFromStorage, onSelectTokens, onSelectProtocols]);
+  // Removed localStorage effect - now handled by useFilterManager
 
   const handleTokenToggle = (token: Token, isSelected: boolean) => {
-    const newSelected = isSelected 
-      ? [...selectedTokens, token.address]
-      : selectedTokens.filter(id => id !== token.address);
-    localStorage.setItem(LS_SELECTED_TOKENS_KEY, JSON.stringify(newSelected));
-    onSelectTokens(newSelected);
+    onTokenToggle(token.address, isSelected);
   };
 
   const handleProtocolToggle = (protocol: string, isSelected: boolean) => {
-    const newSelected = isSelected
-      ? [...selectedProtocols, protocol]
-      : selectedProtocols.filter(p => p !== protocol);
-    localStorage.setItem(LS_SELECTED_PROTOCOLS_KEY, JSON.stringify(newSelected));
-    onSelectProtocols(newSelected);
+    onProtocolToggle(protocol, isSelected);
   };
 
   const handleFullReset = () => {
-    localStorage.removeItem(LS_SELECTED_TOKENS_KEY);
-    localStorage.removeItem(LS_SELECTED_PROTOCOLS_KEY);
-    setHasLoadedFromStorage(false); // Allow reloading defaults if component re-mounts or lists change
-    onReset(); // This prop will call setSelectedTokens([]), setSelectedProtocols([]), setRenderCounter(0) in parent
+    onReset(); // This is now handled by useFilterManager
   };
 
   return (
