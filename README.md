@@ -37,15 +37,6 @@ make up DEV=1
 make up DEV=1 SERVICE=frontend-dev
 ```
 
-## ⚠️ Known Issues
-
-### Frontend Access on macOS
-On macOS, `localhost:5173` may not work due to IPv6/IPv4 issues with Vite. Use `http://127.0.0.1:5173` instead.
-
-### Environment Configuration
-- Development uses .env.dev, production uses .env
-- All configuration is handled via environment variables and CLI arguments
-
 ## Project Structure
 
 ```
@@ -69,7 +60,7 @@ tycho-explorer/
 
 - **Frontend (React)**: Interactive pool explorer and swap simulator
   - Production: http://localhost:8080
-  - Development: http://127.0.0.1:5173 (use IP instead of localhost on macOS)
+  - Development: http://localhost:5173 (use 127.0.0.1 instead of localhost on macOS if `localhost` doesn't work)
 
 ## Development
 
