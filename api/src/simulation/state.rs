@@ -77,8 +77,10 @@ impl SimulationState {
                 spot_prices.insert(addr.clone(), spot_price);
             }
         }
-
-        let update_msg = ClientUpdate::from(update);
+        
+        // Create the update message with the calculated spot prices
+        let mut update_msg = ClientUpdate::from(update);
+        update_msg.spot_prices = spot_prices;
 
         // Broadcast the update to all subscribers
         let _ = self.updates.send(update_msg);
