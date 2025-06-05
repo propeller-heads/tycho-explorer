@@ -117,8 +117,8 @@ pub fn start_simulation_processor(
             info!("Successfully loaded {} tokens", all_tokens.len());
 
             let tvl_filter =
-                ComponentFilter::with_tvl_range(tvl_threshold - tvl_buffer, tvl_threshold);
-            info!("TVL filter range: {} - {}", tvl_threshold - tvl_buffer, tvl_threshold);
+                ComponentFilter::with_tvl_range(0.0, tvl_threshold);
+            info!("TVL filter: remove: {}, add: {}", 0.0, tvl_threshold);
             
             debug!("Building protocol stream...");
             let protocol_stream_builder = register_exchanges(
