@@ -47,8 +47,9 @@ export const getExternalLink = (pool: { protocol_system: string; id: string }, c
     const pancakeChain = chainLower === 'ethereum' ? 'eth' : chainLower;
     return `https://pancakeswap.finance/info/${pancakeChain}/pairs/${poolId}`;
   }
-  // Return null if no specific link is configured for the protocol.
-  return null;
+  // Fallback to block explorer for unknown protocols
+  // Use getTokenExplorerLink but replace /token/ with /address/ for contract addresses
+  return getTokenExplorerLink(poolId, chain).replace('/token/', '/address/');
 };
 
 // Fallback string for invalid or missing timestamps

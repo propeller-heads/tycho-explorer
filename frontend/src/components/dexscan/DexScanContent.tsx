@@ -28,35 +28,22 @@ const DexScanContentMain = () => {
 
   // Update the URL when the tab changes
   const handleTabChange = (tab: 'graph' | 'pools') => {
-    console.log("Changing tab to:", tab, new Date().toISOString());
-    
     // Don't update state if we're already on this tab
     if (activeTab === tab) {
-      console.log("Already on tab:", tab, "- skipping state update");
       return;
     }
     
     setActiveTab(tab);
-    // DOM visibility is now handled only in the useEffect to avoid duplicate work
+    
+    // Update URL with new tab parameter
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('tab', tab);
+    navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
   };
 
-  useEffect(() => {
-    console.log("URL tab sync effect running", tabParam, activeTab, new Date().toISOString());
-
-    // Only update the tab state if the URL parameter doesn't match the current state
-    if (tabParam === 'graph' && activeTab !== 'graph') {
-      console.log("URL changing tab to graph");
-      setActiveTab('graph');
-    } else if (tabParam === 'pools' && activeTab !== 'pools') {
-      console.log("URL changing tab to pools");
-      setActiveTab('pools');
-    }
-
-  }, [tabParam, searchParams]);
 
   // Initialize view visibility based on active tab
   useEffect(() => {
-    console.log("View visibility effect running for tab:", activeTab, new Date().toISOString());
     if (graphContainerRef.current && poolListContainerRef.current) {
       if (activeTab === 'graph') {
         poolListContainerRef.current.style.display = 'none';
