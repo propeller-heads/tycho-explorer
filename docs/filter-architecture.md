@@ -48,15 +48,46 @@ Handles localStorage operations:
 
 ### 2. UI Components
 
-#### Filter Popovers (`/frontend/src/components/dexscan/common/filters/`)
-- `TokenFilterPopover`: Token selection with search and infinite scroll
-- `ProtocolFilterPopover`: Protocol selection with alphabetical sorting
+#### Filter Component Architecture (`/frontend/src/components/dexscan/common/filters/`)
+
+**Core Components:**
+- `TokenFilterPopover`: Token selection with search and virtual scrolling
+- `ProtocolFilterPopover`: Protocol selection with optional color indicators
+- `FilterPopover`: Generic popover wrapper for consistent behavior
+- `FilterList`: Generic list component with virtual scrolling support
+- `FilterSearchInput`: Reusable search input with focus states
+
+**Shared Infrastructure:**
+- `filterStyles.ts`: Centralized style constants (no magic strings)
+- `filterItemRenderer.tsx`: Render helpers for consistent UI
+- `hooks/`: Custom hooks for state management
+  - `useFilterPopover`: Popover state and search management
+  - `useFilterSearch`: Generic search filtering logic
+  - `useVirtualList`: Virtual scrolling for performance
 
 **Interface Pattern:**
 ```typescript
+// Component interfaces
 onTokenToggle: (token: Token, isSelected: boolean) => void;
 onProtocolToggle: (protocol: string, isSelected: boolean) => void;
+
+// Generic components use type parameters
+interface FilterListProps<T> {
+  items: T[];
+  selectedItems: T[];
+  onItemToggle: (item: T, isSelected: boolean) => void;
+  getItemKey: (item: T) => string;
+  getItemLabel: (item: T) => string;
+  // ... other props
+}
 ```
+
+**Key Features:**
+- Token search now searches **only by symbol** (not name or address)
+- ~40% code reduction through component composition
+- Fully type-safe generic components
+- Virtual scrolling for large lists
+- Consistent styling through extracted constants
 
 ### 3. View Integration
 
@@ -198,5 +229,57 @@ const handleTokenToggle = (token, isSelected) => toggleToken(token.address, isSe
 - [ ] No duplicates when rapidly clicking
 - [ ] Both views behave identically
 - [ ] Reset clears filters and localStorage
-- [ ] Token search works correctly
+- [ ] Token search works by symbol only
 - [ ] Selected items appear at top of list
+- [ ] Virtual scrolling loads more items smoothly
+- [ ] Entire dropdown rows are clickable
+
+## Recent Refactoring (2024)
+
+### Overview
+The filter components underwent a major refactoring to improve maintainability and reduce code duplication.
+
+### Key Changes
+
+1. **Extracted Style Constants**
+   - All hardcoded styles moved to `filterStyles.ts`
+   - Eliminated magic strings throughout components
+   - Consistent naming with semantic style names
+
+2. **Created Generic Components**
+   - `FilterPopover`: Wrapper for consistent popover behavior
+   - `FilterList`: Generic list with virtual scrolling
+   - Reduced code duplication by ~40%
+
+3. **Extracted State Logic**
+   - Custom hooks for common patterns
+   - Separated concerns (UI vs state management)
+   - Improved testability
+
+4. **Fixed UI Issues**
+   - Entire dropdown rows now clickable (removed event conflicts)
+   - Removed redundant token name display
+   - Token search now only searches by symbol
+
+### File Structure After Refactoring
+```
+filters/
+├── TokenFilterPopover.tsx      # Simplified from 161 to 89 lines
+├── ProtocolFilterPopover.tsx   # Simplified from 87 to 66 lines
+├── FilterPopover.tsx           # Generic popover wrapper
+├── FilterList.tsx              # Generic list component
+├── FilterSearchInput.tsx       # Search input component
+├── filterItemRenderer.tsx      # Render helpers
+├── filterStyles.ts             # All style constants
+└── hooks/                      # Custom hooks
+    ├── useFilterPopover.ts
+    ├── useFilterSearch.ts
+    └── useVirtualList.ts
+```
+
+### Benefits
+- **Maintainability**: Changes to styles or behavior in one place
+- **Reusability**: Generic components for future filters
+- **Performance**: Better optimization with focused hooks
+- **Type Safety**: Full TypeScript support with generics
+- **Code Quality**: Follows "no magic strings" principle

@@ -22,10 +22,22 @@
 ### UI Components Implemented
 - Main application layout with header
 - Pool table with infinite scroll
-- Filter bar with multi-select dropdowns
+- Filter bar with multi-select dropdowns (recently refactored)
 - Pool detail sidebar overlay
 - Block progress indicator
 - Token and protocol icons with fallbacks
+- Generic filter components with virtual scrolling
+
+### Recent Accomplishments (2025-06-11)
+
+#### Filter Component Refactoring
+- **Extracted all style constants** to `filterStyles.ts` eliminating magic strings
+- **Created generic components**: FilterPopover wrapper and FilterList with virtual scrolling
+- **Reduced code by ~40%**: TokenFilterPopover from 161 to 89 lines, ProtocolFilterPopover from 87 to 66 lines
+- **Extracted state management** into custom hooks (useFilterPopover, useFilterSearch, useVirtualList)
+- **Fixed UI issues**: Made entire dropdown rows clickable, removed redundant token names
+- **Simplified token search**: Now only searches by symbol (not name or address)
+- **Improved architecture**: Clear separation of concerns with render helpers and shared infrastructure
 
 ### Recent Accomplishments (2025-05-29)
 

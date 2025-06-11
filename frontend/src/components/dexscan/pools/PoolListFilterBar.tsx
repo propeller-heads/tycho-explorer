@@ -4,6 +4,7 @@ import BlockProgressIcon from '@/components/dexscan/graph/BlockProgressIcon'; //
 import { Token } from '../types'; // Import Token type
 import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
 import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
+import { FILTER_STYLES } from '../common/filters/filterStyles';
 
 interface PoolListFilterBarProps {
   // Filter state
@@ -40,8 +41,8 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
 }) => {
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-3">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className={FILTER_STYLES.filterBar}>
+      <div className={FILTER_STYLES.filterBarButtons}>
         <TokenFilterPopover
           tokens={allTokensForFilter}
           selectedTokens={selectedTokens}
@@ -55,13 +56,13 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         />
 
         {(selectedTokens.length > 0 || selectedProtocols.length > 0) && (
-          <Button variant="link" size="sm" className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2" onClick={onResetFilters}>
+          <Button variant="link" size="sm" className={FILTER_STYLES.resetButton} onClick={onResetFilters}>
             Reset all
           </Button>
         )}
       </div>
 
-      <div className="flex items-center gap-2 ml-auto sm:ml-0">
+      <div className={FILTER_STYLES.filterBarRight}>
         {startTime && duration && ( // Check for renamed props
           <BlockProgressIcon
             startTime={startTime} // Pass renamed prop
@@ -71,7 +72,7 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           />
         )}
         {blockNumber !== null && (
-          <span className="text-sm font-medium text-[rgba(255,244,224,0.8)]">{blockNumber}</span>
+          <span className={FILTER_STYLES.blockNumberText}>{blockNumber}</span>
         )}
       </div>
     </div>
