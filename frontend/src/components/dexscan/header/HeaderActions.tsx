@@ -27,7 +27,6 @@ const HeaderActions: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [chainSelectorOpen, setChainSelectorOpen] = React.useState(false);
   const {
-    isConnected,
     selectedChain,
     availableChains,
     connectToWebSocket
@@ -59,7 +58,7 @@ const HeaderActions: React.FC = () => {
   return (
     // Always flex-row with proper spacing
     <div className="flex flex-row items-center gap-2 sm:gap-4">
-      {/* Chain selector with connection status */}
+      {/* Chain selector */}
       <Popover open={chainSelectorOpen} onOpenChange={setChainSelectorOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -67,12 +66,7 @@ const HeaderActions: React.FC = () => {
             size="sm"
             className="relative h-9 w-full sm:w-auto pl-3 pr-8 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
           >
-            {/* Connection status dot - smaller on mobile */}
-            <div className={`absolute left-2 w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-              isConnected ? 'bg-green-400' : 'bg-red-400'
-            }`} />
-            
-            <span className="flex items-center ml-2">
+            <span className="flex items-center">
               {chainLogo && (
                 <img src={chainLogo} alt={selectedChain} className="h-5 w-5" />
               )}
