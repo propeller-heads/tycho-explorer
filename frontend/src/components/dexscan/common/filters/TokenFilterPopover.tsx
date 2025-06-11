@@ -20,7 +20,7 @@ export const TokenFilterPopover = ({
   tokens, 
   selectedTokens, 
   onTokenToggle,
-  buttonText = "Select Tokens..."
+  buttonText = "Token"
 }: TokenFilterPopoverProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');

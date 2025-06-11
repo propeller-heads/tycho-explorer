@@ -19,7 +19,7 @@ export const ProtocolFilterPopover = ({
   protocols, 
   selectedProtocols, 
   onProtocolToggle,
-  buttonText = "Select Protocol...",
+  buttonText = "Protocol",
   showColorDots = false
 }: ProtocolFilterPopoverProps) => {
   const [open, setOpen] = useState(false);

@@ -82,14 +82,14 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           tokens={tokensAsTokenType}
           selectedTokens={selectedTokensAsTokenType}
           onTokenToggle={handleTokenToggle}
-          buttonText="Select tokens"
+          buttonText="Token"
         />
 
         <ProtocolFilterPopover
           protocols={protocols}
           selectedProtocols={selectedProtocols}
           onProtocolToggle={handleProtocolToggle}
-          buttonText="Select protocols"
+          buttonText="Protocol"
           showColorDots={true}
         />
 
