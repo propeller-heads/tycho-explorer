@@ -57,9 +57,8 @@ const DexScanContentMain = () => {
 
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center relative mb-6 md:mb-0">
-        {/* Pass activeTab and handleTabChange to DexScanHeader */}
         <DexScanHeader currentView={activeTab} onViewChange={handleTabChange} />
       </div>
 

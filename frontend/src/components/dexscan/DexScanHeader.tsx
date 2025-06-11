@@ -21,7 +21,7 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
   // Return the JSX for the component
   return (
     // Header element with responsive layout - stacks on mobile, row on desktop
-    <header className="flex flex-col sm:flex-row sm:h-[72px] sm:items-center sm:justify-between bg-transparent px-4 sm:px-6 py-3 sm:py-0 w-full gap-3 sm:gap-0">
+    <header className="flex flex-row items-center justify-between bg-transparent px-6 pt-2 pb-0 w-full">
       {/* Mobile-only: Row 1 with branding and actions */}
       <div className="sm:hidden flex items-center justify-between w-full">
         <HeaderBranding />
