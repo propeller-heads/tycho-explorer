@@ -1,6 +1,6 @@
 // Module: HeaderActions
 // Description: Defines the actions in the application header,
-// including a documentation link and a chain selector with connection indicator.
+// including a documentation link and a chain selector.
 
 // Import React and necessary hooks
 import React, { useEffect } from 'react';
@@ -20,7 +20,7 @@ import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
 // --- Constants for Strings and URLs ---
 const DOCS_URL = "https://docs.propellerheads.xyz/";
 const ALT_TEXT_EXTERNAL_LINK = "External link";
-const TEXT_DOCS = "Docs";
+const TEXT_DOCS = "Docs (Run locally)";
 
 // --- HeaderActions Component ---
 const HeaderActions: React.FC = () => {
@@ -58,6 +58,17 @@ const HeaderActions: React.FC = () => {
   return (
     // Always flex-row with proper spacing
     <div className="flex flex-row items-center gap-2 sm:gap-4">
+      {/* Docs link - simple text link */}
+      <a
+        href={DOCS_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1.5 text-[#FFF4E1] text-sm font-medium hover:opacity-80 transition-opacity"
+      >
+        <span>{TEXT_DOCS}</span>
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+      
       {/* Chain selector */}
       <Popover open={chainSelectorOpen} onOpenChange={setChainSelectorOpen}>
         <PopoverTrigger asChild>
@@ -106,24 +117,6 @@ const HeaderActions: React.FC = () => {
           </div>
         </PopoverContent>
       </Popover>
-      
-      {/* Docs link - now more explicit with button styling */}
-      <Button
-        variant="ghost"
-        size="sm"
-        asChild
-        className="h-9 px-3 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
-      >
-        <a
-          href={DOCS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5"
-        >
-          <span>{TEXT_DOCS}</span>
-          <ExternalLink className="h-3.5 w-3.5" />
-        </a>
-      </Button>
     </div>
   );
 };
