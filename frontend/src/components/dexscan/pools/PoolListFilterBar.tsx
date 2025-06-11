@@ -54,9 +54,11 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           onProtocolToggle={onProtocolSelect}
         />
 
-        <Button variant="link" size="sm" className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2" onClick={onResetFilters}>
-          Reset filters
-        </Button>
+        {(selectedTokens.length > 0 || selectedProtocols.length > 0) && (
+          <Button variant="link" size="sm" className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2" onClick={onResetFilters}>
+            Reset all
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 ml-auto sm:ml-0">

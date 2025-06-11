@@ -93,14 +93,16 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           showColorDots={true}
         />
 
-        <Button
-          variant="link"
-          size="sm"
-          className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)]"
-          onClick={handleFullReset}
-        >
-          Reset filters
-        </Button>
+        {(selectedTokens.length > 0 || selectedProtocols.length > 0) && (
+          <Button
+            variant="link"
+            size="sm"
+            className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)]"
+            onClick={handleFullReset}
+          >
+            Reset all
+          </Button>
+        )}
       </div>
 
       {/* Right section for reset and block number - ensure it doesn't shrink excessively and aligns well in column mode */}
