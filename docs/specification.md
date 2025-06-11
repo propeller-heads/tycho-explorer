@@ -40,8 +40,9 @@ Make on-chain liquidity easy to observe and explore, directly, through a local, 
 
 ### Essential Requirements
 
-- **Pool list view**: Columns: Token1, Token2, TVL (in USDC), Protocol, Last Tx (last update) block number, Last update time
-	- **Filter option**: Let the user sort and filter token, protocol and TVL.
+- **Pool list view**: Columns: Tokens, Pool ID, Fee rate, Spot price, Protocol, Last update
+	- **Filter option**: Let the user sort and filter by tokens, protocols and pool IDs.
+	- **Default sort**: Most recent updates first (by Last update descending)
 
 -  **Graph View**: Show pools (of current filter view) in graph view (nodes are tokens, edges are pools).
 

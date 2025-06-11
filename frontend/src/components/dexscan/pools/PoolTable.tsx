@@ -114,8 +114,8 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableHead 
                     key={column.id}
                     className={cn(
-                      "px-4 py-3.5 text-[13px] font-medium text-gray-400",
-                      isSortable && "cursor-pointer hover:text-white",
+                      "px-4 py-3.5 text-[13px] font-medium text-[rgba(255,244,224,0.64)] text-center",
+                      isSortable && "cursor-pointer hover:text-[rgba(255,244,224,0.8)]",
                       getColumnWidthClass(column.id)
                     )}
                     onClick={() => isSortable && onSort(column.id)}
@@ -128,7 +128,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                             <ChevronUp className="h-3 w-3 text-white" /> : 
                             <ChevronDown className="h-3 w-3 text-white" />
                         ) : (
-                          <ChevronsUpDown className="h-3 w-3 text-gray-400" />
+                          <ChevronsUpDown className="h-3 w-3 text-[rgba(255,244,224,0.64)]" />
                         )
                       )}
                     </div>
@@ -149,11 +149,11 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   {column.id === 'tokens' && (
                     <div className="flex flex-col">
                       <span>Summary</span>
-                      <span className="text-xs font-normal text-[rgba(255,244,224,1)]">{summaryData.totalUniqueTokens} Unique Tokens</span>
+                      <span className="text-xs font-normal text-[rgba(255,244,224,1)]">{summaryData.totalUniqueTokens} unique tokens</span>
                     </div>
                   )}
-                  {column.id === 'id' && <span>{summaryData.totalPools} Pools</span>}
-                  {column.id === 'protocol_system' && <span>{summaryData.totalProtocols} Protocols</span>}
+                  {column.id === 'id' && <span>{summaryData.totalPools} pools</span>}
+                  {column.id === 'protocol_system' && <span>{summaryData.totalProtocols} protocols</span>}
                   {/* Other summary cells can be empty or show '-' */}
                   {['static_attributes.fee', 'spotPrice', 'updatedAt'].includes(column.id) && <span>-</span>}
                 </TableCell>

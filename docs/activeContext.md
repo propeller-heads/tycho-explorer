@@ -2,6 +2,20 @@
 
 ## Current Work Focus
 
+### Pool Table UI Updates (2025-06-11)
+
+**COMPLETED**: Updated pool table to match latest Figma specifications.
+
+**CHANGES IMPLEMENTED**:
+1. **Column Header Colors**: Updated from gray to `rgba(255, 244, 224, 0.64)` for consistency with warm cream theme
+2. **Column Order**: Reordered to: Tokens, Pool ID, Fee rate, Spot price (lowercase), Protocol, Last update
+3. **Default Sorting**: Changed from 'protocol_system' ascending to 'updatedAt' descending (most recent first)
+
+**RATIONALE**: 
+- Ensures visual consistency with the TC Design system
+- Shows most recently updated pools first for better user experience
+- Lowercase "Spot price" matches design specifications
+
 ### 🚨 COMPLETED - Unified Filter System Implementation (2025-06-04)
 
 **PROBLEM**: Filter persistence wasn't working for protocols in List View due to state mutation. Additionally, Graph View developed single-select behavior after persistence was added.

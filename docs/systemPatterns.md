@@ -174,6 +174,12 @@ The application uses a unified filter system for both List View and Graph View:
     *   Shows 100 items initially, loads 100 more when scrolling near bottom
     *   Resets to 100 when search term changes
     *   Uses `onViewportScroll` event to detect when user is near bottom (< 50px)
+*   **Pool Table Structure**:
+    *   Column order: Tokens, Pool ID, Fee rate, Spot price, Protocol, Last update
+    *   Column header colors: `rgba(255, 244, 224, 0.64)` for consistency
+    *   Default sort: 'updatedAt' descending (most recent updates first)
+    *   Sortable columns: Protocol, Fee rate, Spot price, Last update
+    *   Non-sortable columns: Tokens, Pool ID (no sort icons or handlers)
 *   **UI Styling Patterns**:
     *   Glassy effects: `bg-[rgba(255,244,224,0.02-0.06)]` with `backdrop-blur`
     *   Warm cream text: `rgba(255, 244, 224, 1)` (#FFF4E0)

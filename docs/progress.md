@@ -30,6 +30,12 @@
 
 ### Recent Accomplishments (2025-06-11)
 
+#### Pool Table UI Updates
+- **Updated column header colors**: Changed from gray to Figma-specified `rgba(255, 244, 224, 0.64)` for consistency
+- **Reordered table columns**: New order is Tokens, Pool ID, Fee rate, Spot price (lowercase), Protocol, Last update
+- **Changed default sorting**: Updated from 'protocol_system' ascending to 'updatedAt' descending (most recent first)
+- **UI consistency**: Ensures table headers match the warm cream color scheme throughout the application
+
 #### Filter Component Refactoring
 - **Extracted all style constants** to `filterStyles.ts` eliminating magic strings
 - **Created generic components**: FilterPopover wrapper and FilterList with virtual scrolling

@@ -2,7 +2,7 @@
 
 This document contains the comprehensive plan for refactoring the Pool List View to align with the TC Design from Figma.
 
-## Implementation Status (Updated 2025-05-26)
+## Implementation Status (Updated 2025-06-11)
 
 ### Completed Items
 - ✅ Color system overhaul - transitioned from purple/blue to warm cream/beige palette
@@ -18,6 +18,9 @@ This document contains the comprehensive plan for refactoring the Pool List View
 - ✅ Fee parsing for ekubo_v2 protocol
 - ✅ Filter popover infinite scroll (Token & Pool ID)
 - ✅ Pool ID filter shows token pairs with enhanced search
+- ✅ Column header colors updated to `rgba(255, 244, 224, 0.64)`
+- ✅ Table columns reordered: Tokens, Pool ID, Fee rate, Spot price, Protocol, Last update
+- ✅ Default sorting changed to 'updatedAt' descending (most recent first)
 
 ### Remaining Items
 - ⏳ Fine-tune table column widths to match TC Design proportions
@@ -259,7 +262,7 @@ This reiterated plan is now as detailed and consistent as possible. I am ready t
     - Last update: ~140px
   - Header Styling:
     - Background: Remove bg-neutral-900
-    - Text: rgba(255, 244, 224, 0.64) instead of text-white/60
+    - Text: rgba(255, 244, 224, 0.64) instead of text-white/60 (COMPLETED)
     - Font: Ensure Inter 500 13px
   - Summary Row:
     - Background: rgba(255, 244, 224, 0.02) instead of bg-white/5

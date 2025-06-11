@@ -16,9 +16,9 @@ import { useFilterManager } from '@/hooks/useFilterManager';
 const COLUMNS = [
   { id: 'tokens', name: 'Tokens', type: 'tokens' }, // Non-sortable
   { id: 'id', name: 'Pool ID', type: 'poolId' },     // Non-sortable
-  { id: 'protocol_system', name: 'Protocol', type: 'protocol' }, // Sortable
   { id: 'static_attributes.fee', name: 'Fee rate', type: 'fee' },    // Sortable
-  { id: 'spotPrice', name: 'Spot Price', type: 'number' },  // Sortable
+  { id: 'spotPrice', name: 'Spot price', type: 'number' },  // Sortable
+  { id: 'protocol_system', name: 'Protocol', type: 'protocol' }, // Sortable
   { id: 'updatedAt', name: 'Last update', type: 'time-ago' } // Sortable
 ];
 
@@ -48,8 +48,8 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [sortConfig, setSortConfig] = useState<{column: string, direction: 'asc' | 'desc'}>({
-    column: 'protocol_system', // Default sort by a sortable column
-    direction: 'asc'
+    column: 'updatedAt', // Default sort by a sortable column
+    direction: 'desc'
   });
   const [displayedPoolsCount, setDisplayedPoolsCount] = useState(INITIAL_DISPLAY_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false); // New state for loading indicator
