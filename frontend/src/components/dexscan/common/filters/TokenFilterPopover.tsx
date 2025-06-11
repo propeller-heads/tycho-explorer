@@ -94,18 +94,15 @@ export const TokenFilterPopover = ({
                     onClick={() => onTokenToggle(token, false)}
                   >
                     <Checkbox
-                      id={`selected-token-${token.address}`}
                       checked={true}
-                      onCheckedChange={() => onTokenToggle(token, false)}
-                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none"
+                      className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none pointer-events-none"
                     />
                     <TokenIcon token={token} size={5} /> 
-                    <label 
-                      htmlFor={`selected-token-${token.address}`}
-                      className="text-xs font-medium leading-none truncate text-[rgba(255,244,224,1)] cursor-pointer"
+                    <span 
+                      className="text-xs font-medium leading-none truncate text-[rgba(255,244,224,1)] flex-1"
                     >
                       {token.symbol}
-                    </label>
+                    </span>
                   </div>
                 ))}
               </div>
@@ -135,16 +132,13 @@ export const TokenFilterPopover = ({
                 onClick={() => onTokenToggle(token, !isSelected)}
               >
                 <Checkbox
-                  id={`token-${token.address}`}
                   checked={isSelected}
-                  onCheckedChange={(checked) => onTokenToggle(token, !!checked)}
-                  className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none"
+                  className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none pointer-events-none"
                 />
                 <TokenIcon token={token} size={5} /> 
-                <label 
-                  htmlFor={`token-${token.address}`}
+                <div 
                   className={cn(
-                    "text-xs leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate cursor-pointer flex-1",
+                    "text-xs leading-none truncate flex-1",
                     isSelected ? "font-semibold text-[rgba(255,244,224,1)]" : "font-medium text-[rgba(255,244,224,0.9)]"
                   )}
                   title={`${token.name} (${token.symbol})`}
@@ -156,7 +150,7 @@ export const TokenFilterPopover = ({
                   )}>
                     {token.name}
                   </span>
-                </label>
+                </div>
               </div>
             );
           })}

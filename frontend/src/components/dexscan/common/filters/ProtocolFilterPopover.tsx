@@ -73,10 +73,8 @@ export const ProtocolFilterPopover = ({
                 onClick={() => onProtocolToggle(protocol, !isSelected)}
               >
                 <Checkbox
-                  id={`protocol-${protocol}`}
                   checked={isSelected}
-                  onCheckedChange={(checked) => onProtocolToggle(protocol, !!checked)}
-                  className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none"
+                  className="border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none pointer-events-none"
                 />
                 {showColorDots && (
                   <span
@@ -87,15 +85,14 @@ export const ProtocolFilterPopover = ({
                     }}
                   />
                 )}
-                <label 
-                  htmlFor={`protocol-${protocol}`}
+                <span 
                   className={cn(
-                    "text-xs leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 truncate cursor-pointer flex-1",
+                    "text-xs leading-none truncate flex-1",
                     isSelected ? "font-semibold text-[rgba(255,244,224,1)]" : "font-medium text-[rgba(255,244,224,0.9)]"
                   )}
                 >
                   {protocol}
-                </label>
+                </span>
               </div>
             );
           })}
