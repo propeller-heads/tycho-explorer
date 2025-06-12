@@ -66,7 +66,12 @@ const DexScanContentMain = () => {
       {/* Set height for this content container */}
       <div 
         className="flex flex-col gap-4 mx-6" 
-        style={{ height: 'calc(100vh - 72px - 16px - 16px)' }} // 100vh - header height - DexScanContent top padding - desired bottom gap
+        style={{ 
+          height: 'calc(100vh - 72px - 16px - 16px)', // 100vh - header height - DexScanContent top padding - desired bottom gap
+          borderRadius: '12px',
+          border: '1px solid rgba(255, 244, 224, 0.1)',
+          background: 'var(--Milk-Milk-50, rgba(255, 244, 224, 0.02))'
+        }}
       > 
         
         {/* Render both views but control visibility with CSS */}

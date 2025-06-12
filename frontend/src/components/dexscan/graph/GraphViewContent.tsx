@@ -97,12 +97,7 @@ const PoolGraphView: React.FC = () => {
   // No need for array handlers - GraphControls now uses individual toggles
 
   return (
-    <div className="h-full flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl relative">
-      {/* Gradient border effect */}
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-b rgba(255,244,224,0.02) p-[1px]">
-        <div className="bg-[#FFF4E005] rounded-xl h-full w-full" />
-      </div>
-      <div className="relative z-10 flex flex-col h-full p-6"> {/* Content wrapper */}
+    <div className="h-full flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl p-6">
       <GraphControls 
         tokenList={allAvailableTokenNodes} 
         protocols={uniqueProtocols}
@@ -134,7 +129,6 @@ const PoolGraphView: React.FC = () => {
           </p>
         </div>
       )}
-      </div> {/* Close content wrapper */}
     </div>
   );
 };
