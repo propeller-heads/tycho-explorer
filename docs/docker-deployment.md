@@ -179,11 +179,6 @@ TYCHO_ETHEREUM_URL=tycho-server-url
 TYCHO_BASE_URL=tycho-base-server-url
 TYCHO_UNICHAIN_URL=tycho-unichain-server-url
 
-# RPC URLs
-RPC_URL_ETHEREUM=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
-RPC_URL_BASE=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
-RPC_URL_UNICHAIN=https://unichain.g.alchemy.com/v2/YOUR_KEY
-
 # TVL Threshold
 TVL_THRESHOLD=30
 

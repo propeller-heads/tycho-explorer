@@ -14,7 +14,6 @@ services:
       - "3001:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_ETHEREUM}
       RUST_LOG: ${RUST_LOG:-info}
     command: ["/usr/local/bin/tycho-api", "--tvl-threshold", "${TVL_THRESHOLD}", "--chain", "ethereum", "--port", "3000", "--tycho-url", "${TYCHO_ETHEREUM_URL}"]
     networks:
@@ -42,7 +41,6 @@ services:
       - "3002:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_BASE}
       RUST_LOG: ${RUST_LOG:-info}
     command: ["/usr/local/bin/tycho-api", "--tvl-threshold", "${TVL_THRESHOLD}", "--chain", "base", "--port", "3000", "--tycho-url", "${TYCHO_BASE_URL}"]
     networks:
@@ -70,7 +68,6 @@ services:
       - "3003:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_UNICHAIN}
       RUST_LOG: ${RUST_LOG:-info}
     command: ["/usr/local/bin/tycho-api", "--tvl-threshold", "${TVL_THRESHOLD}", "--chain", "unichain", "--port", "3000", "--tycho-url", "${TYCHO_UNICHAIN_URL}"]
     networks:

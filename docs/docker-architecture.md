@@ -60,18 +60,6 @@ FROM nginx:alpine
 # No complex startup scripts
 ```
 
-### Docker Compose Configuration
-
-```yaml
-services:
-  tycho-api-ethereum-dev:
-    environment:
-      # Only essential env vars
-      TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_ETHEREUM}
-    command: ["/bin/sh", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain ethereum --port 3000 --tycho-url ${TYCHO_ETHEREUM_URL}'"]
-```
-
 ## Configuration Flow
 
 ```

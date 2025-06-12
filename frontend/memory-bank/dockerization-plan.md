@@ -119,7 +119,6 @@ echo "🔷 [ENV] Chain URLs configured:"\n\
 echo "  - TYCHO_ETHEREUM_URL: $TYCHO_ETHEREUM_URL"\n\
 echo "  - TYCHO_BASE_URL: $TYCHO_BASE_URL"\n\
 echo "  - TYCHO_UNICHAIN_URL: $TYCHO_UNICHAIN_URL"\n\
-echo "🔷 [ENV] RPC_URL: ${RPC_URL:0:30}..."\n\
 echo "🔷 [ENV] RUST_LOG: $RUST_LOG"\n\
 echo "🟣 [NETWORK] Service will listen on port 3000"\n\
 exec tycho-api "$@"' > /start.sh && chmod +x /start.sh
@@ -145,7 +144,6 @@ services:
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
       TYCHO_ETHEREUM_URL: ${TYCHO_ETHEREUM_URL}
-      RPC_URL: ${RPC_URL_ETHEREUM}
       RUST_LOG: ${RUST_LOG}
     command: ["--tvl-threshold", "30", "--chain", "ethereum", "--port", "3000"]
     networks:
@@ -171,7 +169,6 @@ services:
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
       TYCHO_BASE_URL: ${TYCHO_BASE_URL}
-      RPC_URL: ${RPC_URL_BASE}
       RUST_LOG: ${RUST_LOG}
     command: ["--tvl-threshold", "30", "--chain", "base", "--port", "3000"]
     networks:
@@ -197,7 +194,6 @@ services:
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
       TYCHO_UNICHAIN_URL: ${TYCHO_UNICHAIN_URL}
-      RPC_URL: ${RPC_URL_UNICHAIN}
       RUST_LOG: ${RUST_LOG}
     command: ["--tvl-threshold", "30", "--chain", "unichain", "--port", "3000"]
     networks:
@@ -277,11 +273,6 @@ TYCHO_API_KEY=sampletoken
 TYCHO_ETHEREUM_URL=tycho-beta.propellerheads.xyz
 TYCHO_BASE_URL=tycho-base-beta.propellerheads.xyz
 TYCHO_UNICHAIN_URL=tycho-unichain-beta.propellerheads.xyz
-
-# RPC URLs
-RPC_URL_ETHEREUM=https://eth-mainnet.g.alchemy.com/v2/OTD5W7gdTPrzpVot41Lx9tJD9LUiAhbs
-RPC_URL_BASE=https://base-mainnet.g.alchemy.com/v2/YOUR_KEY
-RPC_URL_UNICHAIN=https://unichain.g.alchemy.com/v2/YOUR_KEY
 
 # Logging
 RUST_LOG=info,tower_http=debug

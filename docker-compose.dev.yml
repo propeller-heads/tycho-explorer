@@ -14,7 +14,6 @@ services:
       - "4001:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_ETHEREUM}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
       TVL_THRESHOLD: ${TVL_THRESHOLD}
@@ -55,7 +54,6 @@ services:
       - "4002:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_BASE}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
       TVL_THRESHOLD: ${TVL_THRESHOLD}
@@ -96,7 +94,6 @@ services:
       - "4003:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
-      RPC_URL: ${RPC_URL_UNICHAIN}
       RUST_LOG: ${RUST_LOG:-debug}
       RUST_BACKTRACE: 1
       TVL_THRESHOLD: ${TVL_THRESHOLD}
