@@ -1,0 +1,172 @@
+name: Production; Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - INFRA-143
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+
+env:
+  REPO_NAME: 'tycho-explorer'
+  DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
+  DOMAIN_NAME_WS: ${{ vars.DOMAIN_NAME_WS }}
+  EKS_NAMESPACE: ${{ vars.EKS_NAMESPACE }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: getsentry/action-github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Install git
+        run: sudo apt update && sudo apt install -y git
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Assume role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "${{ secrets.ROLE_TO_ASSUME }}"
+          audience: sts.amazonaws.com
+          aws-region: "${{ secrets.AWS_REGION }}"
+
+      - name: Login in ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+
+      - name: Check if image for Frontend and Backend already exists
+        id: check-image
+        shell: bash
+        run: |
+          IMAGE_FRONTEND="${{ env.REPO_NAME }}:frontend${{ github.sha }}"
+          IMAGE_API="${{ env.REPO_NAME }}:api${{ github.sha }}"
+
+          # Try to pull the image for Frontend from the new repository
+          if aws ecr describe-images --registry-id ${{ secrets.DOMAIN_OWNER }} --repository-name ${{ env.REPO_NAME }} --image-ids imageTag=frontend${{ github.sha }} 2>/dev/null; then
+            echo "Image $IMAGE_FRONTEND already exists in the repository"
+            echo "skip_remaining_steps_frontend=true" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Image $IMAGE_FRONTEND not found, proceeding with build"
+            echo "skip_remaining_steps_frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Try to pull the image for Backend from the new repository
+          if aws ecr describe-images --registry-id ${{ secrets.DOMAIN_OWNER }} --repository-name ${{ env.REPO_NAME }} --image-ids imageTag=api${{ github.sha }} 2>/dev/null; then
+            echo "Image $IMAGE_API already exists in the repository"
+            echo "skip_remaining_steps_api=true" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Image $IMAGE_API not found, proceeding with build"
+            echo "skip_remaining_steps_api=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Docker Buildx
+        if: ${{ steps.check-image.outputs.skip_remaining_steps_frontend != 'true' }} || ${{ steps.check-image.outputs.skip_remaining_steps_api != 'true' }}
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2
+
+      - name: Build and push docker image for Backend App
+        if: ${{ steps.check-image.outputs.skip_remaining_steps_api != 'true' }}
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+        with:
+          context: ./api
+          push: true
+          tags: ${{ secrets.REPOSITORY_URL }}/${{ env.REPO_NAME }}:api${{ github.sha }}
+          file: ./api/Dockerfile
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push docker image for Frontend App
+        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.REPOSITORY_URL }}/${{ env.REPO_NAME }}:frontend${{ github.sha }}
+          file: ./frontend/Dockerfile
+          build-args: |
+            BUILDKIT_PROGRESS=plain
+            VITE_WEBSOCKET_URL_ETHEREUM=wss://${{ env.DOMAIN_NAME_WS }}/ws/ethereum
+            VITE_WEBSOCKET_URL_BASE=wss://${{ env.DOMAIN_NAME_WS }}/ws/base
+            VITE_WEBSOCKET_URL_UNICHAIN=wss://${{ env.DOMAIN_NAME_WS }}/ws/unichain
+            VITE_API_ETHEREUM_URL=/ethereum
+            VITE_API_BASE_URL=/base
+            VITE_API_UNICHAIN_URL=/unichain
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-to-k8s:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: getsentry/action-github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Install git
+        run: sudo apt update && sudo apt install -y git
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          verbose: false
+          arch: amd64
+          rootdir: ""
+          workdir: ""
+
+      - name: Install helm3
+        run: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Assume role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "${{ secrets.ROLE_TO_ASSUME }}"
+          audience: sts.amazonaws.com
+          aws-region: "${{ secrets.AWS_REGION }}"
+
+      - name: Setup kubeconfig
+        run: aws eks update-kubeconfig --name "${{ secrets.EKS_CLUSTER_NAME }}" --region "${{ secrets.AWS_REGION }}"
+
+      - name: Upgrade or Install helm release for Backend
+        run: |
+          helm upgrade --install -n "${{ env.EKS_NAMESPACE }}" tycho-api .helm/tycho-api \
+            -f .helm/tycho-api/values.yaml \
+            --set image.tag=api${{ github.sha }} \
+            --set 'ingress.hosts[0].host'=${{ env.DOMAIN_NAME_WS }}
+
+      - name: Upgrade or Install helm release for Frontend
+        run: |
+          helm upgrade --install -n "${{ env.EKS_NAMESPACE }}" tycho-frontend .helm/frontend \
+            -f .helm/frontend/values.yaml \
+            --set image.tag=frontend${{ github.sha }} \
+            --set 'ingress.hosts[0].host'=${{ env.DOMAIN_NAME }}
