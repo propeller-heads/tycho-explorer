@@ -64,7 +64,7 @@ service:
       externalUrl: tycho-base-beta.propellerheads.xyz
       specEnv:
         - name: RPC_URL
-          value: RPC_URL_ETHEREUM
+          value: RPC_URL_BASE
     unichain:
       port: 3003
       externalUrl: tycho-unichain-beta.propellerheads.xyz
