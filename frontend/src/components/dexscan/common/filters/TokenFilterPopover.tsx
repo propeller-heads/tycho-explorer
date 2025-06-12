@@ -48,7 +48,7 @@ export const TokenFilterPopover = ({
         <FilterSearchInput 
           value={search}
           onChange={setSearch}
-          placeholder="Search token..."
+          placeholder="Search by name or address"
         />
       </div>
 

@@ -42,33 +42,10 @@ export const FILTER_STYLES = {
   // Color dot (for protocol filter)
   colorDot: "w-2.5 h-2.5 rounded-full transition-all duration-200",
   
-  // Search input styles
-  searchIcon: "mr-2 h-4 w-4 shrink-0 text-[rgba(255,244,224,0.4)]",
-  searchInput: "border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto p-0 text-xs bg-transparent text-[rgba(255,244,224,1)] placeholder:text-[rgba(255,244,224,0.4)]",
-  
   // Filter bar styles
   filterBar: "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-3",
   filterBarButtons: "flex flex-wrap items-center gap-2",
   resetButton: "h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2",
   blockNumberText: "text-sm font-medium text-[rgba(255,244,224,0.8)]",
   filterBarRight: "flex items-center gap-2 ml-auto sm:ml-0"
-} as const;
-
-// Style constants for inline styles
-export const FILTER_INLINE_STYLES = {
-  searchContainer: {
-    backgroundColor: "rgba(255, 244, 224, 0.02)",
-    borderRadius: "8px",
-    borderStyle: "solid" as const,
-    padding: "8px 12px",
-    transition: "border-color 0.2s ease-in-out, border-width 0.2s ease-in-out"
-  },
-  searchContainerFocused: {
-    borderWidth: "2px",
-    borderColor: '#FF3366'
-  },
-  searchContainerUnfocused: {
-    borderWidth: "1px",
-    borderColor: 'rgba(255, 244, 224, 0.2)'
-  }
 } as const;
