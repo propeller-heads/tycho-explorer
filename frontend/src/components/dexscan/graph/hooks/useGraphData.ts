@@ -239,6 +239,7 @@ export function useGraphData(
             label: node.symbol, // The text symbol will be the label
             size: 24, // Explicitly set size to ensure consistency
             font: { size: 16 }, // Explicitly set font size
+            // No color property for circularImage - image fills entire node
           };
         } else { 
           // Fallback for when imageUrl is null (fetch failed/no image) or undefined (still fetching)
@@ -248,6 +249,9 @@ export function useGraphData(
             label: node.symbol, // Text label
             size: 24, // Explicitly set size
             font: { size: 16 }, // Explicitly set font size
+            color: {
+              background: '#D3D3D3' // Gray background only for nodes without images
+            }
           };
         }
       });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Token } from '../types';
 import { getCoinId, getCoinImageURL } from '@/lib/coingecko';
+import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
 interface TokenIconProps {
   token: Token;
@@ -31,13 +32,13 @@ const TokenIcon: React.FC<TokenIconProps> = ({ token, size = 6 }) => {
     return () => { isMounted = false; };
   }, [token.symbol, token.address, token.logoURI, iconUrl]); // Added token.address to dependencies
 
-  // Convert size (Tailwind unit) to rem for inline style
-  const sizeRem = size * 0.25; // Assuming 1 unit = 0.25rem (e.g., size 6 = 1.5rem = 24px)
-  const textSizeClass = size <= 4 ? 'text-[9px]' : 'text-[10px]'; // Adjusted for small icon sizes
+  // Get styling values from shared utilities
+  const sizeRem = sizeToRem(size);
+  const textSizeClass = getTextSizeClass(size);
 
   return (
     <div 
-      className={`rounded-full bg-[rgba(255,255,255,0.1)] border-2 border-[rgba(255,255,255,0.2)] flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0`}
+      className={`${tokenLogoBaseClasses} ${textSizeClass}`}
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {iconUrl ? (

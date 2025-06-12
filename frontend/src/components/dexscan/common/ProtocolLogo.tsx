@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCoinImageURL } from '@/lib/coingecko';
+import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
 const protocolToCoinGeckoId: { [key: string]: string } = {
   'uniswap_v2': 'uniswap',
@@ -38,12 +39,12 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) =
     return () => { isMounted = false; };
   }, [protocolName]);
 
-  const sizeRem = size * 0.25; // Assuming 1 unit = 0.25rem
-  const textSizeClass = size <= 4 ? 'text-[9px]' : 'text-[10px]';
+  const sizeRem = sizeToRem(size);
+  const textSizeClass = getTextSizeClass(size);
 
   return (
     <div 
-      className={`rounded-full bg-[rgba(255,255,255,0.15)] border-2 border-[rgba(255,255,255,0.25)] flex items-center justify-center ${textSizeClass} overflow-hidden shrink-0 text-[#FFFFFF]`}
+      className={`${tokenLogoBaseClasses} ${textSizeClass} text-[#FFFFFF] !bg-[rgba(255,255,255,0.15)]`}
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {logoUrl ? (

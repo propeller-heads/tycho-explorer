@@ -8,6 +8,7 @@ import { callSimulationAPI } from './simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
 import { renderHexId, getTokenExplorerLink } from '@/lib/utils';
 import { usePoolData } from './context/PoolDataContext';
+import { tokenLogoBaseClasses } from './common/tokenIconStyles';
 
 
 // Call real simulation API
@@ -84,7 +85,7 @@ const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
       {iconUrl ? (
         <img src={iconUrl} alt={token.symbol} className="w-6 h-6 rounded-full flex-shrink-0" />
       ) : (
-        <div className="w-6 h-6 rounded-full bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] flex items-center justify-center text-xs text-[#FFFFFF] flex-shrink-0">
+        <div className={`${tokenLogoBaseClasses} w-6 h-6 text-xs text-[#FFFFFF]`}>
           {token.symbol.substring(0,1)}
         </div>
       )}

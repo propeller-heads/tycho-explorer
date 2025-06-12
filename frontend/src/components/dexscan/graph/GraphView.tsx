@@ -13,19 +13,19 @@ const getNetworkOptions = (isMobile: boolean) => ({
     shape: "circle", // Default shape, will be overridden by 'circularImage' for nodes with images
     size: 24, // Default size for nodes, including circularImage
     color: {
-      border: "rgba(255, 244, 224, 0.2)", // Subtle light border for fallback circle
-      background: "rgba(255, 244, 224, 0.04)", // Warm cream background matching List View
+      border: "transparent", // No border by default
+      background: "transparent", // Transparent by default (nodes set their own)
       highlight: {
         border: "#FF3366", // Folly Red for selection
-        background: "rgba(255, 244, 224, 0.08)", // Slightly brighter warm cream
+        background: "transparent", // Transparent for circularImage
       },
       hover: {
-        border: "rgba(255, 244, 224, 0.5)",
-        background: "rgba(255, 244, 224, 0.06)", // Warm cream hover
+        border: "transparent", // No border on hover
+        background: "transparent", // Transparent on hover
       }
     },
-    borderWidth: 6,
-    // borderWidthSelected is handled programmatically in GraphManager for #FF3366
+    borderWidth: 0, // No borders by default
+    borderWidthSelected: 2, // Selection border width
     font: {
       size: 16, // px
       color: "rgba(255, 244, 224, 1)", // Warm cream text 
@@ -136,6 +136,12 @@ class GraphManager {
   private boundHandleDocumentMousedown: ((event: MouseEvent | TouchEvent) => void) | null = null;
   private networkOptions: ReturnType<typeof getNetworkOptions> | null = null; // Store network options for later use
 
+  // Node styling constants
+  private readonly NODE_SIZE = 24;
+  private readonly SELECTION_BORDER_COLOR = '#FF3366';
+  private readonly FALLBACK_BG_COLOR = '#D3D3D3'; // lightgray
+  private readonly SELECTION_BORDER_WIDTH = 2; // Keep 2px as requested
+
   initialize(container: HTMLElement, initialNodes: VisNode[], initialEdges: VisEdge[], rawPools: Record<string, PoolType>, isMobile: boolean, selectedChain: string) {
     this.rawPoolsData = rawPools; // Store raw pools data
     this.selectedChain = selectedChain; // Store selected chain
@@ -216,31 +222,12 @@ class GraphManager {
         // A node was clicked
         // Revert style of the previously selected node (if any)
         if (previousSelectedNodeId && previousSelectedNodeId !== clickedNodeId) {
-            this.nodesDataset?.update({
-              id: previousSelectedNodeId,
-              borderWidth: this.networkOptions.nodes.borderWidth,
-              color: {
-                border: this.networkOptions.nodes.color.border,
-                background: this.networkOptions.nodes.color.background,
-                highlight: this.networkOptions.nodes.color.highlight
-              }
-            });
-          }
+          this.resetNodeStyle(previousSelectedNodeId);
+        }
         
         // Apply selected style to the new node if it's not already selected or re-clicked
         if (clickedNodeId !== previousSelectedNodeId) {
-          this.nodesDataset?.update({
-            id: clickedNodeId,
-            borderWidth: 2, // Selected border width
-            color: {
-              border: '#FF3366', // Selected border color
-              background: this.networkOptions.nodes.color.background, // Keep original background
-              highlight: { // Keep highlight consistent or adjust if needed
-                border: '#FF3366',
-                background: this.networkOptions.nodes.color.highlight.background
-              }
-            }
-          });
+          this.selectNodeStyle(clickedNodeId);
         }
         this.selectedNodeId = clickedNodeId; // Update selected node ID
 
@@ -257,15 +244,7 @@ class GraphManager {
         // An edge was clicked
         // Deselect any currently selected node
         if (previousSelectedNodeId) {
-          this.nodesDataset?.update({
-            id: previousSelectedNodeId,
-            borderWidth: this.networkOptions.nodes.borderWidth,
-            color: {
-              border: this.networkOptions.nodes.color.border,
-              background: this.networkOptions.nodes.color.background,
-              highlight: this.networkOptions.nodes.color.highlight
-            }
-          });
+          this.resetNodeStyle(previousSelectedNodeId);
         }
         this.selectedNodeId = null; 
         
@@ -276,15 +255,7 @@ class GraphManager {
         // Clicked on CANVAS (not a node or edge)
         // Deselect any currently selected node
         if (previousSelectedNodeId) {
-          this.nodesDataset?.update({
-            id: previousSelectedNodeId,
-            borderWidth: this.networkOptions.nodes.borderWidth,
-            color: {
-              border: this.networkOptions.nodes.color.border,
-              background: this.networkOptions.nodes.color.background,
-              highlight: this.networkOptions.nodes.color.highlight
-            }
-          });
+          this.resetNodeStyle(previousSelectedNodeId);
         }
         this.selectedNodeId = null; // No node is selected.
       }
@@ -332,6 +303,55 @@ class GraphManager {
     });
 
     this.initialized = true;
+  }
+
+  // Helper to get default node style
+  private getDefaultNodeStyle() {
+    return {
+      size: this.NODE_SIZE,
+      borderWidth: 0,
+      color: {
+        border: 'transparent',
+        background: 'transparent', // Transparent by default
+        highlight: {
+          border: this.SELECTION_BORDER_COLOR,
+          background: 'transparent'
+        }
+      }
+    };
+  }
+
+  // Helper to get selected node style
+  private getSelectedNodeStyle() {
+    return {
+      size: this.NODE_SIZE, // Keep at 24px (no size change)
+      borderWidth: this.SELECTION_BORDER_WIDTH, // 2px border
+      color: {
+        border: this.SELECTION_BORDER_COLOR,
+        background: 'transparent', // Transparent for circularImage
+        highlight: {
+          border: this.SELECTION_BORDER_COLOR,
+          background: 'transparent'
+        }
+      }
+    };
+  }
+
+  // Helper to reset node to default style
+  private resetNodeStyle(nodeId: string) {
+    if (!nodeId) return;
+    this.nodesDataset?.update({
+      id: nodeId,
+      ...this.getDefaultNodeStyle()
+    });
+  }
+
+  // Helper to apply selected style to node
+  private selectNodeStyle(nodeId: string) {
+    this.nodesDataset?.update({
+      id: nodeId,
+      ...this.getSelectedNodeStyle()
+    });
   }
 
   // Fetches token data for node tooltips
