@@ -31,11 +31,11 @@ export const TokenFilterPopover = ({
     [tokens]
   );
 
-  // Filter tokens based on search - only search by symbol
+  // Filter tokens based on search - search by symbol and address
   const filteredTokens = useFilterSearch(
     sortedTokens,
     search,
-    (token) => [token.symbol]
+    (token) => [token.symbol, token.address]
   );
 
   return (
