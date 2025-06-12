@@ -1,0 +1,87 @@
+{{- $services := .Values.service.services }}
+{{- range $name, $cfg := $services }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-{{ $name }}
+  labels:
+    chain: {{ $name | quote }}
+  annotations:
+    {{- if $.Values.externalSecrets.enabled }}
+    secret.reloader.stakater.com/reload: {{ include "tycho-api.fullname" $ }}-secret
+    {{- end }}
+spec:
+  {{- if not $.Values.autoscaling.enabled }}
+  replicas: {{ $.Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      chain: {{ $name | quote }}
+      app: "tycho-api"
+  template:
+    metadata:
+      {{- with $.Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        chain: {{ $name | quote }}
+        app: "tycho-api"
+    spec:
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "tycho-api.serviceAccountName" $ }}
+      securityContext:
+      {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $.Chart.Name }}-{{ $name }}
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          args: ["/usr/local/bin/tycho-api", "--tvl-threshold", "30", "--chain", "{{ $name }}", "--port", "{{ $cfg.port }}", "--tycho-url", "{{ $cfg.externalUrl }}"]
+          env:
+          {{- range $.Values.commonEnv }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "tycho-api.fullname" $ }}-secret
+                  key: {{ .name }}
+          {{- end }}
+          {{- range $cfg.specEnv }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "tycho-api.fullname" $ }}-secret
+                  key: {{ .value }}
+          {{- end }}
+          ports:
+            - name: tcp
+              containerPort: {{ $cfg.port }}
+              protocol: TCP
+          {{- if $.Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml $.Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if $.Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml $.Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+      {{- with $.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
