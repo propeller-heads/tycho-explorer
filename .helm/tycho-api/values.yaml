@@ -56,21 +56,12 @@ service:
     ethereum: 
       port: 3001
       externalUrl: tycho-beta.propellerheads.xyz
-      specEnv:
-        - name: RPC_URL
-          value: RPC_URL_ETHEREUM
     base:
       port: 3002
       externalUrl: tycho-base-beta.propellerheads.xyz
-      specEnv:
-        - name: RPC_URL
-          value: RPC_URL_BASE
     unichain:
       port: 3003
       externalUrl: tycho-unichain-beta.propellerheads.xyz
-      specEnv:
-        - name: RPC_URL
-          value: RPC_URL_UNICHAIN
 
 resources:
   requests:
