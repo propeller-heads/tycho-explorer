@@ -8,7 +8,7 @@ export const FILTER_STYLES = {
   popoverContent: "bg-[rgba(255,244,224,0.02)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]",
   
   // Checkbox styles
-  checkbox: "border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-[#FF3366] data-[state=checked]:text-white rounded-none pointer-events-none",
+  checkbox: "border-[rgba(255,244,224,0.64)] data-[state=checked]:bg-[#F36] data-[state=checked]:border-[#F36] data-[state=checked]:text-white rounded-[4px] pointer-events-none",
   
   // Item container styles
   itemContainer: "flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer transition-all duration-200",
