@@ -23,7 +23,7 @@ export const FilterSearchInput = ({ value, onChange, placeholder = "Search..." }
       <input
         type="text"
         placeholder={placeholder}
-        className="flex-1 bg-transparent outline-none text-xs text-[#FFF4E0] placeholder:text-[rgba(255,244,224,0.4)]"
+        className="flex-1 bg-transparent outline-none text-sm text-[#FFF4E0] placeholder:text-[rgba(255,244,224,0.4)]"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsFocused(true)}

@@ -1,7 +1,7 @@
 // Filter component style constants
 export const FILTER_STYLES = {
   // Button styles
-  button: "h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-xs text-[rgba(255,244,224,1)]",
+  button: "h-10 sm:h-8 px-3 border-[rgba(255,244,224,0.2)] bg-[rgba(255,244,224,0.02)] hover:bg-[rgba(255,244,224,0.06)] text-sm text-[rgba(255,244,224,1)]",
   buttonChevron: "ml-1 h-3 w-3 transition-transform duration-200",
   
   // Popover content styles
@@ -14,8 +14,8 @@ export const FILTER_STYLES = {
   itemContainer: "flex items-center space-x-2 p-1.5 rounded-md hover:bg-[rgba(255,244,224,0.06)] cursor-pointer transition-all duration-200",
   
   // Text styles
-  noItemsText: "text-xs text-[rgba(255,244,224,0.4)] text-center py-2",
-  selectedSectionText: "text-xs font-medium text-[rgba(255,244,224,0.8)]",
+  noItemsText: "text-sm text-[rgba(255,244,224,0.4)] text-center py-2",
+  selectedSectionText: "text-sm font-medium text-[rgba(255,244,224,0.8)]",
   selectedCountText: "text-xs text-[rgba(255,244,224,0.6)]",
   
   // Text color classes (for dynamic application)
@@ -45,7 +45,7 @@ export const FILTER_STYLES = {
   // Filter bar styles
   filterBar: "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-3",
   filterBarButtons: "flex flex-wrap items-center gap-2",
-  resetButton: "h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2",
+  resetButton: "h-10 sm:h-8 text-sm text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)] underline-offset-2",
   blockNumberText: "text-sm font-medium text-[rgba(255,244,224,0.8)]",
   filterBarRight: "flex items-center gap-2 ml-auto sm:ml-0"
 } as const;

@@ -33,7 +33,7 @@ export const renderFilterItem = ({
     {icon}
     <div 
       className={cn(
-        "text-xs leading-none truncate flex-1",
+        "text-sm leading-none truncate flex-1",
         isSelected ? FILTER_STYLES.textColors.selected : FILTER_STYLES.textColors.unselected
       )}
       title={label}
