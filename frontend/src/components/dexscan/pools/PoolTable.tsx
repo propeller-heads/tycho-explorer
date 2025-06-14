@@ -114,7 +114,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableHead 
                     key={column.id}
                     className={cn(
-                      "px-4 py-3.5 text-[13px] font-medium text-[rgba(255,244,224,0.64)] text-center",
+                      "px-4 py-3.5 text-[13px] font-medium text-[rgba(255,244,224,0.64)] text-left",
                       isSortable && "cursor-pointer hover:text-[rgba(255,244,224,0.8)]",
                       getColumnWidthClass(column.id)
                     )}
@@ -149,13 +149,13 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   {column.id === 'tokens' && (
                     <div className="flex flex-col">
                       <span>Summary</span>
-                      <span className="text-xs font-normal text-[rgba(255,244,224,1)]">{summaryData.totalUniqueTokens} unique tokens</span>
+                      <span className="text-xs font-normal text-[rgba(255,244,224,1)]">{summaryData.totalUniqueTokens} tokens</span>
                     </div>
                   )}
-                  {column.id === 'id' && <span>{summaryData.totalPools} pools</span>}
-                  {column.id === 'protocol_system' && <span>{summaryData.totalProtocols} protocols</span>}
-                  {/* Other summary cells can be empty or show '-' */}
-                  {['static_attributes.fee', 'spotPrice', 'updatedAt'].includes(column.id) && <span>-</span>}
+                  {column.id === 'id' && <span>{summaryData.totalPools}</span>}
+                  {column.id === 'protocol_system' && <span>{summaryData.totalProtocols}</span>}
+                  {/* Other summary cells remain empty */}
+                  {['static_attributes.fee', 'spotPrice', 'updatedAt'].includes(column.id) && <span></span>}
                 </TableCell>
               ))}
             </TableRow>
@@ -197,7 +197,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                             <Tooltip delayDuration={0}>
                               <TooltipTrigger asChild>
                                 <span 
-                                  className={cn("font-mono text-xs cursor-pointer", "text-[rgba(255,244,224,1)]")}
+                                  className={cn("text-xs cursor-pointer", "text-[rgba(255,244,224,1)]")}
                                 >
                                   {renderHexId(pool.id)}
                                 </span>
@@ -250,7 +250,6 @@ const PoolTable: React.FC<PoolTableProps> = ({
                           key={column.id} 
                           className={cn(
                             "px-4 py-3.5 text-sm",
-                            column.type === 'number' && "text-right",
                             "text-[rgba(255,244,224,1)]"
                           )}
                         >
