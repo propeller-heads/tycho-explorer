@@ -3,6 +3,7 @@ import { protocolColors } from '../../graph/protocolColors';
 import { FILTER_STYLES } from './filterStyles';
 import { FilterPopover } from './FilterPopover';
 import { FilterList } from './FilterList';
+import { getReadableProtocolName } from '../readableProtocols';
 
 interface ProtocolFilterPopoverProps {
   protocols: string[];
@@ -45,7 +46,7 @@ export const ProtocolFilterPopover = ({
         selectedItems={selectedProtocols}
         onItemToggle={onProtocolToggle}
         getItemKey={(protocol) => protocol}
-        getItemLabel={(protocol) => protocol}
+        getItemLabel={(protocol) => getReadableProtocolName(protocol)}
         getItemIcon={showColorDots ? (protocol) => {
           const isSelected = selectedProtocols.includes(protocol);
           return (

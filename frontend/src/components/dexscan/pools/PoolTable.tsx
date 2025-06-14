@@ -11,6 +11,7 @@ import TokenIcon from '@/components/dexscan/common/TokenIcon';
 import ProtocolLogo from '@/components/dexscan/common/ProtocolLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
 
 // Helper function for column widths
 const getColumnWidthClass = (columnId: string): string => {
@@ -232,7 +233,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         displayValue = (
                           <div className="flex items-center gap-2">
                             <ProtocolLogo protocolName={pool.protocol_system} />
-                            <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{pool.protocol_system}</span>
+                            <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{getReadableProtocolName(pool.protocol_system)}</span>
                           </div>
                         );
                       } else if (column.id === 'static_attributes.fee') {

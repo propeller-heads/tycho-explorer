@@ -7,6 +7,7 @@ export const protocolReadable: { [key: string]: string } = {
   'pancakeswap_v2': 'PancakeSwap V2',
   'pancakeswap_v3': 'PancakeSwap V3',
   'ekubo_v2': 'Ekubo V2',
+  'vm:balancer_v2': 'Balancer V2'
 };
 
 // Helper function to get readable name with fallback
