@@ -8,8 +8,9 @@ const ScrollArea = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & { 
     withHorizontalScrollbar?: boolean;
     onViewportScroll?: React.UIEventHandler<HTMLDivElement>;
+    snapScroll?: boolean;
   }
->(({ className, children, withHorizontalScrollbar = false, onViewportScroll, ...props }, ref) => (
+>(({ className, children, withHorizontalScrollbar = false, onViewportScroll, snapScroll = false, ...props }, ref) => (
   <ScrollAreaPrimitive.Root
     ref={ref}
     className={cn("relative overflow-hidden", className)}
@@ -19,7 +20,12 @@ const ScrollArea = React.forwardRef<
       className="h-full w-full rounded-[inherit] overflow-auto"
       style={{
         WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain'
+        overscrollBehavior: 'contain',
+        ...(snapScroll && {
+          scrollSnapType: 'y mandatory',
+          scrollPaddingTop: '0',
+          scrollPaddingBottom: '0'
+        })
       }}
       onScroll={onViewportScroll}
     >

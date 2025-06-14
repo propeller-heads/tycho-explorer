@@ -25,6 +25,7 @@ export const renderFilterItem = ({
   <div 
     className={FILTER_STYLES.itemContainer}
     onClick={onClick}
+    style={{ scrollSnapAlign: 'start' }}
   >
     <Checkbox
       checked={isSelected}

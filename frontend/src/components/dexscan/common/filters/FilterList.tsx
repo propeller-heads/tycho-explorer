@@ -45,6 +45,7 @@ export function FilterList<T>({
     <ScrollArea 
       className={className}
       onViewportScroll={virtualScroll ? handleScroll : undefined}
+      snapScroll={true}
     >
       {items.length === 0 && renderEmptyState(emptyMessage)}
       {itemsToRender.map(item => {
