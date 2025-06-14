@@ -67,7 +67,12 @@
   body {
     background-image: url('./assets/background/background.svg');
     background-repeat: no-repeat;
-    @apply text-foreground font-sans antialiased;
+    @apply font-sans antialiased;
+    color: #FFF4E0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    font-style: normal;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
