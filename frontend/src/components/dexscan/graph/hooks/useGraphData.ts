@@ -98,6 +98,13 @@ function applyParallelEdgeSmoothness(edges: VisEdge[]): VisEdge[] {
 }
 
 
+// Default gray circle SVG as data URI for nodes without logos
+const DEFAULT_NODE_IMAGE = 'data:image/svg+xml;base64,' + btoa(`
+  <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#D3D3D3"/>
+  </svg>
+`);
+
 export function useGraphData(
   selectedTokens: string[],
   selectedProtocols: string[]
@@ -230,30 +237,16 @@ export function useGraphData(
       .map(node => {
         const imageUrl = tokenImageUrls.get(node.id);
         
-        // If imageUrl is a valid string, use circularImage
-        if (typeof imageUrl === 'string' && imageUrl) {
-          return {
-            ...node, // Spread existing node properties (like id, symbol, address, formattedLabel)
-            shape: 'circularImage',
-            image: imageUrl,
-            label: node.symbol, // The text symbol will be the label
-            size: 24, // Explicitly set size to ensure consistency
-            font: { size: 16 }, // Explicitly set font size
-            // No color property for circularImage - image fills entire node
-          };
-        } else { 
-          // Fallback for when imageUrl is null (fetch failed/no image) or undefined (still fetching)
-          return {
-            ...node,
-            shape: 'circle', // Default shape
-            label: node.symbol, // Text label
-            size: 24, // Explicitly set size
-            font: { size: 16 }, // Explicitly set font size
-            color: {
-              background: '#D3D3D3' // Gray background only for nodes without images
-            }
-          };
-        }
+        // Always use circularImage shape for consistent label positioning
+        return {
+          ...node, // Spread existing node properties (like id, symbol, address, formattedLabel)
+          shape: 'circularImage', // Always use circularImage
+          image: (typeof imageUrl === 'string' && imageUrl) ? imageUrl : DEFAULT_NODE_IMAGE,
+          label: node.symbol, // The text symbol will be the label (appears below circle)
+          size: 32, // Explicitly set size to ensure consistency
+          font: { size: 16 }, // Explicitly set font size
+          // No color property needed - image fills entire node
+        };
       });
 
     const finalNodeIdsSet = new Set(finalNodes.map(node => node.id));

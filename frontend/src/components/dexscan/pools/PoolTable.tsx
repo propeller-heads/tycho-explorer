@@ -39,7 +39,7 @@ const StackedTokenIcons: React.FC<{ tokens: Token[] }> = ({ tokens }) => {
   return (
     <div className="flex -space-x-2">
       {tokens.slice(0, 3).map((token) => (
-        <TokenIcon key={token.address || token.symbol} token={token} size={6} />
+        <TokenIcon key={token.address || token.symbol} token={token} size={8} />
       ))}
       {tokens.length > 3 && (
         <div className="w-6 h-6 rounded-full bg-[rgba(255,255,255,0.02)] border-2 border-[rgba(255,255,255,0.02)] flex items-center justify-center text-xs text-[#FFFFFF]">

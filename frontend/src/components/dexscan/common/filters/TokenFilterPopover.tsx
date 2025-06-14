@@ -70,7 +70,7 @@ export const TokenFilterPopover = ({
               onItemToggle={onTokenToggle}
               getItemKey={(token) => token.address}
               getItemLabel={(token) => token.symbol}
-              getItemIcon={(token) => <TokenIcon token={token} size={5} />}
+              getItemIcon={(token) => <TokenIcon token={token} size={6} />}
               virtualScroll={false}
               className={FILTER_STYLES.selectedScrollArea}
             />
@@ -85,7 +85,7 @@ export const TokenFilterPopover = ({
         onItemToggle={onTokenToggle}
         getItemKey={(token) => token.address}
         getItemLabel={(token) => token.symbol}
-        getItemIcon={(token) => <TokenIcon token={token} size={5} />}
+        getItemIcon={(token) => <TokenIcon token={token} size={6} />}
         emptyMessage="No tokens found."
         virtualScroll={true}
       />

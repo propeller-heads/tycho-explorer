@@ -83,9 +83,9 @@ const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
   return (
     <div className="flex items-center gap-2">
       {iconUrl ? (
-        <img src={iconUrl} alt={token.symbol} className="w-6 h-6 rounded-full flex-shrink-0" />
+        <img src={iconUrl} alt={token.symbol} className="w-8 h-8 rounded-full flex-shrink-0" />
       ) : (
-        <div className={`${tokenLogoBaseClasses} w-6 h-6 text-xs text-[#FFFFFF]`}>
+        <div className={`${tokenLogoBaseClasses} w-8 h-8 text-xs text-[#FFFFFF]`}>
           {token.symbol.substring(0,1)}
         </div>
       )}

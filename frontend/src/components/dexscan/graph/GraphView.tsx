@@ -11,7 +11,7 @@ const getNetworkOptions = (isMobile: boolean) => ({
   autoResize: false, // Prevent automatic resizing that might cause re-centering
   nodes: {
     shape: "circle", // Default shape, will be overridden by 'circularImage' for nodes with images
-    size: 24, // Default size for nodes, including circularImage
+    size: 32, // Default size for nodes, including circularImage
     color: {
       border: "transparent", // No border by default
       background: "transparent", // Transparent by default (nodes set their own)
@@ -137,7 +137,7 @@ class GraphManager {
   private networkOptions: ReturnType<typeof getNetworkOptions> | null = null; // Store network options for later use
 
   // Node styling constants
-  private readonly NODE_SIZE = 24;
+  private readonly NODE_SIZE = 32;
   private readonly SELECTION_BORDER_COLOR = '#FF3366';
   private readonly FALLBACK_BG_COLOR = '#D3D3D3'; // lightgray
   private readonly SELECTION_BORDER_WIDTH = 2; // Keep 2px as requested
@@ -324,7 +324,7 @@ class GraphManager {
   // Helper to get selected node style
   private getSelectedNodeStyle() {
     return {
-      size: this.NODE_SIZE, // Keep at 24px (no size change)
+      size: this.NODE_SIZE,
       borderWidth: this.SELECTION_BORDER_WIDTH, // 2px border
       color: {
         border: this.SELECTION_BORDER_COLOR,
@@ -450,15 +450,7 @@ class GraphManager {
 
       if (this.selectedNodeId) {
         // Revert previously selected node to default styling
-        this.nodesDataset?.update({
-          id: this.selectedNodeId,
-          borderWidth: this.networkOptions.nodes.borderWidth,
-          color: {
-            border: this.networkOptions.nodes.color.border,
-            background: this.networkOptions.nodes.color.background,
-            highlight: this.networkOptions.nodes.color.highlight
-          }
-        });
+        this.resetNodeStyle(this.selectedNodeId);
         this.selectedNodeId = null;
       }
     }
