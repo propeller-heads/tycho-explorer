@@ -12,6 +12,7 @@ import ProtocolLogo from '@/components/dexscan/common/ProtocolLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
+import { MILK_COLORS } from '@/lib/colors';
 
 // Helper function for column widths
 const getColumnWidthClass = (columnId: string): string => {
@@ -105,7 +106,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
         <TableRow 
           className="sticky top-0 z-10"
           style={{
-            borderBottom: '1px solid rgba(255, 244, 224, 0.05)',
+            borderBottom: `1px solid ${MILK_COLORS.borderSubtle}`,
             background: 'transparent'
           }}
         > 
@@ -115,10 +116,11 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableHead 
                     key={column.id}
                     className={cn(
-                      "px-4 py-3.5 text-[13px] font-medium text-[rgba(255,244,224,0.64)] text-left",
-                      isSortable && "cursor-pointer hover:text-[rgba(255,244,224,0.8)]",
+                      "px-4 py-3.5 text-[13px] font-medium text-left",
+                      isSortable && "cursor-pointer hover:opacity-80",
                       getColumnWidthClass(column.id)
                     )}
+                    style={{ color: MILK_COLORS.muted }}
                     onClick={() => isSortable && onSort(column.id)}
                   >
                     <div className="flex items-center gap-1">
@@ -129,7 +131,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                             <ChevronUp className="h-3 w-3 text-white" /> : 
                             <ChevronDown className="h-3 w-3 text-white" />
                         ) : (
-                          <ChevronsUpDown className="h-3 w-3 text-[rgba(255,244,224,0.64)]" />
+                          <ChevronsUpDown className="h-3 w-3" style={{ color: MILK_COLORS.muted }} />
                         )
                       )}
                     </div>
@@ -141,16 +143,16 @@ const PoolTable: React.FC<PoolTableProps> = ({
             <TableRow 
               className=""
               style={{
-                borderBottom: '1px solid rgba(255, 244, 224, 0.05)',
-                background: 'rgba(255, 255, 255, 0.02)'
+                borderBottom: `1px solid ${MILK_COLORS.borderSubtle}`,
+                background: MILK_COLORS.bgSubtle
               }}
             >
               {allVisibleColumns.map(column => (
-                <TableCell key={`summary-${column.id}`} className="py-2 px-4 text-base font-semibold text-[rgba(255,244,224,1)]">
+                <TableCell key={`summary-${column.id}`} className="py-2 px-4 text-base font-semibold" style={{ color: MILK_COLORS.base }}>
                   {column.id === 'tokens' && (
                     <div className="flex flex-col">
                       <span>Summary</span>
-                      <span className="text-xs font-normal text-[rgba(255,244,224,1)]">{summaryData.totalUniqueTokens} tokens</span>
+                      <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>{summaryData.totalUniqueTokens} tokens</span>
                     </div>
                   )}
                   {column.id === 'id' && <span>{summaryData.totalPools}</span>}
@@ -170,14 +172,16 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableRow 
                     key={pool.id}
                     id={`pool-row-${pool.id}`}
-                    className={cn(
-                      "cursor-pointer",
-                      isRowSelected 
-                        ? "bg-[rgba(255,244,224,0.08)] hover:bg-[rgba(255,244,224,0.12)]" 
-                        : "hover:bg-[rgba(255,244,224,0.04)]"
-                    )}
+                    className="cursor-pointer"
                     style={{
-                      borderBottom: '1px solid rgba(255, 244, 224, 0.05)'
+                      borderBottom: `1px solid ${MILK_COLORS.borderSubtle}`,
+                      backgroundColor: isRowSelected ? MILK_COLORS.bgMedium : undefined
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = isRowSelected ? MILK_COLORS.bgMedium : MILK_COLORS.bgLight;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = isRowSelected ? MILK_COLORS.bgMedium : 'transparent';
                     }}
                     onClick={() => onPoolClick(pool)}
                   >
@@ -188,7 +192,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         displayValue = (
                           <div className="flex items-center gap-2">
                             <StackedTokenIcons tokens={pool.tokens} />
-                            <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{renderTokensText(pool)}</span>
+                            <span className="text-sm" style={{ color: MILK_COLORS.base }}>{renderTokensText(pool)}</span>
                           </div>
                         );
                       } else if (column.id === 'id') {
@@ -198,13 +202,13 @@ const PoolTable: React.FC<PoolTableProps> = ({
                             <Tooltip delayDuration={0}>
                               <TooltipTrigger asChild>
                                 <span 
-                                  className={cn("text-xs cursor-pointer", "text-[rgba(255,244,224,1)]")}
+                                  className="text-sm cursor-pointer" style={{ color: MILK_COLORS.base }}
                                 >
                                   {renderHexId(pool.id)}
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent 
-                                className="bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] text-[rgba(255,244,224,1)] z-[100]"
+                                className="bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] z-[100]" style={{ color: MILK_COLORS.base }}
                                 side="top"
                                 onPointerDownOutside={(e) => e.preventDefault()}
                               >
@@ -221,7 +225,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                                 href={linkUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={cn("text-[rgba(255,244,224,1)] hover:text-[rgba(255,244,224,1)]")}
+                                className="transition-colors" style={{ color: MILK_COLORS.base }}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <ExternalLink className="h-3 w-3" />
@@ -233,15 +237,15 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         displayValue = (
                           <div className="flex items-center gap-2">
                             <ProtocolLogo protocolName={pool.protocol_system} />
-                            <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{getReadableProtocolName(pool.protocol_system)}</span>
+                            <span className="text-sm" style={{ color: MILK_COLORS.base }}>{getReadableProtocolName(pool.protocol_system)}</span>
                           </div>
                         );
                       } else if (column.id === 'static_attributes.fee') {
-                        displayValue = <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{renderFee(pool)}</span>;
+                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{renderFee(pool)}</span>;
                       } else if (column.id === 'spotPrice') {
-                        displayValue = <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{pool.spotPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 18 }) ?? '-'}</span>;
+                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{pool.spotPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 18 }) ?? '-'}</span>;
                       } else if (column.id === 'updatedAt') {
-                        displayValue = <span className={cn("text-sm", "text-[rgba(255,244,224,1)]")}>{formatTimeAgo(pool.updatedAt)}</span>;
+                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{formatTimeAgo(pool.updatedAt)}</span>;
                       } else {
                         displayValue = '-';
                       }
@@ -249,10 +253,8 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       return (
                         <TableCell 
                           key={column.id} 
-                          className={cn(
-                            "px-4 py-3.5 text-sm",
-                            "text-[rgba(255,244,224,1)]"
-                          )}
+                          className="px-4 py-3.5 text-sm"
+                          style={{ color: MILK_COLORS.base }}
                         >
                           {displayValue}
                         </TableCell>
@@ -263,7 +265,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={allVisibleColumns.length} className="h-24 text-center text-[rgba(255,244,224,1)]">
+                <TableCell colSpan={allVisibleColumns.length} className="h-24 text-center" style={{ color: MILK_COLORS.base }}>
                   No pools match your filter criteria.
                 </TableCell>
               </TableRow>
@@ -271,7 +273,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
             {isLoadingMore && hasMorePools && (
               <TableRow>
                 <TableCell colSpan={allVisibleColumns.length} className="text-center py-4">
-                  <p className="text-[rgba(255,244,224,1)]">Loading more pools...</p>
+                  <p style={{ color: MILK_COLORS.base }}>Loading more pools...</p>
                 </TableCell>
               </TableRow>
             )}
