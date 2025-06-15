@@ -74,10 +74,10 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
 
   return (
     <div
-      className="flex flex-col md:flex-row md:items-center md:justify-between items-start gap-4 p-4"
-      style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', marginBottom: '16px' }}
+      className="flex flex-col md:flex-row md:items-center md:justify-between items-start"
+      style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', padding: '16px' }}
     >
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-2">
         <TokenFilterPopover
           tokens={tokensAsTokenType}
           selectedTokens={selectedTokensAsTokenType}
@@ -118,7 +118,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             color="#FF3366"
           />
           <span className="text-sm font-medium" style={{ color: "#FFF4E0" }}>
-            {currentBlockNumber > 0 ? currentBlockNumber.toLocaleString() : 'Loading...'}
+            {currentBlockNumber > 0 ? currentBlockNumber : 'Loading...'}
           </span>
         </div>
       </div>

@@ -28,7 +28,7 @@ interface Pool {
 
 const PoolGraphView: React.FC = () => {
   // console.log(`DEBUG: GraphViewContent render`);
-  
+
   // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
   const { pools: rawPoolsForControls, selectedChain } = usePoolData();
 
@@ -76,17 +76,17 @@ const PoolGraphView: React.FC = () => {
     });
     return Array.from(protocols);
   }, [rawPoolsForControls]);
-  
+
   // Get processed graph data for display using the new useGraphData hook
-  const { 
-    nodes: graphDisplayNodes, 
+  const {
+    nodes: graphDisplayNodes,
     edges: graphDisplayEdges,
     rawPoolsData, // Destructure the new rawPoolsData
     currentBlockNumber, // This now comes from useGraphData
     lastBlockTimestamp,   // This now comes from useGraphData
     estimatedBlockDuration // This now comes from useGraphData
   } = useGraphData(selectedTokenAddresses, selectedProtocols);
-  
+
   // Debug log
   React.useEffect(() => {
     if (currentBlockNumber > 0) {
@@ -97,9 +97,9 @@ const PoolGraphView: React.FC = () => {
   // No need for array handlers - GraphControls now uses individual toggles
 
   return (
-    <div className="h-full flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl p-6">
-      <GraphControls 
-        tokenList={allAvailableTokenNodes} 
+    <div className="h-full flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl">
+      <GraphControls
+        tokenList={allAvailableTokenNodes}
         protocols={uniqueProtocols}
         selectedTokens={selectedTokenAddresses}
         selectedProtocols={selectedProtocols}
@@ -110,12 +110,12 @@ const PoolGraphView: React.FC = () => {
         lastBlockTimestamp={lastBlockTimestamp}   // Use block info from useGraphData
         estimatedBlockDuration={estimatedBlockDuration} // Use block info from useGraphData
       />
-      
+
       {selectedTokenAddresses.length > 0 && graphDisplayNodes.length > 0 ? ( // Conditional rendering based on selectedTokens and if nodes exist
         <>
           <div className="flex-1" style={{ minHeight: "0" }}>
             <GraphView
-              tokenNodes={graphDisplayNodes} 
+              tokenNodes={graphDisplayNodes}
               poolEdges={graphDisplayEdges}
               rawPoolsData={rawPoolsData} // Pass rawPoolsData as a prop
               selectedChain={selectedChain} // Pass selectedChain as a prop
