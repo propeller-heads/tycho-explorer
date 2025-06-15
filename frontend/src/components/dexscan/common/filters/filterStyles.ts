@@ -3,7 +3,7 @@ import { MILK_COLORS } from '@/lib/colors';
 // Filter component style constants
 export const FILTER_STYLES = {
   // Button styles
-  button: `h-10 sm:h-8 px-3 border-[${MILK_COLORS.borderDefault}] bg-[${MILK_COLORS.bgSubtle}] hover:bg-[${MILK_COLORS.bgLight}] text-sm text-[${MILK_COLORS.base}]`,
+  button: `h-10 sm:h-8 px-3 border-[${MILK_COLORS.borderDefault}] bg-[${MILK_COLORS.bgSubtle}] hover:bg-[${MILK_COLORS.bgLight}] text-sm text-[${MILK_COLORS.base}] font-normal`,
   buttonChevron: "ml-1 h-3 w-3 transition-transform duration-200",
   
   // Popover content styles
@@ -22,8 +22,8 @@ export const FILTER_STYLES = {
   
   // Text color classes (for dynamic application)
   textColors: {
-    selected: `font-semibold text-[${MILK_COLORS.base}]`,
-    unselected: `font-medium text-[rgba(255,244,224,0.9)]`,
+    selected: `font-normal text-[${MILK_COLORS.base}]`,
+    unselected: `font-normal text-[rgba(255,244,224,0.9)]`,
     secondary: `text-[rgba(255,244,224,0.6)]`,
     selectedSecondary: `text-[${MILK_COLORS.hover}]`
   },
