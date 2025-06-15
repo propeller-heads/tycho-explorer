@@ -31,15 +31,22 @@ const PoolDetailSidebar: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) 
       )}
     >
       {/* Header Section */}
-      <div className="flex items-start justify-between p-6 pb-4 border-b border-[rgba(255,255,255,0.1)]"> {/* Adjusted border color */}
+      <div className="flex items-start gap-4 p-6 pb-4"> {/* Removed border */}
+        <button 
+          onClick={onClose} 
+          className="rounded-md bg-[rgba(255,244,224,0.04)] border border-[rgba(255,244,224,0.2)] hover:bg-[rgba(255,244,224,0.06)] text-[#FFFFFF] w-9 h-9 flex items-center justify-center backdrop-blur-[200px] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)] shrink-0"
+          aria-label="Close pool details"
+        >
+          <LucideX className="w-5 h-5" />
+        </button>
         <div className="flex-grow min-w-0"> {/* Added min-w-0 for better truncation */}
           <h2 className="text-xl font-bold text-[#FFFFFF] truncate" title={poolTokensText}> {/* Figma text color */}
             {poolTokensText}
           </h2>
-          <div className="flex items-center text-xs text-[rgba(255,255,255,0.64)] mt-1"> {/* Figma text color & opacity */}
+          <div className="flex items-center text-[13px] font-['Inter'] text-[rgba(255,255,255,0.64)] mt-1"> {/* Figma text color & opacity */}
             <span className="truncate">{pool.protocol_system}</span>
             <span className="mx-1.5">•</span>
-            <span className="font-mono truncate">{renderHexId(pool.id)}</span>
+            <span className="truncate">{renderHexId(pool.id)}</span>
             {poolExternalLink && (
               <a
                 href={poolExternalLink}
@@ -53,19 +60,12 @@ const PoolDetailSidebar: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) 
             )}
           </div>
         </div>
-        <button 
-          onClick={onClose} 
-          className="p-1 text-[rgba(255,255,255,0.7)] hover:text-[#FFFFFF] focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md shrink-0" // Adjusted colors
-          aria-label="Close pool details"
-        >
-          <LucideX className="h-5 w-5" />
-        </button>
       </div>
 
       {/* Tabs Section - Only "Quote simulation" as per plan */}
-      <div className="px-6 pt-4 border-b border-[rgba(255,255,255,0.1)]"> {/* Adjusted border color */}
+      <div className="px-6 pt-4"> {/* Removed border */}
         <div
-          className="inline-block py-3 px-1 text-base font-semibold text-[#FFFFFF] border-b-2 border-purple-500" // Figma text color
+          className="inline-block py-3 px-1 text-base font-semibold text-[#FFFFFF]" // Figma text color
         >
           Quote simulation
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // For token selection
-import { ArrowRightLeft, ExternalLink } from 'lucide-react'; // For swap direction button and external link
+import { ArrowDown, ExternalLink } from 'lucide-react'; // For swap direction button and external link
 import { Pool, Token } from './types'; // Assuming Token type includes address, symbol, logoURI
 import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
 import { callSimulationAPI } from './simulation/simulationApi';
@@ -55,26 +55,33 @@ const formatTokenSymbol = (symbol: string): string => {
 };
 
 const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
-  const [iconUrl, setIconUrl] = useState<string | null>(token?.logoURI || null);
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (token?.logoURI) {
+    // Reset icon URL when token changes
+    if (!token) {
+      setIconUrl(null);
+      return;
+    }
+    
+    if (token.logoURI) {
       setIconUrl(token.logoURI);
       return;
     }
+    
+    // Clear previous icon and fetch new one
+    setIconUrl(null);
     let isMounted = true;
     const fetchIcon = async () => {
-      if (token) {
-        const coinId = await getCoinId(token.symbol);
-        if (coinId) {
-          const url = await getCoinImageURL(coinId);
-          if (isMounted && url) setIconUrl(url);
-        }
+      const coinId = await getCoinId(token.symbol);
+      if (coinId) {
+        const url = await getCoinImageURL(coinId);
+        if (isMounted && url) setIconUrl(url);
       }
     };
-    if (token && !iconUrl) fetchIcon();
+    fetchIcon();
     return () => { isMounted = false; };
-  }, [token, iconUrl]);
+  }, [token?.address]); // Use token address as dependency to ensure reset on token change
 
   if (!token) return <span className="text-sm text-[rgba(255,255,255,0.64)]">Select Token</span>;
 
@@ -301,9 +308,9 @@ const SwapSimulator: React.FC<SwapSimulatorProps> = ({ poolId, tokens, fee, pool
             variant="ghost"
             size="icon"
             onClick={handleSwapDirection}
-            className="rounded-md bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.04)] text-[#FFFFFF] w-9 h-9 backdrop-blur-[112px]"
+            className="rounded-md bg-[rgba(255,244,224,0.04)] border border-[rgba(255,244,224,0.2)] hover:bg-[rgba(255,244,224,0.06)] text-[#FFFFFF] w-9 h-9 backdrop-blur-[200px] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]"
           >
-            <ArrowRightLeft className="w-5 h-5" />
+            <ArrowDown className="w-5 h-5" />
           </Button>
         </div>
       </div>
