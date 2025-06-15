@@ -5,6 +5,10 @@ import ListView from './ListView';
 import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
 import GraphViewContent from './graph/GraphViewContent';
 
+// Import comet background assets
+import bgSmallComet from '@/assets/figma_generated/bg_small_comet.svg';
+import bgLargeComet from '@/assets/figma_generated/bg_large_comet.svg';
+
 // Main content component using context
 const DexScanContentMain = () => {
   const location = useLocation();
@@ -57,8 +61,38 @@ const DexScanContentMain = () => {
 
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-between items-center relative mb-6 md:mb-0">
+    <div className="flex flex-col gap-4" style={{ position: 'relative' }}>
+      {/* Comet decorations positioned to extend beyond content area */}
+      <img
+        src={bgSmallComet}
+        alt=""
+        style={{ 
+          position: "absolute", 
+          top: "20%", 
+          left: "-5%", 
+          opacity: 0.15, 
+          zIndex: 0, 
+          pointerEvents: "none", 
+          width: "350px",
+          transform: "rotate(-15deg)"
+        }}
+      />
+      <img
+        src={bgLargeComet}
+        alt=""
+        style={{ 
+          position: "absolute", 
+          bottom: "-10%", 
+          right: "-8%", 
+          opacity: 0.12, 
+          zIndex: 0, 
+          pointerEvents: "none", 
+          width: "600px",
+          transform: "rotate(25deg)"
+        }}
+      />
+      
+      <div className="flex justify-between items-center relative mb-6 md:mb-0" style={{ zIndex: 1 }}>
         <DexScanHeader currentView={activeTab} onViewChange={handleTabChange} />
       </div>
 
@@ -70,7 +104,9 @@ const DexScanContentMain = () => {
           height: 'calc(100vh - 72px - 16px - 16px)', // 100vh - header height - DexScanContent top padding - desired bottom gap
           borderRadius: '12px',
           border: '1px solid rgba(255, 244, 224, 0.1)',
-          background: 'var(--Milk-Milk-50, rgba(255, 244, 224, 0.02))'
+          background: 'var(--Milk-Milk-50, rgba(255, 244, 224, 0.02))',
+          position: 'relative',
+          zIndex: 1
         }}
       > 
         
@@ -81,8 +117,7 @@ const DexScanContentMain = () => {
             display: activeTab === 'graph' ? 'block' : 'none',
             height: "100%", // Take full height of the parent (which has calculated height)
             width: "100%",
-            position: "relative",
-            overflow: "hidden" 
+            position: "relative" 
           }
         }>
           <GraphViewContent />
