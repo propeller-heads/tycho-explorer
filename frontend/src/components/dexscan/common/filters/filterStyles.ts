@@ -38,8 +38,8 @@ export const FILTER_STYLES = {
   hoverBackground: `hover:bg-[${MILK_COLORS.bgSubtle}]`,
   
   // Specific component dimensions
-  scrollArea: "h-[200px] p-2",
-  selectedScrollArea: "px-2 pb-2 max-h-[120px] overflow-y-auto",
+  scrollArea: "h-auto max-h-[340px] sm:max-h-[408px] md:max-h-[476px] lg:max-h-[510px] max-h-[calc(80vh-120px)] p-2 overflow-y-auto",
+  selectedScrollArea: "px-2 pb-2 h-auto max-h-[120px] sm:max-h-[150px] overflow-y-auto",
   
   // Color dot (for protocol filter)
   colorDot: "w-2.5 h-2.5 rounded-full transition-all duration-200",
