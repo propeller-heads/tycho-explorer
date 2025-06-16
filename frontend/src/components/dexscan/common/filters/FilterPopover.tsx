@@ -48,28 +48,33 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className={FILTER_STYLES.button}
-        >
-          {buttonLabel}
-          {selectedCount > 0 ? (
-            <X 
-              className={`${FILTER_STYLES.buttonChevron} hover:opacity-80`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onClearAll?.();
-              }}
-            />
-          ) : (
-            <LucideChevronDown 
-              className={`${FILTER_STYLES.buttonChevron} ${open ? 'rotate-180' : ''}`} 
-            />
-          )}
-        </Button>
-      </PopoverTrigger>
+      <div className="relative inline-flex">
+        <PopoverTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className={FILTER_STYLES.button}
+          >
+            {buttonLabel}
+            <span className={`${FILTER_STYLES.buttonChevron} ${selectedCount > 0 ? 'invisible' : ''}`}>
+              {selectedCount === 0 ? (
+                <LucideChevronDown className={open ? 'rotate-180' : ''} />
+              ) : (
+                <X className="opacity-0 pointer-events-none" />
+              )}
+            </span>
+          </Button>
+        </PopoverTrigger>
+        {selectedCount > 0 && (
+          <X 
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer hover:opacity-60 text-[#FFF4E0] transition-opacity z-10"
+            onClick={() => {
+              console.log("debug: clicked received");
+              onClearAll?.();
+            }}
+          />
+        )}
+      </div>
       <PopoverContent 
         align="start" 
         className={`${width} p-0 ${FILTER_STYLES.popoverContent}`}
