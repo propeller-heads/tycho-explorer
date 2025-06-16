@@ -18,6 +18,9 @@ export const MILK_COLORS = {
   /** Hover text - Use for text hover states (80% opacity) */
   hover: 'rgba(255,244,224,0.8)',
   
+  /** High emphasis text - Use for important text and dropdown items (90% opacity) */
+  emphasis: 'rgba(255,244,224,0.9)',
+  
   // Background colors
   /** Very subtle background - Use for default button/input backgrounds (2% opacity) */
   bgSubtle: 'rgba(255,244,224,0.02)',

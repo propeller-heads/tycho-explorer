@@ -1,5 +1,6 @@
 
 import { Button } from '@/components/ui/button';
+import { MILK_COLORS } from '@/lib/colors';
 
 interface ViewSelectorProps {
   activeTab: 'graph' | 'pools';
@@ -9,7 +10,7 @@ interface ViewSelectorProps {
 export const ViewSelector = ({ activeTab, setActiveTab }: ViewSelectorProps) => {
   // Common classes for both buttons with mobile-optimized touch targets
   // Mobile: larger padding for 44px minimum touch target, Desktop: original Figma specs
-  const commonButtonClasses = "py-3 px-4 sm:py-[10px] sm:px-[14px] rounded-xl text-sm font-medium text-[#FFFFFF] leading-none";
+  const commonButtonClasses = `py-3 px-4 sm:py-[10px] sm:px-[14px] rounded-xl text-sm font-medium text-[${MILK_COLORS.base}] leading-none`;
 
   // Classes for the selected button: background rgba(255, 244, 224, 0.06)
   const selectedButtonClasses = "bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)]";

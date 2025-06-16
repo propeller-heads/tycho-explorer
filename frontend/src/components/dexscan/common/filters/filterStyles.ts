@@ -17,14 +17,14 @@ export const FILTER_STYLES = {
   
   // Text styles
   noItemsText: `text-sm text-[${MILK_COLORS.dimmed}] text-center py-2`,
-  selectedSectionText: `text-sm font-medium text-[${MILK_COLORS.hover}]`,
-  selectedCountText: `text-xs text-[rgba(255,244,224,0.6)]`,
+  selectedSectionText: `text-sm font-normal text-[${MILK_COLORS.emphasis}]`,
+  selectedCountText: `text-xs text-[${MILK_COLORS.muted}]`,
   
   // Text color classes (for dynamic application)
   textColors: {
     selected: `font-normal text-[${MILK_COLORS.base}]`,
-    unselected: `font-normal text-[rgba(255,244,224,0.9)]`,
-    secondary: `text-[rgba(255,244,224,0.6)]`,
+    unselected: `font-normal text-[${MILK_COLORS.emphasis}]`,
+    secondary: `text-[${MILK_COLORS.muted}]`,
     selectedSecondary: `text-[${MILK_COLORS.hover}]`
   },
   
@@ -32,7 +32,7 @@ export const FILTER_STYLES = {
   borderBottom: `border-b border-[${MILK_COLORS.borderSubtle}]`,
   
   // Icon styles
-  chevronIcon: `h-3 w-3 text-[rgba(255,244,224,0.6)]`,
+  chevronIcon: `h-3 w-3 text-[${MILK_COLORS.muted}]`,
   
   // Hover effects
   hoverBackground: `hover:bg-[${MILK_COLORS.bgSubtle}]`,
@@ -54,8 +54,8 @@ export const FILTER_STYLES = {
 
 // Export individual color values for inline styles
 export const FILTER_COLORS = {
-  chevron: 'rgba(255,244,224,0.6)',
-  unselected: 'rgba(255,244,224,0.9)',
-  secondary: 'rgba(255,244,224,0.6)',
+  chevron: MILK_COLORS.muted,
+  unselected: MILK_COLORS.emphasis,
+  secondary: MILK_COLORS.muted,
   popoverBorder: 'rgba(255,244,224,0.12)'
 } as const;
