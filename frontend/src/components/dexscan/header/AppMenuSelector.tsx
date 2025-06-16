@@ -11,7 +11,7 @@ const ORDERBOOK_TEXT = 'Orderbook';
 
 // CSS Classes
 const MENU_BUTTON_CLASSES = "flex items-center justify-center w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-[rgba(255,244,224,0.06)] hover:bg-[rgba(255,244,224,0.08)] transition-colors";
-const DROPDOWN_CLASSES = "absolute top-full left-0 mt-2 w-[203px] rounded-xl overflow-hidden shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)] z-50";
+const DROPDOWN_CLASSES = "absolute top-full left-0 mt-2 w-[203px] rounded-xl overflow-hidden shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)] z-[9999]";
 const DROPDOWN_CONTAINER_CLASSES = "bg-[rgba(255,244,224,0.04)] backdrop-blur-[104px] border border-[rgba(255,244,224,0.2)] rounded-xl py-2";
 const MENU_ITEM_CLASSES = "px-4 py-2.5 mx-2 rounded-md hover:bg-[rgba(255,244,224,0.06)] transition-colors cursor-pointer text-sm font-normal text-[#FFF4E0]";
 const MENU_ITEM_DISABLED_CLASSES = "px-4 py-2.5 mx-2 rounded-md text-sm font-normal text-[#FFF4E0] opacity-50 cursor-default";
