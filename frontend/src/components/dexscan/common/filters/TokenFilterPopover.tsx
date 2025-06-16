@@ -38,11 +38,19 @@ export const TokenFilterPopover = ({
     (token) => [token.symbol, token.address]
   );
 
+  // Clear all selected tokens
+  const handleClearAll = () => {
+    selectedTokens.forEach(token => onTokenToggle(token, false));
+  };
+
   return (
     <FilterPopover 
       buttonText={buttonText}
       selectedCount={selectedTokens.length}
       width="w-72"
+      selectedItems={selectedTokens}
+      getItemLabel={(token) => token.symbol}
+      onClearAll={handleClearAll}
     >
       <div className="p-2">
         <FilterSearchInput 

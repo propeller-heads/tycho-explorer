@@ -26,11 +26,19 @@ export const ProtocolFilterPopover = ({
     [protocols]
   );
 
+  // Clear all selected protocols
+  const handleClearAll = () => {
+    selectedProtocols.forEach(protocol => onProtocolToggle(protocol, false));
+  };
+
   return (
     <FilterPopover 
       buttonText={buttonText}
       selectedCount={selectedProtocols.length}
       width="w-64"
+      selectedItems={selectedProtocols}
+      getItemLabel={(protocol) => getReadableProtocolName(protocol)}
+      onClearAll={handleClearAll}
     >
       {/* Selected Summary Bar */}
       {selectedProtocols.length > 0 && (
