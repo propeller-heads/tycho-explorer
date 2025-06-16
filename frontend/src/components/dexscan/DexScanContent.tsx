@@ -92,7 +92,7 @@ const DexScanContentMain = () => {
         }}
       />
       
-      <div className="flex justify-between items-center relative mb-6 md:mb-0" style={{ zIndex: 10 }}>
+      <div className="flex justify-between items-center relative mb-6 md:mb-0">
         <DexScanHeader currentView={activeTab} onViewChange={handleTabChange} />
       </div>
 
@@ -105,8 +105,7 @@ const DexScanContentMain = () => {
           borderRadius: '12px',
           border: '1px solid rgba(255, 244, 224, 0.1)',
           background: 'var(--Milk-Milk-50, rgba(255, 244, 224, 0.02))',
-          position: 'relative',
-          zIndex: 1
+          position: 'relative'
         }}
       > 
         

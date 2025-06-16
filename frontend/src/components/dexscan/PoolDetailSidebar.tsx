@@ -24,7 +24,7 @@ const PoolDetailSidebar: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) 
   return (
     <div 
       className={cn(
-        "fixed top-0 right-0 h-full w-[435px] z-50 flex flex-col",
+        "fixed top-0 right-0 h-full w-[435px] z-[1200] flex flex-col",
         "bg-[rgba(255,255,255,0.01)] backdrop-blur-[200px]", // Closer to Figma spec
         "border-l border-[rgba(255,255,255,0.06)]", // Closer to Figma spec
         "shadow-[-16px_0px_36px_0px_rgba(24,10,52,1)]" // Using arbitrary value for shadow
