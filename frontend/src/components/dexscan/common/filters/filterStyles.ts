@@ -7,7 +7,7 @@ export const FILTER_STYLES = {
   buttonChevron: "ml-1 h-3 w-3 transition-transform duration-200",
   
   // Popover content styles
-  popoverContent: `bg-[${MILK_COLORS.bgSubtle}] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]`,
+  popoverContent: `bg-[${MILK_COLORS.bgSubtle}] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)] z-[1100]`,
   
   // Checkbox styles
   checkbox: `border-[${MILK_COLORS.muted}] data-[state=checked]:bg-[#FF3366] data-[state=checked]:border-transparent data-[state=checked]:text-white rounded-[4px] pointer-events-none`,
