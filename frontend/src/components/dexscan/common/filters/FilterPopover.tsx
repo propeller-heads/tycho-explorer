@@ -48,15 +48,15 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
   
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <div className="relative inline-flex">
+      <div className="relative inline-flex w-full sm:w-auto">
         <PopoverTrigger asChild>
           <Button 
             variant="outline" 
             size="sm" 
-            className={FILTER_STYLES.button}
+            className={`${FILTER_STYLES.button} truncate max-w-full !justify-center relative`}
           >
-            {buttonLabel}
-            <span className={`${FILTER_STYLES.buttonChevron} ${selectedCount > 0 ? 'invisible' : ''}`}>
+            <span className="truncate">{buttonLabel}</span>
+            <span className={`${FILTER_STYLES.buttonChevron} ${selectedCount > 0 ? 'invisible' : ''} absolute right-3 top-1/2 -translate-y-1/2`}>
               {selectedCount === 0 ? (
                 <LucideChevronDown className={open ? 'rotate-180' : ''} />
               ) : (
