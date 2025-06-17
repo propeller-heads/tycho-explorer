@@ -28,7 +28,25 @@ export const Footer = () => {
       <div>2025 © PropellerHeads</div>
       
       {/* Attribution */}
-      <div>Made by PropellerHeads @ex9_fyi</div>
+      <div>
+        Made by PropellerHeads{' '}
+        <a 
+          href="https://x.com/ex9_fyi" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            color: 'inherit',
+            textDecoration: 'none',
+            borderBottom: `1px solid ${MILK_COLORS.muted}`,
+            paddingBottom: '1px',
+            transition: 'opacity 0.2s ease',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+        >
+          @ex9_fyi
+        </a>
+      </div>
     </footer>
   );
 };
