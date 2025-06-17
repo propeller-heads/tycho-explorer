@@ -4,7 +4,7 @@ import {
   TableHead, TableCell 
 } from '@/components/ui/table';
 import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { cn, renderHexId, getExternalLink, formatTimeAgo } from '@/lib/utils';
+import { cn, renderHexId, getExternalLink, formatTimeAgo, formatSpotPrice } from '@/lib/utils';
 import { Pool, Token } from '../types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TokenIcon from '@/components/dexscan/common/TokenIcon';
@@ -26,7 +26,7 @@ const getColumnWidthClass = (columnId: string): string => {
     case 'static_attributes.fee': // Fee Rate
       return 'w-[80px]';         // Figma: hug content (percentage)
     case 'spotPrice':
-      return 'w-[120px]';         // Figma: hug content (price figures)
+      return 'w-[100px]';         // Figma: hug content (price figures)
     case 'updatedAt':
       return 'w-[140px]';         // Figma: hug content (timestamps/dates)
     default:
@@ -243,7 +243,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       } else if (column.id === 'static_attributes.fee') {
                         displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{renderFee(pool)}</span>;
                       } else if (column.id === 'spotPrice') {
-                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{pool.spotPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 18 }) ?? '-'}</span>;
+                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{formatSpotPrice(pool.spotPrice)}</span>;
                       } else if (column.id === 'updatedAt') {
                         displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{formatTimeAgo(pool.updatedAt)}</span>;
                       } else {

@@ -57,6 +57,28 @@ const INVALID_TIMESTAMP_FALLBACK = "N/A";
 // Fallback string for date parsing errors
 const PARSE_ERROR_FALLBACK = "Invalid date";
 
+// Formats a spot price using scientific notation for very small/large numbers
+export const formatSpotPrice = (price: number | null | undefined): string => {
+  if (price == null) return '-';
+  
+  // Use scientific notation for very small numbers (< 0.001) or very large numbers (> 1M)
+  if (price !== 0 && (Math.abs(price) < 0.001 || Math.abs(price) > 1000000)) {
+    return price.toExponential(2); // e.g., 1.23e-9
+  }
+  
+  // For "normal" range, format with appropriate decimals
+  if (price < 1) {
+    // Show up to 6 decimal places, but remove trailing zeros
+    return parseFloat(price.toFixed(6)).toString();
+  } else if (price < 1000) {
+    // Show up to 4 decimal places, but remove trailing zeros
+    return parseFloat(price.toFixed(4)).toString();
+  } else {
+    // For larger numbers, show up to 2 decimal places
+    return price.toFixed(2);
+  }
+};
+
 // Generates a block explorer link for a given token based on the chain.
 export const getTokenExplorerLink = (tokenAddress: string, chain: string): string => {
   // Normalize chain name to lowercase for consistent matching
