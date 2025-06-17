@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import { Footer } from "./components/dexscan/Footer";
 
 // Import background assets
 import globalBgNoise from '@/assets/figma_generated/global_bg_noise.png';
@@ -10,10 +11,12 @@ const App = () => (
   <BrowserRouter>
     <div
       style={{
-        minHeight: "100vh",
+        height: "100vh",
         backgroundColor: "#190A35",
         position: "relative",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Noise Layer - tiled */}
@@ -46,11 +49,14 @@ const App = () => (
       />
 
       {/* Main Content - ensure it's above background elements */}
-      <div style={{ position: "relative", zIndex: 3 }}>
+      <div style={{ position: "relative", zIndex: 3, flex: 1, overflow: "auto" }}>
         <Routes>
           <Route path="/" element={<Index />} />
         </Routes>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   </BrowserRouter>
 );
