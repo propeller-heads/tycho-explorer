@@ -16,6 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChevronDown, Check, ExternalLink } from 'lucide-react';
 // Import custom hooks and context consumers
 import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
+// Import MILK colors
+import { MILK_COLORS } from '@/lib/colors';
 
 // --- Constants for Strings and URLs ---
 const DOCS_URL = "https://docs.propellerheads.xyz/";
@@ -58,16 +60,18 @@ const HeaderActions: React.FC = () => {
   return (
     // Always flex-row with proper spacing
     <div className="flex flex-row items-center gap-2 sm:gap-4">
-      {/* Docs link - simple text link */}
-      <a
-        href={DOCS_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-1.5 text-[#FFF4E1] text-sm font-medium hover:opacity-80 transition-opacity"
-      >
-        <span>{TEXT_DOCS}</span>
-        <ExternalLink className="h-3.5 w-3.5" />
-      </a>
+      {/* Docs link - hidden on mobile */}
+      <div className="hidden sm:flex">
+        <a
+          href={DOCS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-[#FFF4E1] text-sm font-medium hover:opacity-80 transition-opacity"
+        >
+          <span>{TEXT_DOCS}</span>
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </div>
       
       {/* Chain selector */}
       <Popover open={chainSelectorOpen} onOpenChange={setChainSelectorOpen}>
@@ -75,15 +79,13 @@ const HeaderActions: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="relative h-9 w-full sm:w-auto pl-3 pr-8 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
+            className="flex items-center gap-2 h-[36px] w-auto pl-[12px] pr-[10px] rounded-[12px] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
+            style={{ backgroundColor: MILK_COLORS.bgLight }}
           >
-            <span className="flex items-center">
-              {chainLogo && (
-                <img src={chainLogo} alt={selectedChain} className="h-5 w-5" />
-              )}
-            </span>
-            
-            <ChevronDown className="absolute right-2 h-4 w-4 text-white/60" />
+            {chainLogo && (
+              <img src={chainLogo} alt={selectedChain} className="h-5 w-5" />
+            )}
+            <ChevronDown className="h-4 w-4 text-white/60" />
           </Button>
         </PopoverTrigger>
         <PopoverContent 

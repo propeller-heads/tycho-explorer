@@ -7,6 +7,8 @@ import HeaderBranding from '@/components/dexscan/header/HeaderBranding';
 import HeaderActions from '@/components/dexscan/header/HeaderActions';
 // Import the ViewSelector component for the center section of the header
 import { ViewSelector } from '@/components/dexscan/ViewSelector';
+// Import the MobileMenuButton component for mobile navigation
+import MobileMenuButton from '@/components/dexscan/header/MobileMenuButton';
 
 // Define an interface for the props that this component accepts
 interface DexScanHeaderProps {
@@ -22,10 +24,18 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
   return (
     // Header element with responsive layout - stacks on mobile, row on desktop
     <header className="flex flex-row items-center justify-between bg-transparent px-6 pt-2 pb-0 w-full">
-      {/* Mobile-only: Row 1 with branding and actions */}
+      {/* Mobile-only: Single row with all components */}
       <div className="sm:hidden flex items-center justify-between w-full">
-        <HeaderBranding />
-        <HeaderActions />
+        <div className="flex items-center gap-2">
+          <HeaderBranding />
+        </div>
+        <div className="flex items-center gap-2">
+          <HeaderActions />
+          <MobileMenuButton 
+            currentView={currentView}
+            onViewChange={onViewChange}
+          />
+        </div>
       </div>
 
       {/* Desktop-only: Left section with branding */}
@@ -33,8 +43,8 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
         <HeaderBranding />
       </div>
 
-      {/* Mobile Row 3 / Desktop Center Section: Contains the view selector toggle buttons */}
-      <div className="flex justify-center w-full sm:max-w-[475px] sm:mx-auto">
+      {/* Desktop Center Section: Contains the view selector toggle buttons */}
+      <div className="hidden sm:flex justify-center w-full sm:max-w-[475px] sm:mx-auto">
         {/* Render the ViewSelector component and pass props */}
         <ViewSelector 
           // Pass the current active view

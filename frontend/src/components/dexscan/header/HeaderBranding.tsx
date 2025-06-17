@@ -13,7 +13,11 @@ const HeaderBranding: React.FC = () => {
       {/* App menu selector */}
       <AppMenuSelector />
       
-      <img src={TychoLogo} alt="Tycho Explorer" className="h-5 sm:h-6" />
+      <img 
+        src={TychoLogo} 
+        alt="Tycho Explorer" 
+        className="w-[109.691px] h-[24px] sm:w-auto sm:h-6" 
+      />
     </div>
   );
 };
