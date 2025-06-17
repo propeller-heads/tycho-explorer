@@ -243,7 +243,16 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       } else if (column.id === 'static_attributes.fee') {
                         displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{renderFee(pool)}</span>;
                       } else if (column.id === 'spotPrice') {
-                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{formatSpotPrice(pool.spotPrice)}</span>;
+                        // Show spot price with token1 logo (quote token)
+                        const quoteToken = pool.tokens[1] || pool.tokens[0]; // Fallback to token0 if only one token
+                        displayValue = (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm" style={{ color: MILK_COLORS.base }}>
+                              {formatSpotPrice(pool.spotPrice)}
+                            </span>
+                            {quoteToken && <TokenIcon token={quoteToken} size={6} />}
+                          </div>
+                        );
                       } else if (column.id === 'updatedAt') {
                         displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{formatTimeAgo(pool.updatedAt)}</span>;
                       } else {
