@@ -32,9 +32,12 @@ ALL_SERVICES_DEV = $(API_SERVICES_DEV) frontend-dev
 # === Environment Setup ===
 # DEV=1 switches between development and production modes
 
+# Get worktree name from current directory for unique container naming
+WORKTREE_NAME := $(shell basename $(CURDIR))
+
 ifdef DEV
 	# Development mode: use dev config files and show logs in terminal
-	DC = docker-compose -f docker-compose.dev.yml --env-file .env.dev
+	DC = docker-compose -p $(WORKTREE_NAME) -f docker-compose.dev.yml --env-file .env.dev
 	MODE_DESC = Development mode (hot reload enabled)
 else
 	# Production mode: use production config files and run in background
@@ -66,6 +69,13 @@ help:
 	@echo ""
 	@echo "  BUILD=1       → Force rebuild images before starting"
 	@echo ""
+	@echo "PORT CONFIGURATION (Required for DEV mode):"
+	@echo "  Set these in your .env.dev file:"
+	@echo "    TYCHO_API_ETHEREUM_PORT=4001"
+	@echo "    TYCHO_API_BASE_PORT=4002"
+	@echo "    TYCHO_API_UNICHAIN_PORT=4003"
+	@echo "    FRONTEND_DEV_PORT=5173"
+	@echo ""
 	@echo "AVAILABLE SERVICES:"
 	@echo "  Production (all API services use same image):"
 	@echo "    • tycho-api-ethereum  (API for Ethereum network, port 3001)"
@@ -87,6 +97,7 @@ help:
 	@echo "  make down                               # Stop everything"
 	@echo ""
 	@echo "Current mode: $(MODE_DESC)"
+	@echo "Project name: $(WORKTREE_NAME)"
 
 # Start services
 # - If BUILD=1 is set, rebuild images first
