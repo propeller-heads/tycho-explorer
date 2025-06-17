@@ -60,20 +60,21 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
             Reset all
           </Button>
         )}
-      </div>
 
-      <div className={FILTER_STYLES.filterBarRight}>
-        {startTime && duration && ( // Check for renamed props
-          <BlockProgressIcon
-            startTime={startTime} // Pass renamed prop
-            duration={duration}   // Pass renamed prop
-            size={16} // Consistent with GraphControls
-            color="#FF3366" // Changed to red as per Figma and Graph View
-          />
-        )}
-        {blockNumber !== null && (
-          <span className={FILTER_STYLES.blockNumberText}>{blockNumber}</span>
-        )}
+        {/* Block Number Display */}
+        <div className="flex items-center justify-center gap-2">
+          {startTime && duration && ( // Check for renamed props
+            <BlockProgressIcon
+              startTime={startTime} // Pass renamed prop
+              duration={duration}   // Pass renamed prop
+              size={16} // Consistent with GraphControls
+              color="#FF3366" // Changed to red as per Figma and Graph View
+            />
+          )}
+          {blockNumber !== null && (
+            <span className={FILTER_STYLES.blockNumberText}>{blockNumber}</span>
+          )}
+        </div>
       </div>
     </div>
   );

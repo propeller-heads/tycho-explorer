@@ -4,6 +4,7 @@ import BlockProgressIcon from './BlockProgressIcon'; // Import the new component
 import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
 import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
 import { Token } from '../types';
+import { FILTER_STYLES } from '../common/filters/filterStyles';
 
 // Removed local storage keys - now handled by useFilterManager
 
@@ -73,11 +74,8 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   };
 
   return (
-    <div
-      className="flex flex-col md:flex-row md:items-center md:justify-between items-start"
-      style={{ borderBottom: '1px solid rgba(255, 244, 224, 0.1)', padding: '16px' }}
-    >
-      <div className="flex flex-wrap items-center gap-2 sm:gap-2">
+    <div className={FILTER_STYLES.filterBar}>
+      <div className={FILTER_STYLES.filterBarButtons}>
         <TokenFilterPopover
           tokens={tokensAsTokenType}
           selectedTokens={selectedTokensAsTokenType}
@@ -97,19 +95,15 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
           <Button
             variant="link"
             size="sm"
-            className="h-10 sm:h-8 text-xs text-[rgba(255,244,224,0.64)] hover:text-[rgba(255,244,224,1)]"
+            className={FILTER_STYLES.resetButton}
             onClick={handleFullReset}
           >
             Reset all
           </Button>
         )}
-      </div>
 
-      {/* Right section for reset and block number - ensure it doesn't shrink excessively and aligns well in column mode */}
-      {/* This div now only contains the block number display */}
-      <div className="flex items-center gap-3 mt-4 md:mt-0 flex-shrink-0">
         {/* Block Number Display */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <BlockProgressIcon
             startTime={lastBlockTimestamp}
             duration={estimatedBlockDuration}
@@ -117,7 +111,7 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             strokeWidth={2.5}
             color="#FF3366"
           />
-          <span className="text-sm font-medium" style={{ color: "#FFF4E0" }}>
+          <span className={FILTER_STYLES.blockNumberText}>
             {currentBlockNumber > 0 ? currentBlockNumber : 'Loading...'}
           </span>
         </div>

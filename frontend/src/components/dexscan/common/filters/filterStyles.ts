@@ -3,8 +3,8 @@ import { MILK_COLORS } from '@/lib/colors';
 // Filter component style constants
 export const FILTER_STYLES = {
   // Button styles
-  button: `h-10 sm:h-8 px-3 border-[${MILK_COLORS.borderDefault}] bg-[${MILK_COLORS.bgSubtle}] hover:bg-[${MILK_COLORS.bgLight}] text-sm text-[${MILK_COLORS.base}] font-normal`,
-  buttonChevron: "ml-1 h-3 w-3 transition-transform duration-200",
+  button: `h-10 sm:h-8 px-3 border-[${MILK_COLORS.borderDefault}] bg-[${MILK_COLORS.bgSubtle}] hover:bg-[${MILK_COLORS.bgLight}] text-sm text-[${MILK_COLORS.base}] font-normal w-full sm:w-auto`,
+  buttonChevron: "h-3 w-3 transition-transform duration-200",
   
   // Popover content styles
   popoverContent: `bg-[${MILK_COLORS.bgSubtle}] backdrop-blur-[104px] border border-[rgba(255,244,224,0.12)] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)] z-[1100]`,
@@ -46,10 +46,10 @@ export const FILTER_STYLES = {
   
   // Filter bar styles
   filterBar: "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-2",
-  filterBarButtons: "flex flex-wrap items-center gap-2",
+  filterBarButtons: "flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2",
   resetButton: `h-10 sm:h-8 text-sm text-[${MILK_COLORS.muted}] hover:text-[${MILK_COLORS.base}] underline-offset-2`,
   blockNumberText: `text-sm font-medium text-[${MILK_COLORS.hover}]`,
-  filterBarRight: "flex items-center gap-2 ml-auto sm:ml-0"
+  filterBarRight: "flex items-center gap-2"
 } as const;
 
 // Export individual color values for inline styles
