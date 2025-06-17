@@ -9,9 +9,8 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
-    container_name: tycho-api-ethereum-dev
     ports:
-      - "4001:3000"
+      - "${TYCHO_API_ETHEREUM_PORT}:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
       RUST_LOG: ${RUST_LOG:-debug}
@@ -46,12 +45,11 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
-    container_name: tycho-api-base-dev
     depends_on:
       tycho-api-ethereum-dev:
         condition: service_healthy
     ports:
-      - "4002:3000"
+      - "${TYCHO_API_BASE_PORT}:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
       RUST_LOG: ${RUST_LOG:-debug}
@@ -86,12 +84,11 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile.dev
-    container_name: tycho-api-unichain-dev
     depends_on:
       tycho-api-ethereum-dev:
         condition: service_healthy
     ports:
-      - "4003:3000"
+      - "${TYCHO_API_UNICHAIN_PORT}:3000"
     environment:
       TYCHO_API_KEY: ${TYCHO_API_KEY}
       RUST_LOG: ${RUST_LOG:-debug}
@@ -134,9 +131,8 @@ services:
         - VITE_API_ETHEREUM_URL=${VITE_API_ETHEREUM_URL}
         - VITE_API_BASE_URL=${VITE_API_BASE_URL}
         - VITE_API_UNICHAIN_URL=${VITE_API_UNICHAIN_URL}
-    container_name: tycho-explorer-frontend-dev
     ports:
-      - "5173:5173"  # Vite default dev server port
+      - "${FRONTEND_DEV_PORT}:5173"  # Vite default dev server port
     depends_on:
       tycho-api-ethereum-dev:
         condition: service_healthy
