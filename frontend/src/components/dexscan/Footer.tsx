@@ -25,7 +25,7 @@ export const Footer = () => {
       }}
     >
       {/* Copyright */}
-      <div>2025 © PropellerHeads</div>
+      <div>{new Date().getFullYear()} © PropellerHeads</div>
       
       {/* Attribution */}
       <div>
