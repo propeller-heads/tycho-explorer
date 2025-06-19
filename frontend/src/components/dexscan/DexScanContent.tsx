@@ -69,11 +69,12 @@ const DexScanContentMain = () => {
         style={{ 
           position: "absolute", 
           top: "20%", 
-          left: "-5%", 
+          left: "0", 
           opacity: 0.15, 
           zIndex: 0, 
           pointerEvents: "none", 
           width: "350px",
+          maxWidth: "calc(100% - 20px)",
           transform: "rotate(-15deg)"
         }}
       />
@@ -83,11 +84,12 @@ const DexScanContentMain = () => {
         style={{ 
           position: "absolute", 
           bottom: "-10%", 
-          right: "-8%", 
+          right: "0", 
           opacity: 0.12, 
           zIndex: 0, 
           pointerEvents: "none", 
-          width: "600px",
+          width: "400px",
+          maxWidth: "calc(100% - 20px)",
           transform: "rotate(25deg)"
         }}
       />
