@@ -49,7 +49,7 @@ const App = () => (
       />
 
       {/* Main Content - ensure it's above background elements */}
-      <div style={{ position: "relative", zIndex: 3, flex: 1, overflow: "auto" }}>
+      <div style={{ position: "relative", zIndex: 3, flex: 1, overflow: "hidden" }}>
         <Routes>
           <Route path="/" element={<Index />} />
         </Routes>
