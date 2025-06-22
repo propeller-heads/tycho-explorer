@@ -7,8 +7,8 @@ use api::start_api_server;
 use clap::Parser;
 use dotenv::dotenv;
 use futures::future::select_all;
-use simulation::state::SimulationState;
-use std::{env, str::FromStr};
+use simulation::{state::SimulationState, start_simulation_processor};
+use std::{env, str::FromStr, time::Duration};
 use tokio::sync::mpsc;
 use tycho_simulation::tycho_core::models::Chain;
 use utils::setup::setup_tracing;
@@ -58,41 +58,43 @@ async fn main() -> anyhow::Result<()> {
     let simulation_state = SimulationState::new();
     info!("Created simulation state");
 
-    // Create communication channels
-    let (simulation_tx, simulation_rx) = mpsc::channel(32);
-    info!("Created communication channels");
-
-    // Start the API server
-    info!("Starting API server on port {}", cli.port);
-    let api_server = start_api_server(cli.port, simulation_state.clone(), simulation_tx.clone());
-
-    // Start the simulation processor
-    info!("Starting simulation processor...");
-    let simulation_task = simulation::start_simulation_processor(
-        simulation_state.clone(),
-        simulation_tx,
-        simulation_rx,
-        &tycho_url,
-        &tycho_api_key,
-        cli.tvl_threshold,
-        cli.tvl_buffer,
-        chain,
-    );
-
-    let tasks = vec![api_server, simulation_task];
-    info!("All tasks started, waiting for completion...");
-
-    // Wait for all tasks to complete
-    let (result, task_index, remaining) = select_all(tasks).await;
-    
-    match &result {
-        Ok(_) => info!("Task {} completed successfully", task_index),
-        Err(e) => error!("Task {} failed with error: {}", task_index, e),
+    // Simple restart loop - these tasks should run forever
+    let mut restart_count = 0u32;
+    loop {
+        restart_count += 1;
+        
+        // Create fresh channels
+        let (simulation_tx, simulation_rx) = mpsc::channel(32);
+        
+        // Start both tasks
+        info!("Starting services (attempt #{})", restart_count);
+        let tasks = vec![
+            start_api_server(cli.port, simulation_state.clone(), simulation_tx.clone()),
+            start_simulation_processor(
+                simulation_state.clone(),
+                simulation_tx,
+                simulation_rx,
+                &tycho_url,
+                &tycho_api_key,
+                cli.tvl_threshold,
+                cli.tvl_buffer,
+                chain,
+            ),
+        ];
+        
+        // Wait for any task to complete (shouldn't happen)
+        let (result, task_index, _) = select_all(tasks).await;
+        
+        let task_name = if task_index == 0 { "API Server" } else { "Simulation Processor" };
+        
+        // Log what happened for debugging
+        match result {
+            Ok(Ok(())) => error!("{} completed normally (unexpected for long-running task)", task_name),
+            Ok(Err(e)) => error!("{} failed with error: {:?}", task_name, e),
+            Err(e) => error!("{} panicked: {:?}", task_name, e),
+        }
+        
+        error!("Restarting all services in 5 seconds (restart #{})...", restart_count);
+        tokio::time::sleep(Duration::from_secs(5)).await;
     }
-    
-    // Log remaining tasks
-    info!("Shutting down {} remaining tasks", remaining.len());
-
-    let _ = result?;
-    Ok(())
 }
