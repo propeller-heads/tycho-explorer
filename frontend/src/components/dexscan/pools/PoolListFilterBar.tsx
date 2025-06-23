@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import BlockProgressIcon from '@/components/dexscan/graph/BlockProgressIcon'; // Reusing from graph view
 import { Token } from '../types'; // Import Token type
 import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
 import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
 import { FILTER_STYLES } from '../common/filters/filterStyles';
+import ConnectionStatus from '../common/ConnectionStatus';
 
 interface PoolListFilterBarProps {
   // Filter state
@@ -24,7 +24,10 @@ interface PoolListFilterBarProps {
   blockNumber: number | null;
   // Renamed to match BlockProgressIconProps
   startTime?: number; 
-  duration?: number; 
+  duration?: number;
+  // Connection status props
+  connectionState: 'disconnected' | 'connecting' | 'connected';
+  connectionStartTime: number | null;
 }
 
 const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
@@ -38,6 +41,8 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
   blockNumber,
   startTime, // Renamed
   duration,  // Renamed
+  connectionState,
+  connectionStartTime,
 }) => {
 
   return (
@@ -61,20 +66,14 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
           </Button>
         )}
 
-        {/* Block Number Display */}
-        <div className="flex items-center justify-center gap-2">
-          {startTime && duration && ( // Check for renamed props
-            <BlockProgressIcon
-              startTime={startTime} // Pass renamed prop
-              duration={duration}   // Pass renamed prop
-              size={16} // Consistent with GraphControls
-              color="#FF3366" // Changed to red as per Figma and Graph View
-            />
-          )}
-          {blockNumber !== null && (
-            <span className={FILTER_STYLES.blockNumberText}>{blockNumber}</span>
-          )}
-        </div>
+        {/* Connection Status Display */}
+        <ConnectionStatus
+          connectionState={connectionState}
+          connectionStartTime={connectionStartTime}
+          blockNumber={blockNumber || 0}
+          lastBlockTimestamp={startTime || null}
+          estimatedBlockDuration={duration || 12000}
+        />
       </div>
     </div>
   );

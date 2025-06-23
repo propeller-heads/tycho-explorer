@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { 
   Table, TableHeader, TableBody, TableRow, 
   TableHead, TableCell 
@@ -71,6 +71,8 @@ interface PoolTableProps {
   hasMorePools: boolean;
   isLoadingMore: boolean; // New prop for loading indicator
   selectedChain: string; // New prop for chain
+  connectionState: 'disconnected' | 'connecting' | 'connected';
+  connectionStartTime: number | null;
 }
 
 const PoolTable: React.FC<PoolTableProps> = ({ 
@@ -86,10 +88,23 @@ const PoolTable: React.FC<PoolTableProps> = ({
   onLoadMore,
   hasMorePools,
   isLoadingMore,
-  selectedChain
+  selectedChain,
+  connectionState,
+  connectionStartTime
 }) => {
   const sortableColumns = ['protocol_system', 'static_attributes.fee', 'spotPrice', 'updatedAt'];
   const isMobile = useIsMobile();
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Update elapsed time for connecting state
+  useEffect(() => {
+    if (connectionState === 'connecting' && connectionStartTime) {
+      const interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - connectionStartTime) / 1000));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [connectionState, connectionStartTime]);
 
   // Mobile scroll handler
   const handleMobileScroll = (event: React.UIEvent<HTMLDivElement>) => {
@@ -151,14 +166,46 @@ const PoolTable: React.FC<PoolTableProps> = ({
                 <TableCell key={`summary-${column.id}`} className="py-2 px-4 text-base font-semibold" style={{ color: MILK_COLORS.base }}>
                   {column.id === 'tokens' && (
                     <div className="flex flex-col">
-                      <span>Summary</span>
-                      <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>{summaryData.totalUniqueTokens} tokens</span>
+                      {connectionState === 'disconnected' && (
+                        <>
+                          <span>Disconnected</span>
+                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>No connection</span>
+                        </>
+                      )}
+                      {connectionState === 'connecting' && (
+                        <>
+                          <span>Connecting...</span>
+                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>
+                            {elapsedTime > 0 ? `${elapsedTime}s elapsed` : 'Starting...'}
+                          </span>
+                        </>
+                      )}
+                      {connectionState === 'connected' && displayedPools.length === 0 && (
+                        <>
+                          <span>Connected</span>
+                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>Loading pools...</span>
+                        </>
+                      )}
+                      {connectionState === 'connected' && displayedPools.length > 0 && (
+                        <>
+                          <span>Summary</span>
+                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>{summaryData.totalUniqueTokens} tokens</span>
+                        </>
+                      )}
                     </div>
                   )}
-                  {column.id === 'id' && <span>{summaryData.totalPools}</span>}
-                  {column.id === 'protocol_system' && <span>{summaryData.totalProtocols}</span>}
+                  {column.id === 'id' && (
+                    <span>
+                      {connectionState === 'connected' && displayedPools.length > 0 ? summaryData.totalPools : '-'}
+                    </span>
+                  )}
+                  {column.id === 'protocol_system' && (
+                    <span>
+                      {connectionState === 'connected' && displayedPools.length > 0 ? summaryData.totalProtocols : '-'}
+                    </span>
+                  )}
                   {/* Other summary cells remain empty */}
-                  {['static_attributes.fee', 'spotPrice', 'updatedAt'].includes(column.id) && <span></span>}
+                  {['static_attributes.fee', 'spotPrice', 'updatedAt'].includes(column.id) && <span>-</span>}
                 </TableCell>
               ))}
             </TableRow>

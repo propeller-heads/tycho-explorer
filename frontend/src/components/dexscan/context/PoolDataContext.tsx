@@ -22,6 +22,8 @@ interface PoolDataContextValue {
   availableChains: string[];
   lastBlockTimestamp: number | null; // Added
   estimatedBlockDuration: number; // Added
+  connectionState: 'disconnected' | 'connecting' | 'connected';
+  connectionStartTime: number | null;
 }
 
 // Define actions for our reducer
@@ -32,7 +34,8 @@ type PoolDataAction =
   | { type: 'SET_CONNECTION_STATE', payload: { isConnected: boolean } }
   | { type: 'SET_BLOCK_NUMBER', payload: { blockNumber: number; timestamp: number } } // Updated
   | { type: 'SET_SELECTED_CHAIN', payload: string }
-  | { type: 'RESET_STATE' };
+  | { type: 'RESET_STATE' }
+  | { type: 'SET_CONNECTION_STATUS', payload: { connectionState: 'disconnected' | 'connecting' | 'connected'; connectionStartTime?: number } };
 
 // Define the state interface
 interface PoolDataState {
@@ -43,6 +46,8 @@ interface PoolDataState {
   selectedChain: string;
   lastBlockTimestamp: number | null; // Added
   estimatedBlockDuration: number; // Added
+  connectionState: 'disconnected' | 'connecting' | 'connected';
+  connectionStartTime: number | null;
   pendingUpdates: {
     pools: Record<string, Pool>;
   };
@@ -83,6 +88,14 @@ function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolData
         ...state,
         isConnected: action.payload.isConnected
       };
+    case 'SET_CONNECTION_STATUS':
+      return {
+        ...state,
+        connectionState: action.payload.connectionState,
+        connectionStartTime: action.payload.connectionStartTime !== undefined 
+          ? action.payload.connectionStartTime 
+          : state.connectionStartTime
+      };
     case 'SET_BLOCK_NUMBER': {
       const newTimestamp = action.payload.timestamp;
       let newEstimatedDuration = state.estimatedBlockDuration;
@@ -110,6 +123,8 @@ function poolDataReducer(state: PoolDataState, action: PoolDataAction): PoolData
         ...state,
         pools: {},
         isConnected: false,
+        connectionState: 'disconnected',
+        connectionStartTime: null,
         pendingUpdates: {
           pools: {}
         }
@@ -174,6 +189,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     selectedChain: getInitialChain(),
     lastBlockTimestamp: null, // Initialize
     estimatedBlockDuration: DEFAULT_ESTIMATED_BLOCK_DURATION, // Initialize
+    connectionState: 'disconnected',
+    connectionStartTime: null,
     pendingUpdates: {
       pools: {}
     }
@@ -209,6 +226,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         type: 'SET_CONNECTION_STATE', 
         payload: { isConnected: false } 
       });
+      dispatch({
+        type: 'SET_CONNECTION_STATUS',
+        payload: { connectionState: 'disconnected', connectionStartTime: null }
+      });
       
       // Reset state when disconnected
       dispatch({ type: 'RESET_STATE' });
@@ -243,6 +264,12 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     disconnectWebSocket();
 
     try {
+      // Set connecting state with timestamp
+      dispatch({
+        type: 'SET_CONNECTION_STATUS',
+        payload: { connectionState: 'connecting', connectionStartTime: Date.now() }
+      });
+      
       // Create new WebSocket connection
       const ws = new WebSocket(url);
       socketRef.current = ws;
@@ -253,6 +280,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
         dispatch({ 
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: true } 
+        });
+        dispatch({
+          type: 'SET_CONNECTION_STATUS',
+          payload: { connectionState: 'connected' }
         });
         
         console.log('✅ WebSocket connected. Waiting for block updates with price changes...');
@@ -362,6 +393,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: false } 
         });
+        dispatch({
+          type: 'SET_CONNECTION_STATUS',
+          payload: { connectionState: 'disconnected', connectionStartTime: null }
+        });
         
         // Reset state on error
         dispatch({ type: 'RESET_STATE' });
@@ -378,6 +413,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
           type: 'SET_CONNECTION_STATE', 
           payload: { isConnected: false } 
         });
+        dispatch({
+          type: 'SET_CONNECTION_STATUS',
+          payload: { connectionState: 'disconnected', connectionStartTime: null }
+        });
         
         // Reset state on close
         dispatch({ type: 'RESET_STATE' });
@@ -392,6 +431,10 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       dispatch({ 
         type: 'SET_CONNECTION_STATE', 
         payload: { isConnected: false } 
+      });
+      dispatch({
+        type: 'SET_CONNECTION_STATUS',
+        payload: { connectionState: 'disconnected', connectionStartTime: null }
       });
       
       // Reset state on connection error
@@ -469,6 +512,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       selectedChain: state.selectedChain,
       lastBlockTimestamp: state.lastBlockTimestamp, // Added
       estimatedBlockDuration: state.estimatedBlockDuration, // Added
+      connectionState: state.connectionState,
+      connectionStartTime: state.connectionStartTime,
       connectToWebSocket,
       disconnectWebSocket,
       highlightPool,
@@ -483,6 +528,8 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
     state.selectedChain,
     state.lastBlockTimestamp, // Added
     state.estimatedBlockDuration, // Added
+    state.connectionState,
+    state.connectionStartTime,
     connectToWebSocket,
     disconnectWebSocket,
     highlightPool,
