@@ -42,16 +42,6 @@ export const TokenFilterPopover = ({
   const handleClearAll = () => {
     selectedTokens.forEach(token => onTokenToggle(token, false));
   };
-  
-  // Select all tokens (only from filtered list if searching)
-  const handleSelectAll = () => {
-    const tokensToSelect = search ? filteredTokens : tokens;
-    tokensToSelect.forEach(token => {
-      if (!selectedTokens.some(t => t.address === token.address)) {
-        onTokenToggle(token, true);
-      }
-    });
-  };
 
   return (
     <FilterPopover 
@@ -68,34 +58,6 @@ export const TokenFilterPopover = ({
           onChange={setSearch}
           placeholder="Search by name or address"
         />
-      </div>
-      
-      {/* Selection Header with Actions */}
-      <div className={`flex justify-between items-center px-3 py-2 ${FILTER_STYLES.borderBottom}`}>
-        <span className={`text-sm ${selectedTokens.length > 0 ? FILTER_STYLES.selectedCountText : 'text-muted-foreground'}`}>
-          {selectedTokens.length} of {tokens.length} selected
-          {search && ` (${filteredTokens.length} shown)`}
-        </span>
-        <div className="flex gap-1">
-          {(search ? filteredTokens : tokens).some(token => 
-            !selectedTokens.some(t => t.address === token.address)
-          ) && (
-            <button
-              onClick={handleSelectAll}
-              className="text-xs px-2 py-1 rounded hover:bg-[#FFF4E010] text-[#FFF4E0] transition-colors"
-            >
-              Select {search ? 'Visible' : 'All'}
-            </button>
-          )}
-          {selectedTokens.length > 0 && (
-            <button
-              onClick={handleClearAll}
-              className="text-xs px-2 py-1 rounded hover:bg-[#FFF4E010] text-[#FFF4E0] transition-colors"
-            >
-              Clear All
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Sticky Selected Section */}
