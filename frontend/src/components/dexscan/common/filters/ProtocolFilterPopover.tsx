@@ -30,6 +30,15 @@ export const ProtocolFilterPopover = ({
   const handleClearAll = () => {
     selectedProtocols.forEach(protocol => onProtocolToggle(protocol, false));
   };
+  
+  // Select all protocols
+  const handleSelectAll = () => {
+    protocols.forEach(protocol => {
+      if (!selectedProtocols.includes(protocol)) {
+        onProtocolToggle(protocol, true);
+      }
+    });
+  };
 
   return (
     <FilterPopover 
@@ -40,14 +49,30 @@ export const ProtocolFilterPopover = ({
       getItemLabel={(protocol) => getReadableProtocolName(protocol)}
       onClearAll={handleClearAll}
     >
-      {/* Selected Summary Bar */}
-      {selectedProtocols.length > 0 && (
-        <div className={`px-3 py-2 ${FILTER_STYLES.borderBottom}`}>
-          <span className={FILTER_STYLES.selectedCountText}>
-            {selectedProtocols.length} protocol{selectedProtocols.length !== 1 ? 's' : ''} selected
-          </span>
+      {/* Selection Header with Actions */}
+      <div className={`flex justify-between items-center px-3 py-2 ${FILTER_STYLES.borderBottom}`}>
+        <span className={`text-sm ${selectedProtocols.length > 0 ? FILTER_STYLES.selectedCountText : 'text-muted-foreground'}`}>
+          {selectedProtocols.length} of {protocols.length} selected
+        </span>
+        <div className="flex gap-1">
+          {selectedProtocols.length < protocols.length && (
+            <button
+              onClick={handleSelectAll}
+              className="text-xs px-2 py-1 rounded hover:bg-[#FFF4E010] text-[#FFF4E0] transition-colors"
+            >
+              Select All
+            </button>
+          )}
+          {selectedProtocols.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="text-xs px-2 py-1 rounded hover:bg-[#FFF4E010] text-[#FFF4E0] transition-colors"
+            >
+              Clear All
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
       <FilterList
         items={sortedProtocols}

@@ -8,7 +8,6 @@ import PoolTable from './pools/PoolTable';
 import PoolListFilterBar from './pools/PoolListFilterBar';
 import PoolDetailSidebar from './PoolDetailSidebar'; // This component will be created later
 import { usePoolData } from './context/PoolDataContext';
-import { useFilterManager } from '@/hooks/useFilterManager';
 
 // TokenForFilter interface is removed. Using 'Token' from './types' directly.
 
@@ -30,6 +29,12 @@ interface PoolListViewProps {
   className?: string;
   highlightedPoolId?: string | null;
   onPoolSelect?: (poolId: string | null) => void;
+  selectedTokenAddresses: string[];
+  selectedProtocols: string[];
+  toggleToken: (address: string, isSelected: boolean) => void;
+  toggleProtocol: (protocol: string, isSelected: boolean) => void;
+  resetFilters: () => void;
+  isInitialized: boolean;
 }
 
 // Simplified renderTokens for text part, icons will be handled in PoolTable cell
@@ -43,7 +48,18 @@ const renderTokensText = (pool: Pool) => {
   }).join(' / ');
 };
 
-const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
+const ListView = ({ 
+  pools, 
+  className, 
+  highlightedPoolId, 
+  onPoolSelect,
+  selectedTokenAddresses,
+  selectedProtocols,
+  toggleToken,
+  toggleProtocol,
+  resetFilters: resetFilterState,
+  isInitialized
+}: PoolListViewProps) => {
   const { blockNumber, lastBlockTimestamp, estimatedBlockDuration, selectedChain } = usePoolData();
   
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
@@ -53,15 +69,6 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
   });
   const [displayedPoolsCount, setDisplayedPoolsCount] = useState(INITIAL_DISPLAY_COUNT);
   const [isLoadingMore, setIsLoadingMore] = useState(false); // New state for loading indicator
-
-  // Use unified filter management
-  const {
-    selectedTokenAddresses,
-    selectedProtocols,
-    toggleToken,
-    toggleProtocol,
-    resetFilters: resetFilterState
-  } = useFilterManager({ viewType: 'list', chain: selectedChain });
 
   // Prepare data for filter popovers
   const allTokensForFilter = useMemo((): Token[] => { // Changed to Token[]
