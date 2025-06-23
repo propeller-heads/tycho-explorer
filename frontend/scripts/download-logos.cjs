@@ -6,7 +6,7 @@ const https = require('https');
 
 // Configuration
 const LOGOS_DIR = path.join(__dirname, '..', 'public', 'logos');
-const RATE_LIMIT_DELAY = 3000;
+const RATE_LIMIT_DELAY = 2400;
 const PROGRESS_FILE = path.join(LOGOS_DIR, '.download-progress.json');
 const API_KEY = process.env.COINGECKO_API_KEY;
 
@@ -47,8 +47,6 @@ function fetchJson(url) {
     if (API_KEY) {
       options.headers['x-cg-api-key'] = API_KEY;
     }
-
-    console.log(`\noptions.headers['x-cg-api-key']: ${options.headers['x-cg-api-key']}`);
 
     https.get(url, options, (res) => {
       let data = '';
@@ -134,7 +132,7 @@ function timestamp() {
 }
 
 // Fetch with retry logic and exponential backoff
-async function fetchWithRetry(url, coinId, maxRetries = 5) {
+async function fetchWithRetry(url, coinId, maxRetries = 10) {
   let lastError;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -147,7 +145,7 @@ async function fetchWithRetry(url, coinId, maxRetries = 5) {
       
       // Check for rate limit error
       if (response.statusCode === 429 || response.data?.status?.error_code === 429) {
-        const backoffTime = Math.pow(3, attempt + 1) * 1000; // 1s, 2s, 4s, 8s, 16s
+        const backoffTime = Math.pow(2.4, attempt + 1) * 1000; // 1s, 2s, 4s, 8s, 16s
         console.log(`\n[${timestamp()}] [RATE LIMIT] Hit rate limit for ${coinId}`);
         console.log(`[${timestamp()}] Error message: ${response.error}`);
         console.log(`[${timestamp()}] Waiting ${backoffTime/1000}s before retry (attempt ${attempt + 1}/${maxRetries})`);
@@ -169,7 +167,7 @@ async function fetchWithRetry(url, coinId, maxRetries = 5) {
     } catch (error) {
       // Network errors, retry with backoff
       if (attempt < maxRetries - 1) {
-        const backoffTime = Math.pow(3, attempt + 1) * 1000;
+        const backoffTime = Math.pow(2.4, attempt + 1) * 1000;
         console.log(`\n[${timestamp()}] [NETWORK ERROR] Failed to fetch ${coinId}: ${error.message}`);
         console.log(`[${timestamp()}] Waiting ${backoffTime/1000}s before retry (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(backoffTime);
