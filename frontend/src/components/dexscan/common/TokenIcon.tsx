@@ -10,6 +10,8 @@ interface TokenIconProps {
 
 const TokenIcon: React.FC<TokenIconProps> = ({ token, size = 6 }) => {
   const [iconUrl, setIconUrl] = useState<string | null>(token.logoURI || null);
+  const [coinId, setCoinId] = useState<string | null>(null);
+  const [triedStatic, setTriedStatic] = useState(false);
 
   useEffect(() => {
     if (token.logoURI) {
@@ -18,19 +20,34 @@ const TokenIcon: React.FC<TokenIconProps> = ({ token, size = 6 }) => {
     }
     let isMounted = true;
     const fetchIcon = async () => {
-      const coinId = await getCoinId(token.symbol); // Or use token.address if mapping exists
-      if (coinId) {
-        const url = await getCoinImageURL(coinId);
-        if (isMounted && url) {
-          setIconUrl(url);
-        }
+      const id = await getCoinId(token.symbol); // Or use token.address if mapping exists
+      if (isMounted && id) {
+        setCoinId(id);
+        // Try static logo first
+        setIconUrl(`/logos/${id}.png`);
+        setTriedStatic(false);
       }
     };
     if (!iconUrl && token.symbol) { // Ensure symbol exists before fetching
         fetchIcon();
     }
     return () => { isMounted = false; };
-  }, [token.symbol, token.address, token.logoURI, iconUrl]); // Added token.address to dependencies
+  }, [token.symbol, token.address, token.logoURI]); // Removed iconUrl from dependencies
+
+  // Handle image load error - fallback to Coingecko API
+  const handleImageError = async () => {
+    if (!triedStatic && coinId) {
+      setTriedStatic(true);
+      const url = await getCoinImageURL(coinId);
+      if (url) {
+        setIconUrl(url);
+      } else {
+        setIconUrl(null);
+      }
+    } else {
+      setIconUrl(null);
+    }
+  };
 
   // Get styling values from shared utilities
   const sizeRem = sizeToRem(size);
@@ -42,7 +59,12 @@ const TokenIcon: React.FC<TokenIconProps> = ({ token, size = 6 }) => {
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {iconUrl ? (
-        <img src={iconUrl} alt={token.symbol} className="w-full h-full object-cover rounded-full" />
+        <img 
+          src={iconUrl} 
+          alt={token.symbol} 
+          className="w-full h-full object-cover rounded-full" 
+          onError={handleImageError}
+        />
       ) : (
         token.symbol ? token.symbol.substring(0, 1).toUpperCase() : '?'
       )}

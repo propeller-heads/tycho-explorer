@@ -26,13 +26,13 @@ export const Footer = () => {
     >
       {/* Copyright */}
       <div>{new Date().getFullYear()} © PropellerHeads</div>
-      
+
       {/* Attribution */}
       <div>
         Made by PropellerHeads{' '}
-        <a 
-          href="https://x.com/ex9_fyi" 
-          target="_blank" 
+        <a
+          href="https://x.com/ex9_fyi"
+          target="_blank"
           rel="noopener noreferrer"
           style={{
             color: 'inherit',
@@ -47,6 +47,21 @@ export const Footer = () => {
           @ex9_fyi
         </a>
       </div>
-    </footer>
+
+      <div>Logos from{' '}
+        <a href="https://www.coingecko.com/en/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: 'inherit',
+            textDecoration: 'none',
+            borderBottom: `1px solid ${MILK_COLORS.muted}`,
+            paddingBottom: '1px',
+            transition: 'opacity 0.2s ease',
+          }}>
+          Coingecko
+        </a>
+      </div>
+    </footer >
   );
 };
