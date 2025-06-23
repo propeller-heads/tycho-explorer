@@ -44,7 +44,7 @@ const renderTokensText = (pool: Pool) => {
 };
 
 const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolListViewProps) => {
-  const { blockNumber, lastBlockTimestamp, estimatedBlockDuration, selectedChain } = usePoolData();
+  const { blockNumber, lastBlockTimestamp, estimatedBlockDuration, selectedChain, connectionState, connectionStartTime } = usePoolData();
   
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [sortConfig, setSortConfig] = useState<{column: string, direction: 'asc' | 'desc'}>({
@@ -242,6 +242,8 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
           blockNumber={blockNumber}
           startTime={lastBlockTimestamp} 
           duration={estimatedBlockDuration}
+          connectionState={connectionState}
+          connectionStartTime={connectionStartTime}
         />
         <PoolTable
           // Props for PoolTable will be adjusted when PoolTable.tsx is refactored
@@ -260,6 +262,8 @@ const ListView = ({ pools, className, highlightedPoolId, onPoolSelect }: PoolLis
           hasMorePools={displayedPoolsCount < processedPools.length}
           isLoadingMore={isLoadingMore} // Pass new loading state
           selectedChain={selectedChain} // Pass selected chain
+          connectionState={connectionState}
+          connectionStartTime={connectionStartTime}
         />
       </div>
 
