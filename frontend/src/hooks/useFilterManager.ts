@@ -21,16 +21,34 @@ export function useFilterManager({ chain, availableProtocols }: UseFilterManager
     const filters = loadFilters();
     setSelectedTokenAddresses(filters.selectedTokens);
     
-    // Initialize protocols with all available if empty
-    if (filters.selectedProtocols.length === 0 && availableProtocols && availableProtocols.length > 0) {
-      console.log(`[FilterManager] No saved protocols, selecting all ${availableProtocols.length} available protocols`);
+    // Initialize protocols with all available only if no localStorage entry exists
+    if (!filters.hasProtocolsEntry && availableProtocols && availableProtocols.length > 0) {
+      console.log(`[FilterManager] No localStorage entry found, selecting all ${availableProtocols.length} available protocols`);
       setSelectedProtocols(availableProtocols);
     } else {
       setSelectedProtocols(filters.selectedProtocols);
     }
     
     setIsInitialized(true);
-  }, [chain, availableProtocols]); // Depend on chain and availableProtocols
+  }, [chain, loadFilters]); // Only depend on chain and loadFilters
+  
+  // Auto-select all protocols when they become available for the first time
+  useEffect(() => {
+    // Only auto-select if:
+    // 1. No localStorage entry exists (hasProtocolsEntry from loadFilters was false)
+    // 2. No protocols are currently selected
+    // 3. Available protocols now exist
+    if (!isInitialized) return; // Wait for initial load
+    
+    const filters = loadFilters();
+    if (!filters.hasProtocolsEntry && 
+        selectedProtocols.length === 0 && 
+        availableProtocols && 
+        availableProtocols.length > 0) {
+      console.log(`[FilterManager] Protocols now available, selecting all ${availableProtocols.length}`);
+      setSelectedProtocols(availableProtocols);
+    }
+  }, [availableProtocols, isInitialized, selectedProtocols.length, loadFilters]);
   
   // Save filters when they change (after initialization)
   useEffect(() => {

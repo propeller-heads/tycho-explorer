@@ -138,7 +138,7 @@ const ListView = ({
       const tokenMatch = selectedTokenAddresses.length === 0 ||
         selectedTokenAddresses.some(addr => pool.tokens.some(pt => pt.address === addr));
       
-      const protocolMatch = selectedProtocols.length === 0 ||
+      const protocolMatch = selectedProtocols.length > 0 &&
         selectedProtocols.includes(pool.protocol_system);
       
       return tokenMatch && protocolMatch;

@@ -52,7 +52,12 @@ export const ProtocolFilterPopover = ({
       {/* Selection Header with Actions */}
       <div className={`flex justify-between items-center px-3 py-2 ${FILTER_STYLES.borderBottom}`}>
         <span className={`text-sm ${selectedProtocols.length > 0 ? FILTER_STYLES.selectedCountText : 'text-muted-foreground'}`}>
-          {selectedProtocols.length} of {protocols.length} selected
+          {selectedProtocols.length === 0 
+            ? `Select protocols to filter`
+            : selectedProtocols.length === protocols.length
+            ? `Showing all protocols`
+            : `Showing pools from any ${selectedProtocols.length} protocol${selectedProtocols.length !== 1 ? 's' : ''}`
+          }
         </span>
         <div className="flex gap-1">
           {selectedProtocols.length < protocols.length && (

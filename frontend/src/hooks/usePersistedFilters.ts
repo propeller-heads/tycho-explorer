@@ -7,6 +7,7 @@ interface UsePersistedFiltersOptions {
 interface FilterData {
   selectedProtocols: string[];
   selectedTokens: string[]; // Always stored as addresses
+  hasProtocolsEntry?: boolean; // Indicates if protocols were found in localStorage
 }
 
 export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
@@ -32,18 +33,21 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
 
       console.log(`[Persistence] Loaded filters for ${chain}:`, {
         protocols,
-        tokens
+        tokens,
+        hasProtocolsEntry: protocolsJson !== null
       });
 
       return {
         selectedProtocols: protocols,
-        selectedTokens: tokens
+        selectedTokens: tokens,
+        hasProtocolsEntry: protocolsJson !== null
       };
     } catch (error) {
       console.error('[Persistence] Error loading filters:', error);
       return {
         selectedProtocols: [],
-        selectedTokens: []
+        selectedTokens: [],
+        hasProtocolsEntry: false
       };
     } finally {
       setIsLoading(false);
