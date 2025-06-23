@@ -5,6 +5,7 @@ import { parsePoolFee } from '@/lib/poolUtils'; // Import for fee parsing
 import { Pool as PoolType } from '@/components/dexscan/types'; // Import Pool type
 import { getExternalLink, renderHexId, formatTimeAgo, getTokenExplorerLink } from '@/lib/utils'; // Import getExternalLink, renderHexId, formatTimeAgo, and getTokenExplorerLink
 import { useIsMobile } from '@/hooks/use-mobile'; // Import mobile detection hook
+import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols'; // Import for readable protocol names
 
 // Function to get network options based on device type
 const getNetworkOptions = (isMobile: boolean) => ({
@@ -728,6 +729,10 @@ class GraphManager {
           Copy
         </button>
       </div>
+        <div style="margin-bottom: 8px;">
+          <span style="color: rgba(255, 244, 224, 0.64);">Protocol: </span>
+          <span style="color: #FFF4E0;">${getReadableProtocolName(protocolName)}</span>
+        </div>
         <div style="margin-bottom: 8px;">
           <span style="color: rgba(255, 244, 224, 0.64);">Fee: </span>
           <span style="color: #FFF4E0;">${formattedFee}</span>
