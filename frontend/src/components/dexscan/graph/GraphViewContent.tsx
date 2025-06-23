@@ -4,7 +4,6 @@ import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
 import { usePoolData } from '../context/PoolDataContext'; // Corrected Import usePoolData
-import { useFilterManager } from '@/hooks/useFilterManager';
 
 // Import graph frame background asset
 import graphFrameBgArtboard from '@/assets/figma_generated/graph_frame_bg_artboard.png';
@@ -26,20 +25,27 @@ interface Pool {
   // Add other pool properties if accessed
 }
 
-const PoolGraphView: React.FC = () => {
+interface PoolGraphViewProps {
+  selectedTokenAddresses: string[];
+  selectedProtocols: string[];
+  toggleToken: (address: string, isSelected: boolean) => void;
+  toggleProtocol: (protocol: string, isSelected: boolean) => void;
+  resetFilters: () => void;
+  isInitialized: boolean;
+}
+
+const PoolGraphView: React.FC<PoolGraphViewProps> = ({
+  selectedTokenAddresses,
+  selectedProtocols,
+  toggleToken,
+  toggleProtocol,
+  resetFilters,
+  isInitialized
+}) => {
   // console.log(`DEBUG: GraphViewContent render`);
 
   // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
   const { pools: rawPoolsForControls, selectedChain } = usePoolData();
-
-  // Use unified filter management
-  const {
-    selectedTokenAddresses,
-    selectedProtocols,
-    toggleToken,
-    toggleProtocol,
-    resetFilters
-  } = useFilterManager({ viewType: 'graph', chain: selectedChain });
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {

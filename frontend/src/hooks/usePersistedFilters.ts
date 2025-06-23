@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UsePersistedFiltersOptions {
-  viewType: 'graph' | 'list';
   chain: string;
 }
 
@@ -10,13 +9,13 @@ interface FilterData {
   selectedTokens: string[]; // Always stored as addresses
 }
 
-export function usePersistedFilters({ viewType, chain }: UsePersistedFiltersOptions) {
+export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
   const [isLoading, setIsLoading] = useState(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Construct storage keys based on view type and chain
+  // Construct storage keys based on chain
   const getStorageKey = (dataType: 'protocols' | 'tokens') => {
-    return `tycho_${viewType}View_selected${dataType.charAt(0).toUpperCase() + dataType.slice(1)}_${chain}`;
+    return `tycho_selected${dataType.charAt(0).toUpperCase() + dataType.slice(1)}_${chain}`;
   };
 
   // Load filters from localStorage
@@ -31,7 +30,7 @@ export function usePersistedFilters({ viewType, chain }: UsePersistedFiltersOpti
       const protocols = protocolsJson ? JSON.parse(protocolsJson) : [];
       const tokens = tokensJson ? JSON.parse(tokensJson) : [];
 
-      console.log(`[Persistence] Loaded filters for ${viewType} view on ${chain}:`, {
+      console.log(`[Persistence] Loaded filters for ${chain}:`, {
         protocols,
         tokens
       });
@@ -49,7 +48,7 @@ export function usePersistedFilters({ viewType, chain }: UsePersistedFiltersOpti
     } finally {
       setIsLoading(false);
     }
-  }, [viewType, chain]);
+  }, [chain]);
 
   // Save filters to localStorage with debouncing
   const saveFilters = useCallback((filters: FilterData) => {
@@ -67,7 +66,7 @@ export function usePersistedFilters({ viewType, chain }: UsePersistedFiltersOpti
         localStorage.setItem(protocolsKey, JSON.stringify(filters.selectedProtocols));
         localStorage.setItem(tokensKey, JSON.stringify(filters.selectedTokens));
 
-        console.log(`[Persistence] Saved filters for ${viewType} view on ${chain}:`, {
+        console.log(`[Persistence] Saved filters for ${chain}:`, {
           protocols: filters.selectedProtocols,
           tokens: filters.selectedTokens,
           protocolsKey,
@@ -77,7 +76,7 @@ export function usePersistedFilters({ viewType, chain }: UsePersistedFiltersOpti
         console.error('[Persistence] Error saving filters:', error);
       }
     }, 500); // 500ms debounce
-  }, [viewType, chain]);
+  }, [chain]);
 
   // Clear filters from localStorage
   const clearFilters = useCallback(() => {
@@ -88,11 +87,11 @@ export function usePersistedFilters({ viewType, chain }: UsePersistedFiltersOpti
       localStorage.removeItem(protocolsKey);
       localStorage.removeItem(tokensKey);
 
-      console.log(`[Persistence] Cleared filters for ${viewType} view on ${chain}`);
+      console.log(`[Persistence] Cleared filters for ${chain}`);
     } catch (error) {
       console.error('[Persistence] Error clearing filters:', error);
     }
-  }, [viewType, chain]);
+  }, [chain]);
 
   // Cleanup on unmount
   useEffect(() => {
