@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DexScanHeader from './DexScanHeader';
 import ListView from './ListView';
 import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
 import GraphViewContent from './graph/GraphViewContent';
+import { useFilterManager } from '@/hooks/useFilterManager';
 
 // Import comet background assets
 import bgSmallComet from '@/assets/figma_generated/bg_small_comet.svg';
@@ -27,8 +28,21 @@ const DexScanContentMain = () => {
   const {
     poolsArray,
     highlightedPoolId,
-    highlightPool
+    highlightPool,
+    selectedChain
   } = usePoolData();
+  
+  // Calculate available protocols from all pools
+  const availableProtocols = useMemo(() => 
+    Array.from(new Set(poolsArray.map(pool => pool.protocol_system))).filter(Boolean).sort(),
+    [poolsArray]
+  );
+  
+  // Shared filter state for both views
+  const filters = useFilterManager({ 
+    chain: selectedChain,
+    availableProtocols 
+  });
 
   // Update the URL when the tab changes
   const handleTabChange = (tab: 'graph' | 'pools') => {
@@ -121,7 +135,7 @@ const DexScanContentMain = () => {
             position: "relative" 
           }
         }>
-          <GraphViewContent />
+          <GraphViewContent {...filters} />
         </div>
 
         <div ref={poolListContainerRef} style={{ 
@@ -132,6 +146,7 @@ const DexScanContentMain = () => {
             pools={poolsArray}
             highlightedPoolId={highlightedPoolId}
             onPoolSelect={highlightPool}
+            {...filters}
           />
         </div>
       </div>

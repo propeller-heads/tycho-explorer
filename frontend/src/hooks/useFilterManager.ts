@@ -2,28 +2,35 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePersistedFilters } from './usePersistedFilters';
 
 interface UseFilterManagerOptions {
-  viewType: 'graph' | 'list';
   chain: string;
+  availableProtocols?: string[];
 }
 
-export function useFilterManager({ viewType, chain }: UseFilterManagerOptions) {
+export function useFilterManager({ chain, availableProtocols }: UseFilterManagerOptions) {
   const [selectedTokenAddresses, setSelectedTokenAddresses] = useState<string[]>([]);
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   
   const { loadFilters, saveFilters, clearFilters } = usePersistedFilters({
-    viewType,
     chain
   });
   
   // Load filters on mount or chain change
   useEffect(() => {
-    console.log(`[FilterManager] Loading filters for ${viewType} view on ${chain}`);
+    console.log(`[FilterManager] Loading filters for ${chain}`);
     const filters = loadFilters();
     setSelectedTokenAddresses(filters.selectedTokens);
-    setSelectedProtocols(filters.selectedProtocols);
+    
+    // Initialize protocols with all available if empty
+    if (filters.selectedProtocols.length === 0 && availableProtocols && availableProtocols.length > 0) {
+      console.log(`[FilterManager] No saved protocols, selecting all ${availableProtocols.length} available protocols`);
+      setSelectedProtocols(availableProtocols);
+    } else {
+      setSelectedProtocols(filters.selectedProtocols);
+    }
+    
     setIsInitialized(true);
-  }, [chain, viewType]); // Only depend on chain and viewType, not the function refs
+  }, [chain, availableProtocols]); // Depend on chain and availableProtocols
   
   // Save filters when they change (after initialization)
   useEffect(() => {

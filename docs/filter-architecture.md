@@ -9,7 +9,7 @@ The Tycho Explorer uses a unified filter management system for both List View an
 ### 1. Filter State Management
 
 #### `useFilterManager` Hook (`/frontend/src/hooks/useFilterManager.ts`)
-The central hook that manages filter state for both views:
+The central hook that manages unified filter state across all views:
 
 ```typescript
 interface UseFilterManagerReturn {
@@ -26,22 +26,23 @@ interface UseFilterManagerReturn {
 - Works with token addresses internally (simpler state management)
 - Built-in duplicate prevention in toggle functions
 - Automatic persistence via `usePersistedFilters`
-- Consistent interface for both views
+- Unified filters that apply to both graph and list views
 
 #### `usePersistedFilters` Hook (`/frontend/src/hooks/usePersistedFilters.ts`)
 Handles localStorage operations:
 
 ```typescript
 // Storage key pattern:
-`tycho_${viewType}View_selected${DataType}_${chain}`
+`tycho_selected${DataType}_${chain}`
 
 // Examples:
-- tycho_listView_selectedTokens_Ethereum
-- tycho_graphView_selectedProtocols_Base
+- tycho_selectedTokens_Ethereum
+- tycho_selectedProtocols_Base
 ```
 
 **Features:**
 - Per-chain persistence (each chain maintains separate filters)
+- Unified filters across all views (graph and list share same filters)
 - 500ms debounced saves to prevent excessive writes
 - Error handling for localStorage operations
 - No default values - starts with empty arrays
@@ -100,7 +101,7 @@ const {
   toggleToken,
   toggleProtocol,
   resetFilters
-} = useFilterManager({ viewType: 'list', chain: selectedChain });
+} = useFilterManager({ chain: selectedChain });
 
 // Convert addresses to Token objects for display
 const selectedTokenObjects = useMemo(() => 
@@ -125,7 +126,7 @@ const {
   toggleToken,
   toggleProtocol,
   resetFilters
-} = useFilterManager({ viewType: 'graph', chain: selectedChain });
+} = useFilterManager({ chain: selectedChain });
 
 // Direct pass-through to GraphControls
 <GraphControls 
@@ -155,12 +156,13 @@ const {
   - Consistent with checkbox UI metaphor
 - **Previous Bug**: GraphControls used array replacement, causing single-select behavior
 
-### 3. Per-Chain Persistence
-- **Decision**: Separate filter state for each blockchain
+### 3. Unified Cross-View Persistence
+- **Decision**: Single filter state shared across graph and list views per chain
 - **Rationale**: 
-  - Users work with different tokens/protocols per chain
-  - Better UX: switching chains preserves context
-  - No filter clearing on chain switch
+  - Users expect filters to persist when switching views
+  - Simpler mental model - one set of filters per chain
+  - Reduces confusion about why filters differ between views
+  - Better UX: filtering in one view applies to both
 
 ### 4. Duplicate Prevention
 - **Decision**: Check for duplicates in toggle functions
@@ -208,7 +210,7 @@ const handleFilterChange = (filterKey, value, isSelected) => {
 **After:**
 ```typescript
 // Simple hook usage
-const { selectedTokenAddresses, toggleToken } = useFilterManager({ viewType, chain });
+const { selectedTokenAddresses, toggleToken } = useFilterManager({ chain });
 
 // Direct handlers
 const handleTokenToggle = (token, isSelected) => toggleToken(token.address, isSelected);
@@ -226,9 +228,10 @@ const handleTokenToggle = (token, isSelected) => toggleToken(token.address, isSe
 
 - [ ] Filters persist across page reloads
 - [ ] Each chain maintains separate filters
+- [ ] Filters remain active when switching between graph and list views
 - [ ] No duplicates when rapidly clicking
-- [ ] Both views behave identically
-- [ ] Reset clears filters and localStorage
+- [ ] Both views share the same filter state
+- [ ] Reset clears filters in both views simultaneously
 - [ ] Token search works by symbol only
 - [ ] Selected items appear at top of list
 - [ ] Virtual scrolling loads more items smoothly
