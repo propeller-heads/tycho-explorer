@@ -8,6 +8,7 @@ import PoolTable from './pools/PoolTable';
 import PoolListFilterBar from './pools/PoolListFilterBar';
 import PoolDetailSidebar from './PoolDetailSidebar'; // This component will be created later
 import { usePoolData } from './context/PoolDataContext';
+import { filterPools } from './utils/poolFilters';
 
 // TokenForFilter interface is removed. Using 'Token' from './types' directly.
 
@@ -133,22 +134,10 @@ const ListView = ({
     [selectedTokenAddresses, allTokensForFilter]
   );
 
-  const filterPools = useCallback((poolsToFilter: Pool[]) => {
-    return poolsToFilter.filter(pool => {
-      const tokenMatch = selectedTokenAddresses.length === 0 ||
-        selectedTokenAddresses.some(addr => pool.tokens.some(pt => pt.address === addr));
-      
-      const protocolMatch = selectedProtocols.length > 0 &&
-        selectedProtocols.includes(pool.protocol_system);
-      
-      return tokenMatch && protocolMatch;
-    });
-  }, [selectedTokenAddresses, selectedProtocols]);
-
   const processedPools = useMemo(() => {
-    const filtered = filterPools(pools);
+    const filtered = filterPools(pools, selectedTokenAddresses, selectedProtocols);
     return sortPools(filtered);
-  }, [pools, filterPools, sortPools]);
+  }, [pools, selectedTokenAddresses, selectedProtocols, sortPools]);
 
   const summaryData = useMemo(() => {
     const uniqueProtocolsInView = new Set(processedPools.map(p => p.protocol_system));

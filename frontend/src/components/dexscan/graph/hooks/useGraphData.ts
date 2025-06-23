@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
 import { protocolColors } from '../protocolColors'; // Import color definitions
 import { getCoinId, getCoinImageURL } from '../../../../lib/coingecko';
+import { filterPools } from '../../utils/poolFilters';
 
 // // Compare objects by JSON stringifying them (deep equality) - No longer needed with refined memo dependencies
 // const deepEqual = (a: any, b: any) => {
@@ -208,9 +209,12 @@ export function useGraphData(
       };
     }
 
-    // 1. Generate all base tokenNodes from pools data
+    // 1. Filter pools using the same logic as ListView
+    const filteredPools = filterPools(Object.values(pools), selectedTokens, selectedProtocols);
+
+    // 2. Build nodes from ALL tokens in filtered pools (not just selected tokens)
     const tokenMap = new Map();
-    Object.values(pools).forEach(pool => {
+    filteredPools.forEach(pool => {
       pool.tokens.forEach(token => {
         if (!tokenMap.has(token.address)) {
           const address = token.address || '';
@@ -229,11 +233,9 @@ export function useGraphData(
         }
       });
     });
-    const allTokenNodesInitial = Array.from(tokenMap.values());
 
-    // 2. Filter tokenNodes based on selectedTokens and add image data
-    const finalNodes = allTokenNodesInitial
-      .filter(node => selectedTokens.includes(node.id))
+    // 3. All tokens from filtered pools become nodes
+    const finalNodes = Array.from(tokenMap.values())
       .map(node => {
         const imageUrl = tokenImageUrls.get(node.id);
         
@@ -251,67 +253,74 @@ export function useGraphData(
 
     const finalNodeIdsSet = new Set(finalNodes.map(node => node.id));
 
-    // 3. Generate, Filter, and Style Edges
-    const tempFinalEdges: VisEdge[] = []; // Changed to VisEdge[] and temp name
-    for (const pool of Object.values(pools)) {
+    // 4. Generate edges for all token pairs in filtered pools
+    const tempFinalEdges: VisEdge[] = [];
+    for (const pool of filteredPools) {
       if (pool.tokens.length < 2) continue;
 
-      const fromId = pool.tokens[0].address;
-      const toId = pool.tokens[1].address;
+      // Generate edges for all token pairs in multi-token pools
+      for (let i = 0; i < pool.tokens.length; i++) {
+        for (let j = i + 1; j < pool.tokens.length; j++) {
+          const fromId = pool.tokens[i].address;
+          const toId = pool.tokens[j].address;
 
-      // A. Filter by Selected Tokens: Ensure both 'from' and 'to' nodes are in `finalNodeIdsSet`
-      if (!finalNodeIdsSet.has(fromId) || !finalNodeIdsSet.has(toId)) {
-        continue; 
+          // Since we're using filtered pools, both tokens should be in our node set
+          // But we still check to be safe
+          if (!finalNodeIdsSet.has(fromId) || !finalNodeIdsSet.has(toId)) {
+            continue; 
+          }
+
+          const currentPoolEdge = {
+            id: `${pool.id}-${i}-${j}`, // Unique ID for each edge in multi-token pools
+            from: fromId,
+            to: toId,
+            protocol: pool.protocol_system,
+            lastUpdatedAtBlock: pool.lastUpdatedAtBlock || 0,
+            poolId: pool.id, // Reference back to original pool
+            // Include other original pool data if needed by vis-network or tooltips later
+            // For example: spotPrice: pool.spotPrice 
+          };
+
+          // B. Filter by Selected Protocols & Apply Styling
+          const isProtocolSelected = selectedProtocols.some(sp => sp.toLowerCase() === currentPoolEdge.protocol.toLowerCase());
+
+          const isUpdatedInCurrentBlock =
+            currentPoolEdge.lastUpdatedAtBlock === currentBlockNumber && currentBlockNumber > 0;
+
+          // Debug logging
+          if (pool.id && isProtocolSelected) {
+            console.log(`🟧 Edge ${pool.id}-${i}-${j} processing:`, {
+              poolId: pool.id,
+              lastUpdatedAtBlock: pool.lastUpdatedAtBlock,
+              currentBlockNumber,
+              isUpdatedInCurrentBlock,
+              isProtocolSelected,
+              willWiden: isUpdatedInCurrentBlock && isProtocolSelected
+            });
+          }
+
+          let determinedColor;
+          const defaultEdgeWidth = 1;
+          const updatedEdgeWidth = 10; 
+          let determinedWidth;
+          
+          if (isProtocolSelected) {
+            const colorKey = currentPoolEdge.protocol.toLowerCase(); // Ensure consistency with keys in protocolColors
+            determinedColor = protocolColors[colorKey] || '#CCCCCC'; // Protocol color, fallback to light gray
+            determinedWidth = isUpdatedInCurrentBlock ? updatedEdgeWidth : defaultEdgeWidth;
+          } else {
+            // Protocol is NOT selected, but the edge connects selected tokens
+            determinedColor = '#848484'; // Standard gray for non-selected protocols
+            determinedWidth = defaultEdgeWidth; // Always default width if protocol not selected
+          }
+
+          tempFinalEdges.push({ // Push to tempFinalEdges
+            ...currentPoolEdge,
+            color: determinedColor,
+            width: determinedWidth,
+          });
+        }
       }
-
-      const currentPoolEdge = {
-        id: pool.id, // Use pool's unique ID for the edge ID
-        from: fromId,
-        to: toId,
-        protocol: pool.protocol_system,
-        lastUpdatedAtBlock: pool.lastUpdatedAtBlock || 0,
-        // Include other original pool data if needed by vis-network or tooltips later
-        // For example: spotPrice: pool.spotPrice 
-      };
-
-      // B. Filter by Selected Protocols & Apply Styling
-      const isProtocolSelected = selectedProtocols.some(sp => sp.toLowerCase() === currentPoolEdge.protocol.toLowerCase());
-
-      const isUpdatedInCurrentBlock =
-        currentPoolEdge.lastUpdatedAtBlock === currentBlockNumber && currentBlockNumber > 0;
-
-      // Debug logging
-      if (pool.id && isProtocolSelected) {
-        console.log(`🟧 Edge ${pool.id} processing:`, {
-          poolId: pool.id,
-          lastUpdatedAtBlock: pool.lastUpdatedAtBlock,
-          currentBlockNumber,
-          isUpdatedInCurrentBlock,
-          isProtocolSelected,
-          willWiden: isUpdatedInCurrentBlock && isProtocolSelected
-        });
-      }
-
-      let determinedColor;
-      const defaultEdgeWidth = 1;
-      const updatedEdgeWidth = 10; 
-      let determinedWidth;
-      
-      if (isProtocolSelected) {
-        const colorKey = currentPoolEdge.protocol.toLowerCase(); // Ensure consistency with keys in protocolColors
-        determinedColor = protocolColors[colorKey] || '#CCCCCC'; // Protocol color, fallback to light gray
-        determinedWidth = isUpdatedInCurrentBlock ? updatedEdgeWidth : defaultEdgeWidth;
-      } else {
-        // Protocol is NOT selected, but the edge connects selected tokens
-        determinedColor = '#848484'; // Standard gray for non-selected protocols
-        determinedWidth = defaultEdgeWidth; // Always default width if protocol not selected
-      }
-
-      tempFinalEdges.push({ // Push to tempFinalEdges
-        ...currentPoolEdge,
-        color: determinedColor,
-        width: determinedWidth,
-      });
     }
 
     // Apply smoothness for parallel edges
