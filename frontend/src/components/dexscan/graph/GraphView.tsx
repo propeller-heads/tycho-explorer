@@ -52,35 +52,32 @@ const getNetworkOptions = (isMobile: boolean) => ({
     // physics: true, // Default
   },
   physics: {
-    enabled: true,
-    solver: 'barnesHut', // Default, generally good for non-hierarchical
+    enabled: true,  // Enable for initial layout
+    solver: 'barnesHut',
     barnesHut: {
-      gravitationalConstant: isMobile ? -15000 : -25000, // Less repulsion on mobile for tighter clustering
-      centralGravity: isMobile ? 0.3 : 0.1,              // More center pull on mobile to keep nodes in view
-      springLength: isMobile ? 150 : 300,                // Shorter springs on mobile for compact layout
-      springConstant: isMobile ? 0.05 : 0.03,            // Slightly higher spring constant for mobile
-      damping: 0.09,                                      // Standard
-      avoidOverlap: isMobile ? 0.5 : 0.7                 // Less overlap avoidance for tighter mobile layout
+      gravitationalConstant: -25000,  // Reduced repulsion for tighter spacing
+      centralGravity: 0.15,           // Stronger center pull
+      springLength: 250,              // Shorter edges for compact layout
+      springConstant: 0.04,           // Tighter springs
+      damping: 0.09,
+      avoidOverlap: 0.7               // Slightly less overlap avoidance
     },
-    adaptiveTimestep: true, // Default
-    // Stabilization options:
-    // fit: false is crucial to prevent the graph from resetting user's zoom/pan
-    // on data updates (e.g., new block). Vis-network defaults fit to true,
-    // which causes the view to re-center and re-zoom to fit all nodes.
-    stabilization: { 
-      enabled: true, // Or false if you don't want initial stabilization iterations
-      iterations: 1000, // Default, adjust if needed
-      fit: false,       // Prevents auto-fitting the graph on data changes / initial load
-      // updateInterval: 50, // Default
-      // iterationsPerUpdate: 10 // Default
-    }
+    stabilization: {
+      enabled: true,
+      iterations: 2000,               // Sufficient iterations for convergence
+      updateInterval: 25,
+      onlyDynamicEdges: false,
+      fit: false                      // Prevent auto-fitting
+    },
+    timestep: 0.5,
+    adaptiveTimestep: true
   },
   layout: {
     randomSeed: 42, // Or a specific seed once a good layout is found
+    improvedLayout: true,  // Enable improved initial positioning
     hierarchical: {
       enabled: false // TC Design is not hierarchical
-    },
-    // improvedLayout: true, // Default
+    }
   },
   interaction: {
     hover: true, // To see hover effects
@@ -169,10 +166,12 @@ class GraphManager {
     );
 
     // Listen for initial stabilization to be done
-    // We don't call fit() anymore to prevent any re-centering
-    // User's zoom/pan will be preserved from the start
+    // After stabilization, disable physics to keep nodes static
     this.network.once('stabilizationIterationsDone', () => {
-      // Stabilization complete - no action needed
+      // Disable physics after initial layout
+      this.network!.setOptions({ 
+        physics: { enabled: false } 
+      });
     });
 
     // Add click event handler for nodes and edges
@@ -673,8 +672,15 @@ class GraphManager {
   }
 
   // Method to display information for a clicked edge
-  public showEdgeInfoPopover(poolId: string, clickX: number, clickY: number) {
+  public showEdgeInfoPopover(edgeIdOrPoolId: string, clickX: number, clickY: number) {
     if (!this.network || !this.container || !this.rawPoolsData) return;
+
+    // First try to get edge data in case an edge ID was passed
+    let poolId = edgeIdOrPoolId;
+    const edgeData = this.edgesDataset?.get(edgeIdOrPoolId);
+    if (edgeData && edgeData.poolId) {
+      poolId = edgeData.poolId;
+    }
 
     const pool = this.rawPoolsData[poolId];
     if (!pool) {
