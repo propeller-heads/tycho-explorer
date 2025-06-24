@@ -11,9 +11,9 @@ export const filterPools = (
   selectedProtocols: string[]
 ): Pool[] => {
   return pools.filter(pool => {
-    // Token filter: pool must contain ALL selected tokens (AND logic)
+    // Token filter: selected tokens must contain ALL pool tokens (AND logic)
     const tokenMatch = selectedTokenAddresses.length === 0 ||
-      selectedTokenAddresses.every(addr => pool.tokens.some(pt => pt.address === addr));
+      pool.tokens.every(t => selectedTokenAddresses.some(stAddr => stAddr === t.address));
     
     // Protocol filter: pool must match one of the selected protocols
     const protocolMatch = selectedProtocols.length > 0 &&

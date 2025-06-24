@@ -55,16 +55,16 @@ const getNetworkOptions = (isMobile: boolean) => ({
     enabled: true,  // Enable for initial layout
     solver: 'barnesHut',
     barnesHut: {
-      gravitationalConstant: -70000,  // Maximum repulsion for maximum spacing
-      centralGravity: 0.001,          // Minimal center pull
-      springLength: 600,              // Very long edges for maximum clarity
-      springConstant: 0.01,           // Very loose springs
+      gravitationalConstant: -25000,  // Reduced repulsion for tighter spacing
+      centralGravity: 0.15,           // Stronger center pull
+      springLength: 250,              // Shorter edges for compact layout
+      springConstant: 0.04,           // Tighter springs
       damping: 0.09,
-      avoidOverlap: 1                 // Maximum overlap avoidance
+      avoidOverlap: 0.7               // Slightly less overlap avoidance
     },
     stabilization: {
       enabled: true,
-      iterations: 3000,               // Extra iterations for convergence
+      iterations: 2000,               // Sufficient iterations for convergence
       updateInterval: 25,
       onlyDynamicEdges: false,
       fit: false                      // Prevent auto-fitting
