@@ -33,7 +33,7 @@ let inFlightCoinListFetch: Promise<CoinGeckoCoin[] | null> | null = null; // To 
 const coinImageCache: Map<string, string | null> = new Map();
 const COIN_IMAGE_URL_CACHE_PREFIX = 'coingeckoImageURL_';
 // Using the same duration as coin list for simplicity, can be adjusted
-const COIN_IMAGE_URL_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const COIN_IMAGE_URL_CACHE_DURATION = 365 * 24 * 60 * 60 * 1000; // 24 hours * 365
 
 // Queue for image requests to prevent CoinGecko API rate limits
 interface QueuedImageRequest {
