@@ -4,6 +4,7 @@ import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
 import { usePoolData } from '../context/PoolDataContext'; // Corrected Import usePoolData
+import EmptyGraphPrompt from './EmptyGraphPrompt';
 
 // Import graph frame background asset
 import graphFrameBgArtboard from '@/assets/figma_generated/graph_frame_bg_artboard.png';
@@ -45,7 +46,7 @@ const PoolGraphView: React.FC<PoolGraphViewProps> = ({
   // console.log(`DEBUG: GraphViewContent render`);
 
   // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
-  const { pools: rawPoolsForControls, selectedChain } = usePoolData();
+  const { pools: rawPoolsForControls, selectedChain, connectionState, connectionStartTime } = usePoolData();
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {
@@ -117,7 +118,7 @@ const PoolGraphView: React.FC<PoolGraphViewProps> = ({
         estimatedBlockDuration={estimatedBlockDuration} // Use block info from useGraphData
       />
 
-      {selectedTokenAddresses.length > 0 && graphDisplayNodes.length > 0 ? ( // Conditional rendering based on selectedTokens and if nodes exist
+      {selectedTokenAddresses.length >= 2 && graphDisplayNodes.length > 0 ? ( // Conditional rendering based on selectedTokens and if nodes exist
         <>
           <div className="flex-1" style={{ minHeight: "0" }}>
             <GraphView
@@ -129,10 +130,11 @@ const PoolGraphView: React.FC<PoolGraphViewProps> = ({
           </div>
         </>
       ) : (
-        <div className="flex flex-grow items-center justify-center border rounded-md bg-muted/20" style={{ minHeight: "300px" }}>
-          <p className="text-muted-foreground text-center">
-            Select tokens to display the graph.
-          </p>
+        <div className="flex flex-grow items-center justify-center" style={{ minHeight: "300px" }}>
+          <EmptyGraphPrompt 
+            connectionState={connectionState}
+            connectionStartTime={connectionStartTime}
+          />
         </div>
       )}
     </div>
