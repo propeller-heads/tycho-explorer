@@ -1,8 +1,8 @@
 // src/components/dexscan/graph/hooks/useGraphData.ts
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
 import { protocolColors } from '../protocolColors'; // Import color definitions
-import { getCoinId, getCoinImageURL } from '../../../../lib/coingecko';
+import { getCoinId, getCoinLogoUrl } from '../../../../lib/coingecko';
 import { filterPools } from '../../utils/poolFilters';
 
 // // Compare objects by JSON stringifying them (deep equality) - No longer needed with refined memo dependencies
@@ -18,6 +18,7 @@ interface VisEdge {
   to: string;
   protocol: string;
   lastUpdatedAtBlock: number;
+  poolId: string;
   color: string;
   width: number;
   smooth?: {
@@ -117,76 +118,6 @@ export function useGraphData(
     estimatedBlockDuration,
   } = usePoolData();
 
-  // State to store fetched image URLs: Map<tokenId, imageUrl | null>
-  const [tokenImageUrls, setTokenImageUrls] = useState<Map<string, string | null>>(new Map());
-
-  // Effect to fetch token images when selectedTokens or pools change
-  useEffect(() => {
-    // Create a unique set of token IDs that are currently selected and present in pools
-    const relevantTokenIds = new Set<string>();
-    if (selectedTokens.length > 0) {
-      Object.values(pools).forEach(pool => {
-        pool.tokens.forEach(token => {
-          if (selectedTokens.includes(token.address)) {
-            relevantTokenIds.add(token.address);
-          }
-        });
-      });
-    }
-
-    // Use a for...of loop to handle async operations sequentially with delays
-    const processTokenIds = async () => {
-      for (const tokenId of relevantTokenIds) {
-        // Fetch only if not already fetched or being fetched
-        if (tokenImageUrls.has(tokenId) && tokenImageUrls.get(tokenId) !== undefined) {
-          continue; // Already processed or successfully fetched
-        }
-        if (tokenImageUrls.get(tokenId) === undefined && tokenImageUrls.has(tokenId)) {
-            // Already fetching, skip
-            continue;
-        }
-
-
-        // Placeholder to prevent re-fetching while in progress
-        setTokenImageUrls(prev => new Map(prev).set(tokenId, undefined)); // 'undefined' means "fetching"
-        
-        // Introduce a delay before this token's fetch sequence
-        // Commenting out for now as /coins/list is the main issue, can be re-enabled if needed for individual image calls
-        // await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
-
-        // Find the symbol for this tokenId (needed for getCoinId if it expects symbol)
-        // This assumes token symbols are relatively stable for a given address in `pools`
-        let tokenSymbol: string | undefined;
-        for (const pool of Object.values(pools)) {
-          const foundToken = pool.tokens.find(t => t.address === tokenId);
-          if (foundToken) {
-            tokenSymbol = foundToken.symbol;
-            break;
-          }
-        }
-
-        if (tokenSymbol) {
-          const coingeckoId = await getCoinId(tokenSymbol); // This is the call to /coins/list (potentially cached)
-          if (coingeckoId) {
-            // Add a small delay before fetching the actual image to not burst CoinGecko for images
-            await new Promise(resolve => setTimeout(resolve, 250)); // 250ms delay before image URL fetch
-            const imageUrl = await getCoinImageURL(coingeckoId);
-            setTokenImageUrls(prev => new Map(prev).set(tokenId, imageUrl));
-          } else {
-            setTokenImageUrls(prev => new Map(prev).set(tokenId, null)); // Not found on CoinGecko
-          }
-        } else {
-          setTokenImageUrls(prev => new Map(prev).set(tokenId, null)); // Symbol not found in pools
-        }
-      }
-    };
-
-    if (relevantTokenIds.size > 0) {
-      processTokenIds();
-    }
-
-  }, [pools, selectedTokens]); // Rerun when pools or selectedTokens change
-
 
   return useMemo(() => {
     console.log("🟦 useGraphData recalculating:", { 
@@ -237,13 +168,15 @@ export function useGraphData(
     // 3. All tokens from filtered pools become nodes
     const finalNodes = Array.from(tokenMap.values())
       .map(node => {
-        const imageUrl = tokenImageUrls.get(node.id);
+        // Calculate image URL directly (synchronous)
+        const coinId = node.symbol ? getCoinId(node.symbol) : null;
+        const imageUrl = getCoinLogoUrl(coinId);
         
         // Always use circularImage shape for consistent label positioning
         return {
           ...node, // Spread existing node properties (like id, symbol, address, formattedLabel)
           shape: 'circularImage', // Always use circularImage
-          image: (typeof imageUrl === 'string' && imageUrl) ? imageUrl : DEFAULT_NODE_IMAGE,
+          image: imageUrl || DEFAULT_NODE_IMAGE,
           label: node.symbol, // The text symbol will be the label (appears below circle)
           size: 32, // Explicitly set size to ensure consistency
           font: { size: 16 }, // Explicitly set font size
@@ -334,5 +267,5 @@ export function useGraphData(
       lastBlockTimestamp,
       estimatedBlockDuration
     };
-  }, [pools, selectedTokens, selectedProtocols, currentBlockNumber, lastBlockTimestamp, estimatedBlockDuration, tokenImageUrls]);
+  }, [pools, selectedTokens, selectedProtocols, currentBlockNumber, lastBlockTimestamp, estimatedBlockDuration]);
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCoinImageURL } from '@/lib/coingecko';
+import { getCoinLogoUrl } from '@/lib/coingecko';
 import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
 const protocolToCoinGeckoId: { [key: string]: string } = {
@@ -7,6 +7,7 @@ const protocolToCoinGeckoId: { [key: string]: string } = {
   'uniswap_v3': 'uniswap',
   'uniswap_v4': 'uniswap',
   'vm:curve': 'curve-dao-token',
+  'vm:balancer_v2': 'balancer',
   'sushiswap_v2': 'sushi',
   'pancakeswap_v2': 'pancakeswap-token',
   'pancakeswap_v3': 'pancakeswap-token',
@@ -23,20 +24,13 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) =
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchLogo = async () => {
-      const coinId = protocolToCoinGeckoId[protocolName?.toLowerCase() || ''];
-      if (coinId) {
-        const url = await getCoinImageURL(coinId);
-        if (isMounted && url) {
-          setLogoUrl(url);
-        }
-      }
-    };
-    if (protocolName) {
-      fetchLogo();
+    // Get protocol's CoinGecko ID from mapping
+    const coinId = protocolToCoinGeckoId[protocolName?.toLowerCase() || ''];
+    if (coinId) {
+      // Get CDN URL directly (synchronous)
+      const url = getCoinLogoUrl(coinId);
+      setLogoUrl(url);
     }
-    return () => { isMounted = false; };
   }, [protocolName]);
 
   const sizeRem = sizeToRem(size);
@@ -50,8 +44,6 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) =
       {logoUrl ? (
         <img src={logoUrl} alt={protocolName} className="w-full h-full object-cover rounded-full" />
       ) : (
-        // Log a warning if logo is not found, to help diagnose missing mappings
-        // console.warn(`ProtocolLogo: No logo found for protocol: ${protocolName}`);
         protocolName ? protocolName.substring(0, 1).toUpperCase() : 'P'
       )}
     </div>

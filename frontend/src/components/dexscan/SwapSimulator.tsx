@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // For token selection
 import { ArrowDown, ExternalLink } from 'lucide-react'; // For swap direction button and external link
 import { Pool, Token } from './types'; // Assuming Token type includes address, symbol, logoURI
-import { getCoinId, getCoinImageURL } from '@/lib/coingecko'; // For token icons
+import { getCoinId, getCoinLogoUrl } from '@/lib/coingecko'; // For token icons
 import { callSimulationAPI } from './simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
 import { renderHexId, getTokenExplorerLink } from '@/lib/utils';
@@ -69,18 +69,10 @@ const TokenDisplay: React.FC<{token: Token | undefined}> = ({token}) => {
       return;
     }
     
-    // Clear previous icon and fetch new one
-    setIconUrl(null);
-    let isMounted = true;
-    const fetchIcon = async () => {
-      const coinId = await getCoinId(token.symbol);
-      if (coinId) {
-        const url = await getCoinImageURL(coinId);
-        if (isMounted && url) setIconUrl(url);
-      }
-    };
-    fetchIcon();
-    return () => { isMounted = false; };
+    // Get icon URL directly (synchronous)
+    const coinId = getCoinId(token.symbol);
+    const url = getCoinLogoUrl(coinId);
+    setIconUrl(url);
   }, [token?.address]); // Use token address as dependency to ensure reset on token change
 
   if (!token) return <span className="text-sm text-[rgba(255,244,224,0.64)]">Select Token</span>;

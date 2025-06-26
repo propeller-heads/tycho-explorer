@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Token } from '../types';
-import { getCoinId, getCoinImageURL } from '@/lib/coingecko';
+import { getCoinId, getCoinLogoUrl, getCoinImageFromAPI } from '@/lib/coingecko';
 import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
 interface TokenIconProps {
@@ -9,64 +9,35 @@ interface TokenIconProps {
 }
 
 const TokenIcon: React.FC<TokenIconProps> = ({ token, size = 6 }) => {
-  const [iconUrl, setIconUrl] = useState<string | null>(token.logoURI || null);
-  const [coinId, setCoinId] = useState<string | null>(null);
-  const [triedStatic, setTriedStatic] = useState(false);
-
+  const [iconUrl, setIconUrl] = useState<string | null>(
+    token.logoURI || getCoinLogoUrl(getCoinId(token.symbol))
+  );
+  
+  // Add API fallback when no CDN URL
   useEffect(() => {
-    if (token.logoURI) {
-      setIconUrl(token.logoURI);
-      return;
+    if (!iconUrl && token.symbol) {
+      getCoinImageFromAPI(token.symbol).then(url => url && setIconUrl(url));
     }
-    let isMounted = true;
-    const fetchIcon = async () => {
-      const id = await getCoinId(token.symbol); // Or use token.address if mapping exists
-      if (isMounted && id) {
-        setCoinId(id);
-        // Try static logo first
-        setIconUrl(`/logos/${id}.png`);
-        setTriedStatic(false);
-      }
-    };
-    if (!iconUrl && token.symbol) { // Ensure symbol exists before fetching
-        fetchIcon();
-    }
-    return () => { isMounted = false; };
-  }, [token.symbol, token.address, token.logoURI]); // Removed iconUrl from dependencies
-
-  // Handle image load error - fallback to Coingecko API
-  const handleImageError = async () => {
-    if (!triedStatic && coinId) {
-      setTriedStatic(true);
-      const url = await getCoinImageURL(coinId);
-      if (url) {
-        setIconUrl(url);
-      } else {
-        setIconUrl(null);
-      }
-    } else {
-      setIconUrl(null);
-    }
-  };
-
+  }, [iconUrl, token.symbol]);
+  
   // Get styling values from shared utilities
   const sizeRem = sizeToRem(size);
   const textSizeClass = getTextSizeClass(size);
 
   return (
-    <div 
+    <div
       className={`${tokenLogoBaseClasses} ${textSizeClass}`}
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {iconUrl ? (
-        <img 
-          src={iconUrl} 
-          alt={token.symbol} 
-          className="w-full h-full object-cover rounded-full" 
-          onError={handleImageError}
+        <img
+          src={iconUrl}
+          alt={token.symbol}
+          className="w-full h-full object-cover rounded-full"
+          onError={() => setIconUrl(null)}
         />
       ) : (
-        token.symbol ? token.symbol.substring(0, 1).toUpperCase() : '?'
+        token.symbol ? token.symbol.substring(0, 3).toUpperCase() : '?'
       )}
     </div>
   );

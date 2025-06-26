@@ -677,7 +677,7 @@ class GraphManager {
 
     // First try to get edge data in case an edge ID was passed
     let poolId = edgeIdOrPoolId;
-    const edgeData = this.edgesDataset?.get(edgeIdOrPoolId);
+    const edgeData = this.edgesDataset?.get(edgeIdOrPoolId) as any;
     if (edgeData && edgeData.poolId) {
       poolId = edgeData.poolId;
     }
