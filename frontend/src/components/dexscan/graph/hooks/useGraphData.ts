@@ -1,15 +1,10 @@
 // src/components/dexscan/graph/hooks/useGraphData.ts
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
 import { protocolColors } from '../protocolColors'; // Import color definitions
 import { getTokenLogoUrlSync } from '@/hooks/useTokenLogo';
+import { getCoinImageFromAPI } from '@/lib/coingecko';
 import { filterPools } from '../../utils/poolFilters';
-
-// // Compare objects by JSON stringifying them (deep equality) - No longer needed with refined memo dependencies
-// const deepEqual = (a: any, b: any) => {
-//   if (a === b) return true;
-//   return JSON.stringify(a) === JSON.stringify(b);
-// };
 
 // Interface for Vis.js edges, including the optional smooth property
 interface VisEdge {
@@ -118,13 +113,50 @@ export function useGraphData(
     estimatedBlockDuration,
   } = usePoolData();
 
+  // Store logo URLs that have been fetched from API
+  const [apiLogos, setApiLogos] = useState<Record<string, string>>({});
+
+  // Fetch logos from API for nodes that don't have CDN URLs
+  useEffect(() => {
+    const fetchMissingLogos = async () => {
+      // Get all unique symbols from filtered pools
+      const filteredPools = filterPools(Object.values(pools), selectedTokens, selectedProtocols);
+      const symbolsToFetch: { symbol: string; address: string }[] = [];
+      
+      filteredPools.forEach(pool => {
+        pool.tokens.forEach(token => {
+          // Check if we need to fetch this logo
+          const cdnUrl = getTokenLogoUrlSync(token.symbol);
+          if (!cdnUrl && !apiLogos[token.address]) {
+            symbolsToFetch.push({ symbol: token.symbol, address: token.address });
+          }
+        });
+      });
+
+      console.warn(`[useGraphData] symbolsToFetch: ${JSON.stringify(symbolsToFetch)}`);
+
+      // Fetch logos from API
+      for (const { symbol, address } of symbolsToFetch) {
+        const apiUrl = await getCoinImageFromAPI(symbol);
+        if (apiUrl) {
+          setApiLogos(prev => ({ ...prev, [address]: apiUrl }));
+        }
+      }
+    };
+
+    if (selectedTokens.length > 0) {
+      fetchMissingLogos();
+    }
+  }, [pools, selectedTokens, selectedProtocols]); // Don't include apiLogos to avoid infinite loop
+
 
   return useMemo(() => {
     console.log("🟦 useGraphData recalculating:", { 
       selectedTokens: selectedTokens.length, 
       selectedProtocols: selectedProtocols.length, 
       currentBlockNumber,
-      poolCount: Object.keys(pools).length
+      poolCount: Object.keys(pools).length,
+      apiLogosCount: Object.keys(apiLogos).length
     });
 
     // Early Exit: If no tokens are selected, return empty graph structure.
@@ -168,8 +200,13 @@ export function useGraphData(
     // 3. All tokens from filtered pools become nodes
     const finalNodes = Array.from(tokenMap.values())
       .map(node => {
-        // Use synchronous helper - same logic as other components
-        const imageUrl = getTokenLogoUrlSync(node.symbol);
+        // First try CDN
+        let imageUrl = getTokenLogoUrlSync(node.symbol);
+        
+        // If no CDN URL, check if we have an API URL
+        if (!imageUrl && apiLogos[node.address]) {
+          imageUrl = apiLogos[node.address];
+        }
         
         // Always use circularImage shape for consistent label positioning
         return {
@@ -267,5 +304,5 @@ export function useGraphData(
       lastBlockTimestamp,
       estimatedBlockDuration
     };
-  }, [pools, selectedTokens, selectedProtocols, currentBlockNumber, lastBlockTimestamp, estimatedBlockDuration]);
+  }, [pools, selectedTokens, selectedProtocols, currentBlockNumber, lastBlockTimestamp, estimatedBlockDuration, apiLogos]);
 }
