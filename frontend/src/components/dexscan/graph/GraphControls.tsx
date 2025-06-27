@@ -101,22 +101,21 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             Reset all
           </Button>
         )}
-
-        {/* Block Number Display */}
-        <div className="flex items-center justify-center gap-2">
-          <BlockProgressIcon
-            startTime={lastBlockTimestamp}
-            duration={estimatedBlockDuration}
-            size={16} // Adjust size as needed
-            strokeWidth={2.5}
-            color="#FF3366"
-          />
-          <span className={FILTER_STYLES.blockNumberText}>
-            {currentBlockNumber > 0 ? currentBlockNumber : 'Loading...'}
-          </span>
-        </div>
       </div>
-      {/* Removed old multi-row layout and selection summary section */}
+
+      {/* Block Number Display - moved to the right */}
+      <div className="flex items-center justify-center gap-2">
+        <BlockProgressIcon
+          startTime={lastBlockTimestamp}
+          duration={estimatedBlockDuration}
+          size={16} // Adjust size as needed
+          strokeWidth={2.5}
+          color="#FF3366"
+        />
+        <span className={FILTER_STYLES.blockNumberText}>
+          {currentBlockNumber > 0 ? currentBlockNumber : 'Loading...'}
+        </span>
+      </div>
     </div>
   );
 };
