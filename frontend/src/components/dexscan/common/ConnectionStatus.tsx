@@ -29,19 +29,15 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       )}
       style={{ color: MILK_COLORS.base }}
     >
-      {blockNumber > 0 && (
-        <>
-          <BlockProgressIcon
-            startTime={lastBlockTimestamp}
-            duration={estimatedBlockDuration}
-            size={16}
-            color="#FF3366"
-          />
-          <span className="font-sans text-sm">
-            {blockNumber}
-          </span>
-        </>
-      )}
+      <BlockProgressIcon
+        startTime={lastBlockTimestamp}
+        duration={estimatedBlockDuration}
+        size={16}
+        color="#FF3366"
+      />
+      <span className="font-sans text-sm">
+        {blockNumber > 0 ? blockNumber : 'Loading...'}
+      </span>
     </div>
   );
 };
