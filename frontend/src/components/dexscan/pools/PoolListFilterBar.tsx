@@ -65,16 +65,16 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
             Reset all
           </Button>
         )}
-
-        {/* Connection Status Display */}
-        <ConnectionStatus
-          connectionState={connectionState}
-          connectionStartTime={connectionStartTime}
-          blockNumber={blockNumber || 0}
-          lastBlockTimestamp={startTime || null}
-          estimatedBlockDuration={duration || 12000}
-        />
       </div>
+
+      {/* Connection Status Display - moved to the right */}
+      <ConnectionStatus
+        connectionState={connectionState}
+        connectionStartTime={connectionStartTime}
+        blockNumber={blockNumber || 0}
+        lastBlockTimestamp={startTime || null}
+        estimatedBlockDuration={duration || 12000}
+      />
     </div>
   );
 };

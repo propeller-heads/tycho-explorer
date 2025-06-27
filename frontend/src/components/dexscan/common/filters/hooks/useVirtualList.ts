@@ -29,10 +29,22 @@ export const useVirtualList = <T>(
     const target = event.currentTarget;
     const remainingScroll = target.scrollHeight - target.scrollTop - target.clientHeight;
     
+    // console.log('[scroll][VirtualList] Scroll event:', {
+    //   scrollHeight: target.scrollHeight,
+    //   scrollTop: target.scrollTop,
+    //   clientHeight: target.clientHeight,
+    //   remainingScroll,
+    //   threshold: scrollThreshold,
+    //   shouldLoadMore: remainingScroll < scrollThreshold,
+    //   currentDisplayCount: displayCount,
+    //   totalItems: items.length
+    // });
+    
     if (remainingScroll < scrollThreshold) {
+      // console.log('[scroll][VirtualList] Loading more items, from', displayCount, 'to', Math.min(displayCount + incrementSize, items.length));
       setDisplayCount(prev => Math.min(prev + incrementSize, items.length));
     }
-  }, [incrementSize, items.length, scrollThreshold]);
+  }, [incrementSize, items.length, scrollThreshold, displayCount]);
   
   // Get the currently visible items
   const visibleItems = items.slice(0, displayCount);

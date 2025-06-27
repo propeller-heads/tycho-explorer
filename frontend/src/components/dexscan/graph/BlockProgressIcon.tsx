@@ -54,7 +54,6 @@ const BlockProgressIcon: React.FC<BlockProgressIconProps> = ({
 
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - progress * circumference;
 
   // Ensure startTime is not null for rendering, default to non-animated full circle if so.
   const displayProgress = startTime === null ? 0 : progress; // Show full if no startTime (or handle differently)

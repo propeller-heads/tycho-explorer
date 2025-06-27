@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { getCoinImageURL } from '@/lib/coingecko';
+import React from 'react';
+import { useTokenLogo, getFallbackLetters } from '@/hooks/useTokenLogo';
 import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
-const protocolToCoinGeckoId: { [key: string]: string } = {
-  'uniswap_v2': 'uniswap',
-  'uniswap_v3': 'uniswap',
-  'uniswap_v4': 'uniswap',
-  'vm:curve': 'curve-dao-token',
-  'sushiswap_v2': 'sushi',
-  'pancakeswap_v2': 'pancakeswap-token',
-  'pancakeswap_v3': 'pancakeswap-token',
-  'ekubo_v2': 'ekubo-protocol',
+// Protocol to symbol mapping
+const protocolToSymbol: Record<string, string> = {
+  'uniswap_v2': 'UNI',
+  'uniswap_v3': 'UNI',
+  'uniswap_v4': 'UNI',
+  'vm:curve': 'CRV',
+  'vm:balancer_v2': 'BAL',
+  'sushiswap_v2': 'SUSHI',
+  'pancakeswap_v2': 'CAKE',
+  'pancakeswap_v3': 'CAKE',
+  'ekubo_v2': 'EKUBO',
   // Add other mappings as needed
 };
 
@@ -20,24 +22,8 @@ interface ProtocolLogoProps {
 }
 
 const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) => {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchLogo = async () => {
-      const coinId = protocolToCoinGeckoId[protocolName?.toLowerCase() || ''];
-      if (coinId) {
-        const url = await getCoinImageURL(coinId);
-        if (isMounted && url) {
-          setLogoUrl(url);
-        }
-      }
-    };
-    if (protocolName) {
-      fetchLogo();
-    }
-    return () => { isMounted = false; };
-  }, [protocolName]);
+  const symbol = protocolToSymbol[protocolName?.toLowerCase()] || '';
+  const { logoUrl, handleError } = useTokenLogo(symbol);
 
   const sizeRem = sizeToRem(size);
   const textSizeClass = getTextSizeClass(size);
@@ -48,11 +34,14 @@ const ProtocolLogo: React.FC<ProtocolLogoProps> = ({ protocolName, size = 6 }) =
       style={{ width: `${sizeRem}rem`, height: `${sizeRem}rem` }}
     >
       {logoUrl ? (
-        <img src={logoUrl} alt={protocolName} className="w-full h-full object-cover rounded-full" />
+        <img 
+          src={logoUrl} 
+          alt={protocolName} 
+          className="w-full h-full object-cover rounded-full"
+          onError={handleError}
+        />
       ) : (
-        // Log a warning if logo is not found, to help diagnose missing mappings
-        // console.warn(`ProtocolLogo: No logo found for protocol: ${protocolName}`);
-        protocolName ? protocolName.substring(0, 1).toUpperCase() : 'P'
+        getFallbackLetters(protocolName)[0] // Just first letter for protocols
       )}
     </div>
   );

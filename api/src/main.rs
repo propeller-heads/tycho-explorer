@@ -61,6 +61,9 @@ async fn main() -> anyhow::Result<()> {
     // Simple restart loop - these tasks should run forever
     let mut restart_count = 0u32;
     loop {
+        if (restart_count > 10) {
+            panic!("RESTART COUNT > 10")
+        }
         restart_count += 1;
         
         // Create fresh channels

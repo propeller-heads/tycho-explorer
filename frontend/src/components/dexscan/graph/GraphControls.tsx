@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import BlockProgressIcon from './BlockProgressIcon'; // Import the new component
+import ConnectionStatus from '../common/ConnectionStatus';
 import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
 import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
 import { Token } from '../types';
 import { FILTER_STYLES } from '../common/filters/filterStyles';
+import { usePoolData } from '../context/PoolDataContext';
 
 // Removed local storage keys - now handled by useFilterManager
 
@@ -35,6 +36,8 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
   lastBlockTimestamp,
   estimatedBlockDuration,
 }) => {
+  // Get connection state data for ConnectionStatus component
+  const { connectionState, connectionStartTime } = usePoolData();
   // Removed hasLoadedFromStorage - now handled by useFilterManager
   
   // Convert between Token type and graph's token structure
@@ -101,22 +104,16 @@ export const GraphControls: React.FC<GraphControlsProps> = ({
             Reset all
           </Button>
         )}
-
-        {/* Block Number Display */}
-        <div className="flex items-center justify-center gap-2">
-          <BlockProgressIcon
-            startTime={lastBlockTimestamp}
-            duration={estimatedBlockDuration}
-            size={16} // Adjust size as needed
-            strokeWidth={2.5}
-            color="#FF3366"
-          />
-          <span className={FILTER_STYLES.blockNumberText}>
-            {currentBlockNumber > 0 ? currentBlockNumber : 'Loading...'}
-          </span>
-        </div>
       </div>
-      {/* Removed old multi-row layout and selection summary section */}
+
+      {/* Block Number Display - moved to the right */}
+      <ConnectionStatus
+        connectionState={connectionState}
+        connectionStartTime={connectionStartTime}
+        blockNumber={currentBlockNumber}
+        lastBlockTimestamp={lastBlockTimestamp}
+        estimatedBlockDuration={estimatedBlockDuration}
+      />
     </div>
   );
 };

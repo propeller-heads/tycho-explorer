@@ -45,7 +45,7 @@ export const FILTER_STYLES = {
   colorDot: "w-2.5 h-2.5 rounded-full transition-all duration-200",
   
   // Filter bar styles
-  filterBar: "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-2",
+  filterBar: "flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-white/10 gap-2 justify-between",
   filterBarButtons: "flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2",
   resetButton: `h-10 sm:h-8 text-sm text-[${MILK_COLORS.muted}] hover:text-[${MILK_COLORS.base}] underline-offset-2`,
   blockNumberText: `text-sm font-medium text-[${MILK_COLORS.hover}]`,
