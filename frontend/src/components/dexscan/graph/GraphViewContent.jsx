@@ -1,59 +1,25 @@
-// src/components/dexscan/graph/GraphViewContent.tsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import GraphView from './GraphView';
 import { useGraphData } from './hooks/useGraphData';
 import { GraphControls } from './GraphControls';
-import { usePoolData } from '../context/PoolDataContext'; // Corrected Import usePoolData
-import EmptyGraphPrompt from './EmptyGraphPrompt';
+import { usePoolData } from '../context/PoolDataContext';
+import { TokenSelectionPrompt } from './TokenSelectionPrompt';
 
-// Import graph frame background asset
-import graphFrameBgArtboard from '@/assets/figma_generated/graph_frame_bg_artboard.png';
-import globalBgNoise from '@/assets/figma_generated/global_bg_noise.png';
-
-// Define a minimal type for Pool and Token if not already globally available
-// This should ideally come from a shared types file e.g., ../types
-interface Token {
-  address: string;
-  symbol: string;
-  // Add other token properties if accessed
-}
-
-interface Pool {
-  id: string; // Or number, depending on actual type
-  tokens: Token[];
-  protocol_system: string;
-  lastUpdatedAtBlock?: number; // Optional as it's defaulted in useGraphData
-  // Add other pool properties if accessed
-}
-
-interface PoolGraphViewProps {
-  selectedTokenAddresses: string[];
-  selectedProtocols: string[];
-  toggleToken: (address: string, isSelected: boolean) => void;
-  toggleProtocol: (protocol: string, isSelected: boolean) => void;
-  resetFilters: () => void;
-  isInitialized: boolean;
-}
-
-const PoolGraphView: React.FC<PoolGraphViewProps> = ({
+const PoolGraphView = ({
   selectedTokenAddresses,
   selectedProtocols,
   toggleToken,
   toggleProtocol,
   resetFilters,
-  isInitialized
 }) => {
-  // console.log(`DEBUG: GraphViewContent render`);
-
   // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
-  const { pools: rawPoolsForControls, selectedChain, connectionState, connectionStartTime } = usePoolData();
+  const { pools: rawPoolsForControls, selectedChain } = usePoolData();
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {
-    // console.log('DEBUG: Recalculating allAvailableTokenNodes for Controls');
     const tokenMap = new Map();
     Object.values(rawPoolsForControls).forEach(poolUnk => {
-      const pool = poolUnk as Pool; // Type assertion
+      const pool = poolUnk;
       pool.tokens.forEach(token => {
         if (!tokenMap.has(token.address)) {
           const address = token.address || '';
@@ -76,9 +42,9 @@ const PoolGraphView: React.FC<PoolGraphViewProps> = ({
 
   const uniqueProtocols = useMemo(() => {
     // console.log('DEBUG: Recalculating uniqueProtocols for Controls');
-    const protocols = new Set<string>();
+    const protocols = new Set();
     Object.values(rawPoolsForControls).forEach(poolUnk => {
-      const pool = poolUnk as Pool; // Type assertion
+      const pool = poolUnk;
       protocols.add(pool.protocol_system);
     });
     return Array.from(protocols);
@@ -131,10 +97,7 @@ const PoolGraphView: React.FC<PoolGraphViewProps> = ({
         </>
       ) : (
         <div className="flex flex-grow items-center justify-center" style={{ minHeight: "300px" }}>
-          <EmptyGraphPrompt 
-            connectionState={connectionState}
-            connectionStartTime={connectionStartTime}
-          />
+          <TokenSelectionPrompt />
         </div>
       )}
     </div>
