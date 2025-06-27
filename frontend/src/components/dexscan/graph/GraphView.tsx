@@ -369,6 +369,31 @@ class GraphManager {
     return { poolCount, address: nodeId };
   }
 
+  // Fetches connection data for node tooltips
+  getNodeConnectionData(nodeId: string) {
+    if (!this.edgesDataset) return { totalConnections: 0, connectionsByProtocol: {} };
+    
+    // Get all edges from the dataset
+    const allEdges = this.edgesDataset.get();
+    
+    // Filter edges connected to this node
+    const connectedEdges = allEdges.filter(edge => 
+      edge.from === nodeId || edge.to === nodeId
+    );
+    
+    // Count connections by protocol
+    const connectionsByProtocol: Record<string, number> = {};
+    connectedEdges.forEach(edge => {
+      const protocol = (edge as any).protocol || 'unknown';
+      connectionsByProtocol[protocol] = (connectionsByProtocol[protocol] || 0) + 1;
+    });
+    
+    return {
+      totalConnections: connectedEdges.length,
+      connectionsByProtocol
+    };
+  }
+
   // Displays the node tooltip
   showPopup(nodeId: string, content: string, options: { position: { x: number, y: number }, direction: string }) {
     if (!this.network || !this.container) return;
@@ -494,8 +519,28 @@ class GraphManager {
       ? `0x${firstByte}...${lastByte}`
       : address;
 
-    // Get node data
-    const node = this.nodesDataset?.get(nodeId);
+    // Get connection data
+    const connectionData = this.getNodeConnectionData(nodeId);
+
+    // Build connection by protocol HTML
+    let connectionsByProtocolHtml = '';
+    if (connectionData.totalConnections > 0) {
+      // Sort protocols by connection count (descending) for better display
+      const sortedProtocols = Object.entries(connectionData.connectionsByProtocol)
+        .sort(([, a], [, b]) => b - a);
+      
+      connectionsByProtocolHtml = sortedProtocols
+        .map(([protocol, count]) => {
+          const readableName = getReadableProtocolName(protocol);
+          return `
+            <div style="margin-bottom: 4px;">
+              <span style="color: rgba(255, 244, 224, 0.64);">Connections through ${readableName}: </span>
+              <span style="color: #FFF4E0;">${count} / ${connectionData.totalConnections}</span>
+            </div>
+          `;
+        })
+        .join('');
+    }
 
     // Create HTML content for popup
     // Applying styles based on Figma's tooltip (7903:5709)
@@ -518,7 +563,7 @@ class GraphManager {
           <span id="tooltip-pool-count" style="color: #FFF4E0;">${data.poolCount}</span>
         </div>
         
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <div>
             <span style="color: rgba(255, 244, 224, 0.64);">Address: </span>
             <a href="${getTokenExplorerLink(data.address, this.selectedChain)}" 
@@ -532,6 +577,13 @@ class GraphManager {
             Copy
           </button>
         </div>
+        
+        <div style="margin-bottom: 8px;">
+          <span style="color: rgba(255, 244, 224, 0.64);">Connections in view: </span>
+          <span id="tooltip-connection-count" style="color: #FFF4E0;">${connectionData.totalConnections}</span>
+        </div>
+        
+        ${connectionsByProtocolHtml}
       </div>
     `;
 
@@ -645,10 +697,28 @@ class GraphManager {
 
   refreshCurrentTooltipData() {
     if (this.popupDiv && this.selectedNodeId) {
+      // Update pool count
       const poolCountSpan = this.popupDiv.querySelector('#tooltip-pool-count');
       if (poolCountSpan) {
         const freshTokenData = this.getTokenData(this.selectedNodeId);
         poolCountSpan.textContent = freshTokenData.poolCount.toString();
+      }
+      
+      // Update connection count
+      const connectionCountSpan = this.popupDiv.querySelector('#tooltip-connection-count');
+      if (connectionCountSpan) {
+        const freshConnectionData = this.getNodeConnectionData(this.selectedNodeId);
+        connectionCountSpan.textContent = freshConnectionData.totalConnections.toString();
+        
+        // Also update protocol breakdown - this is more complex as we need to rebuild the HTML
+        // For now, we'll trigger a full tooltip refresh if connections changed
+        const currentCount = parseInt(connectionCountSpan.textContent || '0');
+        if (currentCount !== freshConnectionData.totalConnections) {
+          // Re-show the tooltip with updated data
+          const tokenData = this.getTokenData(this.selectedNodeId);
+          const clickEvent = { x: 0, y: 0 }; // Use stored position if available
+          this.showTokenInfo(this.selectedNodeId, tokenData, clickEvent);
+        }
       }
     }
   }
