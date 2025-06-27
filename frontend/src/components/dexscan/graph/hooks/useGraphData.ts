@@ -2,7 +2,7 @@
 import { useMemo } from 'react';
 import { usePoolData } from '../../context/PoolDataContext';
 import { protocolColors } from '../protocolColors'; // Import color definitions
-import { getCoinId, getCoinLogoUrl } from '../../../../lib/coingecko';
+import { getTokenLogoUrlSync } from '@/hooks/useTokenLogo';
 import { filterPools } from '../../utils/poolFilters';
 
 // // Compare objects by JSON stringifying them (deep equality) - No longer needed with refined memo dependencies
@@ -168,15 +168,15 @@ export function useGraphData(
     // 3. All tokens from filtered pools become nodes
     const finalNodes = Array.from(tokenMap.values())
       .map(node => {
-        // Calculate image URL directly (synchronous)
-        const coinId = node.symbol ? getCoinId(node.symbol) : null;
-        const imageUrl = getCoinLogoUrl(coinId);
+        // Use synchronous helper - same logic as other components
+        const imageUrl = getTokenLogoUrlSync(node.symbol);
         
         // Always use circularImage shape for consistent label positioning
         return {
           ...node, // Spread existing node properties (like id, symbol, address, formattedLabel)
           shape: 'circularImage', // Always use circularImage
           image: imageUrl || DEFAULT_NODE_IMAGE,
+          brokenImage: DEFAULT_NODE_IMAGE, // vis-network uses this on error
           label: node.symbol, // The text symbol will be the label (appears below circle)
           size: 32, // Explicitly set size to ensure consistency
           font: { size: 16 }, // Explicitly set font size

@@ -121,7 +121,7 @@ interface GraphViewProps {
 // Class to manage the network and position cache
 class GraphManager {
   public network: Network | null = null; // Made public for mobile touch handler
-  private nodesDataset: DataSet<VisNode> | null = null;
+  public nodesDataset: DataSet<VisNode> | null = null; // Made public for API fallback
   private edgesDataset: DataSet<VisEdge> | null = null;
   public rawPoolsData: Record<string, PoolType> // Changed RawPool to PoolType
   public selectedChain: string = 'ethereum'; // Default chain
@@ -169,8 +169,8 @@ class GraphManager {
     // After stabilization, disable physics to keep nodes static
     this.network.once('stabilizationIterationsDone', () => {
       // Disable physics after initial layout
-      this.network!.setOptions({ 
-        physics: { enabled: false } 
+      this.network!.setOptions({
+        physics: { enabled: false }
       });
     });
 
@@ -183,26 +183,26 @@ class GraphManager {
       // Get the actual DOM position of the click event
       // Handle both mouse and touch events
       let clickEvent = { x: 0, y: 0 };
-      
+
       if (params.event) {
         // For mouse events
         if (params.event.center) {
           clickEvent = { x: params.event.center.x, y: params.event.center.y };
-        } 
+        }
         // For touch events, check srcEvent
         else if (params.event.srcEvent) {
           const srcEvent = params.event.srcEvent;
           if (srcEvent.touches && srcEvent.touches.length > 0) {
             // Touch event
-            clickEvent = { 
-              x: srcEvent.touches[0].clientX, 
-              y: srcEvent.touches[0].clientY 
+            clickEvent = {
+              x: srcEvent.touches[0].clientX,
+              y: srcEvent.touches[0].clientY
             };
           } else if (srcEvent.changedTouches && srcEvent.changedTouches.length > 0) {
             // Touch end event
-            clickEvent = { 
-              x: srcEvent.changedTouches[0].clientX, 
-              y: srcEvent.changedTouches[0].clientY 
+            clickEvent = {
+              x: srcEvent.changedTouches[0].clientX,
+              y: srcEvent.changedTouches[0].clientY
             };
           } else if (srcEvent.clientX !== undefined) {
             // Mouse event fallback
@@ -224,7 +224,7 @@ class GraphManager {
         if (previousSelectedNodeId && previousSelectedNodeId !== clickedNodeId) {
           this.resetNodeStyle(previousSelectedNodeId);
         }
-        
+
         // Apply selected style to the new node if it's not already selected or re-clicked
         if (clickedNodeId !== previousSelectedNodeId) {
           this.selectNodeStyle(clickedNodeId);
@@ -246,8 +246,8 @@ class GraphManager {
         if (previousSelectedNodeId) {
           this.resetNodeStyle(previousSelectedNodeId);
         }
-        this.selectedNodeId = null; 
-        
+        this.selectedNodeId = null;
+
         // Show edge popover
         this.showEdgeInfoPopover(clickedEdgeId, clickEvent.x, clickEvent.y);
 
@@ -263,7 +263,7 @@ class GraphManager {
 
     // Bind click event for all devices
     this.network.on('click', handleInteraction);
-    
+
     // On mobile, add immediate touch response for edges
     if (isMobile) {
       const canvas = container.querySelector('canvas');
@@ -271,12 +271,12 @@ class GraphManager {
         canvas.addEventListener('touchend', (event) => {
           event.preventDefault();
           const touch = event.changedTouches[0];
-          const canvasPos = this.network!.DOMtoCanvas({ 
-            x: touch.clientX, 
-            y: touch.clientY 
+          const canvasPos = this.network!.DOMtoCanvas({
+            x: touch.clientX,
+            y: touch.clientY
           });
           const edgeId = this.network!.getEdgeAt(canvasPos);
-          
+
           // Trigger interaction for edge taps
           if (edgeId) {
             handleInteraction({
@@ -398,9 +398,9 @@ class GraphManager {
           navigator.clipboard.writeText(addressToCopy)
             .then(() => {
               copyNodeAddressButton.textContent = 'Copied!';
-              setTimeout(() => { 
+              setTimeout(() => {
                 // Check if button still exists before trying to change text
-                if (copyNodeAddressButton) copyNodeAddressButton.textContent = 'Copy'; 
+                if (copyNodeAddressButton) copyNodeAddressButton.textContent = 'Copy';
               }, 1500);
             })
             .catch(err => {
@@ -599,10 +599,10 @@ class GraphManager {
     const currentEdgesMap = new Map(this.edgesDataset.get({ returnType: 'Array' }).map(edge => [edge.id, edge]));
     // Create a Map of new edges
     const newEdgesMap = new Map(newEdgesData.map(edge => [edge.id, edge]));
-    
+
     const edgesToAdd = [];
     const edgesToUpdate = []; // Edges don't have x/y positions managed by physics in the same way nodes do.
-                              // Their appearance is determined by 'from' and 'to' nodes and 'smooth' options.
+    // Their appearance is determined by 'from' and 'to' nodes and 'smooth' options.
     const edgeIdsToRemove = [];
 
     // Identify edges to add or update
@@ -610,7 +610,7 @@ class GraphManager {
       if (currentEdgesMap.has(newEdge.id)) {
         // Edge exists, prepare for update.
         // TODO: Add diffing if only specific property changes should trigger an update.
-        edgesToUpdate.push(newEdge); 
+        edgesToUpdate.push(newEdge);
       } else {
         // Edge is new, add it.
         edgesToAdd.push(newEdge);
@@ -633,7 +633,7 @@ class GraphManager {
     if (edgeIdsToRemove.length > 0) {
       this.edgesDataset.remove(edgeIdsToRemove);
     }
-    
+
     // After updating datasets, restore the viewport position
     // This prevents the graph from re-centering after updates
     this.network.moveTo({
@@ -700,7 +700,7 @@ class GraphManager {
     const timeAgo = formatTimeAgo(lastUpdateTimeString);
     const feeRatePercent = parsePoolFee(pool); // Uses the imported function
     const formattedFee = `${feeRatePercent.toFixed(4)}%`; // Adjust precision as needed
-    
+
     // Use getExternalLink, fallback to Etherscan
     const poolLink = getExternalLink(pool, this.selectedChain);
     const displayPoolId = renderHexId(pool.id);
@@ -765,7 +765,7 @@ class GraphManager {
           navigator.clipboard.writeText(idToCopy)
             .then(() => {
               copyEdgeButton.textContent = 'Copied!';
-              setTimeout(() => { 
+              setTimeout(() => {
                 if (copyEdgeButton) copyEdgeButton.textContent = 'Copy';
               }, 1500);
             })
@@ -773,7 +773,7 @@ class GraphManager {
         }
       });
     }
-    
+
     // Stop propagation for clicks inside the popover itself
     popoverDiv.addEventListener('click', (e) => e.stopPropagation());
     popoverDiv.addEventListener('mousedown', (e) => e.stopPropagation()); // Also for mousedown
@@ -786,14 +786,14 @@ class GraphManager {
     // Position the popup
     const popupHeight = popoverDiv.offsetHeight;
     const popupWidth = popoverDiv.offsetWidth;
-    
+
     // Check if mobile device
     const isMobile = window.innerWidth < 768;
-    
+
     // Position relative to the click, with mobile adjustments
     let left = clickX - (popupWidth / 2);
     let top = clickY - popupHeight - 20; // 20px above the click
-    
+
     // Add padding for mobile screens
     const padding = isMobile ? 10 : 0;
 
@@ -817,16 +817,16 @@ class GraphManager {
 
     // Ensure document mousedown listener is active for outside clicks
     if (this.boundHandleDocumentMousedown && !this.popupDiv && !this.currentEdgePopover?.element.parentNode) { // Logic might need refinement
-        // This check is tricky. The listener should be active if ANY popup is shown.
-        // The existing handleDocumentMousedown should handle both.
-        // Let's assume showPopup and this method ensure the listener is active.
-        // If not already added by showPopup (node tooltip), add it.
-        // This part of the logic for adding/removing the listener needs to be robust.
-        // For now, we rely on showPopup to manage the main listener if a node tooltip is also involved.
-        // If only an edge popover is shown, we might need to explicitly add it here.
-        // The current `handleDocumentMousedown` is designed to hide both.
+      // This check is tricky. The listener should be active if ANY popup is shown.
+      // The existing handleDocumentMousedown should handle both.
+      // Let's assume showPopup and this method ensure the listener is active.
+      // If not already added by showPopup (node tooltip), add it.
+      // This part of the logic for adding/removing the listener needs to be robust.
+      // For now, we rely on showPopup to manage the main listener if a node tooltip is also involved.
+      // If only an edge popover is shown, we might need to explicitly add it here.
+      // The current `handleDocumentMousedown` is designed to hide both.
     }
-     if (this.boundHandleDocumentMousedown) {
+    if (this.boundHandleDocumentMousedown) {
       // Remove first to avoid duplicates, then add.
       // This ensures it's active if this is the only popup.
       document.removeEventListener('mousedown', this.boundHandleDocumentMousedown, true);
@@ -868,18 +868,19 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
     };
   }, []); // Empty dependencies - only run once on mount
 
+
   // Initialize or update graph when data changes
   useEffect(() => {
     if (!containerRef.current || !graphManagerRef.current) return;
-    
+
     const manager = graphManagerRef.current;
-    
+
     if (!manager.isInitialized() && tokenNodes.length > 0 && poolEdges.length > 0) {
       // First time initialization
       manager.initialize(containerRef.current, tokenNodes, poolEdges, rawPoolsData, isMobile, selectedChain);
     } else if (manager.isInitialized()) {
       // Subsequent updates
-      manager.rawPoolsData = rawPoolsData as Record<string, PoolType>; 
+      manager.rawPoolsData = rawPoolsData as Record<string, PoolType>;
       manager.selectedChain = selectedChain; // Update selected chain
       manager.updateData(tokenNodes, poolEdges, isMobile);
       manager.refreshCurrentTooltipData(); // Refresh tooltip if open
@@ -889,30 +890,30 @@ const GraphView: React.FC<GraphViewProps> = ({ tokenNodes, poolEdges, rawPoolsDa
   // Add mobile touch handler for edges when on mobile
   useEffect(() => {
     if (!containerRef.current || !graphManagerRef.current || !graphManagerRef.current.isInitialized() || !isMobile) return;
-    
+
     const canvas = containerRef.current.querySelector('canvas');
     if (!canvas) return;
-    
+
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
       const touch = event.changedTouches[0];
       const manager = graphManagerRef.current;
       if (!manager || !manager.network) return;
-      
-      const canvasPos = manager.network.DOMtoCanvas({ 
-        x: touch.clientX, 
-        y: touch.clientY 
+
+      const canvasPos = manager.network.DOMtoCanvas({
+        x: touch.clientX,
+        y: touch.clientY
       });
       const edgeId = manager.network.getEdgeAt(canvasPos);
-      
+
       // Trigger edge tooltip for taps
       if (edgeId) {
         manager.showEdgeInfoPopover(String(edgeId), touch.clientX, touch.clientY);
       }
     };
-    
+
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-    
+
     return () => {
       canvas.removeEventListener('touchend', handleTouchEnd);
     };

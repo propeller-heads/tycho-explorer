@@ -25,6 +25,9 @@ export const MILK_COLORS = {
   /** Very subtle background - Use for default button/input backgrounds (2% opacity) */
   bgSubtle: 'rgba(255,244,224,0.02)',
   
+  /** Subtle background - Use for card backgrounds and panels (4% opacity) */
+  bgCard: 'rgba(255,244,224,0.04)',
+  
   /** Light background - Use for hover states and subtle emphasis (6% opacity) */
   bgLight: 'rgba(255,244,224,0.06)',
   
