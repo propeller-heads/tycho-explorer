@@ -1,29 +1,20 @@
 // Sub-components for EdgeTooltip
 export const PoolIdSection = ({ poolLink, displayPoolId, onCopy, copyText }) => (
-  <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div className="mb-2 flex justify-between items-center">
     <div>
-      <span style={{ color: 'rgba(255, 244, 224, 0.64)' }}>Pool ID: </span>
+      <span className="text-milk-base/60">Pool ID: </span>
       <a 
         href={poolLink} 
         target="_blank" 
         rel="noopener noreferrer"
-        style={{ color: 'rgba(255, 244, 224, 0.64)', textDecoration: 'underline', wordBreak: 'break-all' }}
+        className="text-milk-base/60 underline break-all"
       >
         {displayPoolId}
       </a>
     </div>
     <button 
       onClick={onCopy}
-      style={{
-        marginLeft: '8px',
-        padding: '2px 6px',
-        fontSize: '10px',
-        color: 'rgba(255, 244, 224, 0.64)',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        border: '1px solid rgba(255, 244, 224, 0.2)',
-        borderRadius: '4px',
-        cursor: 'pointer'
-      }}
+      className="ml-2 px-1.5 py-0.5 text-[10px] text-milk-base/60 bg-white/10 border border-milk-base/20 rounded cursor-pointer hover:bg-white/20 transition-colors"
     >
       {copyText}
     </button>
@@ -31,8 +22,8 @@ export const PoolIdSection = ({ poolLink, displayPoolId, onCopy, copyText }) => 
 );
 
 export const InfoRow = ({ label, value }) => (
-  <div style={{ marginBottom: '8px' }}>
-    <span style={{ color: 'rgba(255, 244, 224, 0.64)' }}>{label}: </span>
-    <span style={{ color: '#FFF4E0' }}>{value}</span>
+  <div className="mb-2">
+    <span className="text-milk-base/60">{label}: </span>
+    <span className="text-milk-base">{value}</span>
   </div>
 );

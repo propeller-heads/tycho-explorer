@@ -3,7 +3,7 @@ import { getExternalLink, renderHexId, formatTimeAgo } from '@/lib/utils';
 import { parsePoolFee } from '@/lib/poolUtils';
 import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
 import { PoolIdSection, InfoRow } from '@/components/dexscan/graph/tooltips/EdgeTooltipParts';
-import { defaultStyles } from '@/components/dexscan/graph/tooltips/EdgeTooltipStyles';
+import { tooltipClasses } from '@/components/dexscan/graph/tooltips/EdgeTooltipStyles';
 
 /**
  * Tooltip component for graph edges (pools)
@@ -25,7 +25,7 @@ export const EdgeTooltip = ({ pool, selectedChain, style = {} }) => {
   const formattedFee = `${feePercent.toFixed(4)}%`;
 
   return (
-    <div style={{ ...defaultStyles, ...style }}>
+    <div className={tooltipClasses} style={style}>
       <PoolIdSection 
         poolLink={poolLink}
         displayPoolId={displayPoolId}

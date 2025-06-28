@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import { Footer } from "./components/dexscan/Footer";
-// import { NetworkManagerTest } from "@/components/dexscan/graph/test/NetworkManagerTest";
+import { NetworkManagerTest } from "@/components/dexscan/graph/test/NetworkManagerTest";
 
 // Import background assets
 import globalBgNoise from '@/assets/figma_generated/global_bg_noise.png';
@@ -53,7 +53,7 @@ const App = () => (
       <div style={{ position: "relative", zIndex: 3, flex: 1, overflow: "hidden" }}>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* <Route path="/graph-test" element={<NetworkManagerTest />} /> */}
+          <Route path="/graph-test" element={<NetworkManagerTest />} />
         </Routes>
       </div>
 

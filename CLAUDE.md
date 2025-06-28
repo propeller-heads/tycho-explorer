@@ -255,3 +255,7 @@ A working 80% solution beats a theoretical 100% solution
 Ship early, improve iteratively
 
 These principles help create more maintainable, composable, and reliable solutions while avoiding over-engineering and unnecessary complexity.
+
+## Development Tips
+
+* `cd frontend` when you need to run bun scripts because package.json is in frontend/

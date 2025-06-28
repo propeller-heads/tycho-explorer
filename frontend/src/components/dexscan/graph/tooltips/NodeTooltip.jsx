@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NodeInfo, AddressInfo } from '@/components/dexscan/graph/tooltips/NodeTooltipParts';
 import { ProtocolConnections } from '@/components/dexscan/graph/tooltips/ProtocolConnections';
-import { defaultStyles } from '@/components/dexscan/graph/tooltips/NodeTooltipStyles';
+import { tooltipClasses } from '@/components/dexscan/graph/tooltips/NodeTooltipStyles';
 
 /**
  * Tooltip component for graph nodes
@@ -25,7 +25,7 @@ export const NodeTooltip = ({
     .sort(([, a], [, b]) => b - a);
 
   return (
-    <div style={{ ...defaultStyles, ...style }}>
+    <div className={tooltipClasses} style={style}>
       <NodeInfo label="Pools" value={nodeData.poolCount} />
       <AddressInfo 
         address={nodeData.address} 

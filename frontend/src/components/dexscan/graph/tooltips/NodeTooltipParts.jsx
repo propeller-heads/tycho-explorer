@@ -1,11 +1,10 @@
 import { getTokenExplorerLink } from '@/lib/utils';
-import { buttonStyles, linkStyles, labelColor, valueColor } from '@/components/dexscan/graph/tooltips/NodeTooltipStyles';
 
 // Sub-components for NodeTooltip
 export const NodeInfo = ({ label, value }) => (
-  <div style={{ marginBottom: '8px' }}>
-    <span style={{ color: labelColor }}>{label}: </span>
-    <span style={{ color: valueColor }}>{value}</span>
+  <div className="mb-2">
+    <span className="text-milk-base/60">{label}: </span>
+    <span className="text-milk-base">{value}</span>
   </div>
 );
 
@@ -18,19 +17,19 @@ export const AddressInfo = ({ address, chain, onCopy, copyText }) => {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+    <div className="flex justify-between items-center mb-2">
       <div>
-        <span style={{ color: labelColor }}>Address: </span>
+        <span className="text-milk-base/60">Address: </span>
         <a 
           href={getTokenExplorerLink(address, chain)} 
           target="_blank" 
           rel="noopener noreferrer"
-          style={linkStyles}
+          className="text-milk-base/60 underline"
         >
           {formatAddress(address)}
         </a>
       </div>
-      <button onClick={onCopy} style={buttonStyles}>
+      <button onClick={onCopy} className="ml-2 px-1.5 py-0.5 text-[10px] text-milk-base/60 bg-white/10 border border-milk-base/20 rounded cursor-pointer hover:bg-white/20 transition-colors">
         {copyText}
       </button>
     </div>

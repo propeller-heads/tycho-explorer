@@ -1,14 +1,13 @@
 import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
-import { labelColor, valueColor } from '@/components/dexscan/graph/tooltips/NodeTooltipStyles';
 
 export const ProtocolConnections = ({ protocols, total }) => (
   <>
     {protocols.map(([protocol, count]) => (
-      <div key={protocol} style={{ marginBottom: '4px' }}>
-        <span style={{ color: labelColor }}>
+      <div key={protocol} className="mb-1">
+        <span className="text-milk-base/60">
           Connections through {getReadableProtocolName(protocol)}: 
         </span>
-        <span style={{ color: valueColor }}> {count} / {total}</span>
+        <span className="text-milk-base"> {count} / {total}</span>
       </div>
     ))}
   </>
