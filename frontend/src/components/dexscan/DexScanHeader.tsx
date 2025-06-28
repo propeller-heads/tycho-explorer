@@ -9,6 +9,8 @@ import HeaderActions from '@/components/dexscan/header/HeaderActions';
 import { ViewSelector } from '@/components/dexscan/ViewSelector';
 // Import the MobileMenuButton component for mobile navigation
 import MobileMenuButton from '@/components/dexscan/header/MobileMenuButton';
+// Import Link for navigation
+// import { Link } from 'react-router-dom';
 
 // Define an interface for the props that this component accepts
 interface DexScanHeaderProps {
@@ -28,6 +30,13 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
       <div className="sm:hidden flex items-center justify-between w-full">
         <div className="flex items-center gap-2">
           <HeaderBranding />
+          {/* TEMPORARY: Test link for NetworkManager */}
+          {/* <Link 
+            to="/graph-test"
+            className="px-2 py-1 text-xs bg-purple-600 text-white rounded"
+          >
+            Test
+          </Link> */}
         </div>
         <div className="flex items-center gap-2">
           <HeaderActions />
@@ -45,6 +54,7 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
 
       {/* Desktop Center Section: Contains the view selector toggle buttons */}
       <div className="hidden sm:flex justify-center w-full sm:max-w-[475px] sm:mx-auto">
+      {/* <div className="hidden sm:flex justify-center w-full sm:max-w-[475px] sm:mx-auto items-center gap-4"> */}
         {/* Render the ViewSelector component and pass props */}
         <ViewSelector 
           // Pass the current active view
@@ -52,6 +62,13 @@ const DexScanHeader: React.FC<DexScanHeaderProps> = ({ currentView, onViewChange
           // Pass the callback for when view changes
           setActiveTab={onViewChange} 
         />
+        {/* TEMPORARY: Test link for NetworkManager
+        <Link 
+          to="/graph-test"
+          className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+        >
+          Test Graph
+        </Link> */}
       </div>
 
       {/* Desktop Right Section */}

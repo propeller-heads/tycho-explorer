@@ -1,247 +1,257 @@
-# Role
+# CLAUDE.md - Development Guidelines
 
-You are an expert software designer and implementor. 
-In Plan Mode, plan and iterate until the plan is accurate and comprehensive, and specific file and line code changes planned out.
-When you asked to "reiterate the plan", you should respond with the whole and updated plan noting what's changed. 
-You should note any ambiguity and FIGURE OUT AS MUCH AS POSSIBLE YOURSELF; FAILING THAT YOU SHOULD ASK FOR THE USER's HELP! 
+## ROLE & APPROACH
+
+### Your Role
+You are an expert software designer and implementor. In Plan Mode, plan and iterate until the plan is accurate and comprehensive, with specific file and line code changes planned out.
+
+When asked to "reiterate the plan", respond with the whole updated plan noting what's changed. Note any ambiguity and FIGURE OUT AS MUCH AS POSSIBLE YOURSELF; FAILING THAT, ASK FOR THE USER's HELP!
+
+### Planning Process
 
 When planning:
+- Give overview
+- Give motivation  
+- Group changes by concepts
+  - Describe each group's rationale, specific file changes, component changes, function changes, code changes, configuration changes
+- Be concise using Germanic-style English (plain and concrete words)
+- Number proposed changes with subitems (e.g., 1.1, 1.1.2)
+- Ultrathink means think as long as needed for the best answer
+
+To create the best plan:
+1. Gather data about the problem/feature/bug; after ultrathinking, ask user when unsure
+2. Find root cause(s) of the problem
+3. Enumerate best options, collect user's criteria, highlight each solution's qualities
+4. Recommend the best option or combination
+
+---
+
+## CODING STANDARDS
+
+### General Principles
+- **Small functions**: Keep under 20 lines each
+- **No hardcoded values**: Always name and reuse values
+- **Comment concepts**: Write a comment above each concept
+- **No accessibility features**: Don't implement alt tags or similar
+- **Production ready**: Never mock data - ask when unsure about data handling
+- **File size limit**: Each file should be no more than 40 lines, with comments included. This is about 1 page of text.
+- **Post-change file size check**: After you make code changes, new files or existing files, you will check whether you are respecting the file size limit.
+- **No file size limit for test files**
+- **After every code change, lint the code on the files / directories changed**: `bun run lint file1 dir1`
+
+### Function Design Process
+
+Follow these steps when writing functions:
+
+1. **Problem Analysis to Data Definitions**
+   - Identify information to represent
+   - Formulate data definitions with examples
+
+2. **Signature, Purpose Statement, Header**
+   - State what data the function consumes and produces
+   - Write concise purpose statement
+   - Define stub matching signature
+
+3. **Functional Examples**
+   - Work through examples illustrating the function's purpose
+
+4. **Function Template**
+   - Translate data definitions into function outline
+
+5. **Function Definition**
+   - Fill gaps in template using purpose statement and examples
+
+6. **Testing** (only when requested)
+   - Convert examples to tests
+   - Ensure function passes all tests
+
+### Modularity
+Keep each component/function doing 1 thing well. In plans, explain modularity decisions.
+
+### Code Organization
+- **Imports**: Always put at the top of source file
+- **Import alias**: Use `@/` which represents `frontend/src/` (configured in vite.config.ts)
+- **CSS classes**: Abstract repeated classes into strings
+
+---
+
+## COMPONENT GUIDELINES
+
+### File Structure
+Organize component files in this order:
+1. Imports
+2. Constants  
+3. Helper functions
+4. Sub-components
+5. Main component
+6. Display name
+
+### Export Strategy
+
+Always use named exports because:
+
+1. **Find/Replace Works Reliably**
+   - Find all usages by searching exact component name
+   - Straightforward renaming
+   - Avoids confusion from arbitrary import names
 
-* give overview
-* give motivation
-* group changes by concepts
-  * describe each group of changes' rationale, specific file changes, component changes, function changes, code changes, configuration changes
-* be concise and use Germanic-style English words in the sense they are plain and concrete
-* number the proposed changes, and use subitem numbering e.g. 1.1 and 1.1.2
-* ultrathink means think as long as you need to come up with best answer possible
+2. **IDE Refactoring Support**
+   - Automatic reference tracking and renaming
+   - "Rename Symbol" (F2 in VS Code) works across codebase
+   - Reliable tracking unlike default exports
+
+3. **Explicit Dependencies**
+   - Clear, explicit imports: `import { TokenSelectionPrompt, TokenIcon } from './tokens'`
+   - No ambiguity about module contents
 
-To come up with the best plan, we want to:
+4. **Cleaner Re-exports**
+   - `export { TokenSelectionPrompt } from './TokenSelectionPrompt'`
+   - More readable than default export syntax
 
-1. gather data about the problem/feature/bug at hand; after you ultrathink, ask the user when you're not sure about anything
-2. find the root cause(s) of the problem
-3. enumerate a handful of best options, collect the user's criteria for a solution, highlight each solution's qualities against the user's criteria
-4. recommend the best option, or a combination of the options
+### Component Patterns
 
-# Execution
+1. **Break into smaller components**
+   ```javascript
+   // Sub-component for icons
+   const Icon = ({ src, className }) => (
+     <img src={src} className={className} loading="lazy" />
+   );
+   
+   // Sub-component for styled text
+   const HighlightedText = ({ children }) => (
+     <span className="px-2 py-1 rounded bg-highlight">
+       {children}
+     </span>
+   );
+   ```
 
-* Don't ever mock data, we need this app be production ready, when you don't know how to read / write data, ask me!
+2. **Compose from parts**
+   ```javascript
+   export const TokenSelectionPrompt = () => (
+     <div className={`flex flex-col items-center justify-center h-full gap-4 ${CONTAINER_PADDING}`}>
+       <Icon src={selectTokensIcon} className={ICON_SIZE} />
+       <div className="flex flex-wrap items-center justify-center gap-1 text-sm text-milk-base">
+         <span>You need to</span>
+         <HighlightedText>select at least two tokens</HighlightedText>
+         <span>to display the graph.</span>
+       </div>
+     </div>
+   );
+   ```
 
-# Coding guidelines
+### Best Practices
 
-Follow the following guidelines strictly.
+- **Constants at module level**: Avoid repeated hardcoded values
+- **Props for flexibility**: Add props even if not currently used
+- **Display name**: Add `ComponentName.displayName = 'ComponentName'` for debugging
+- **Small, focused components**: Each does one thing well
+- **Meaningful names**: Self-documenting constants and components
 
-* Abstract repeated css classes into strings.
+---
 
-* Avoid hardcoded values: always name and reuse them.
+## STYLING STANDARDS
 
-* Aim for small functions, fewer than 20 lines each.
+### CSS Guidelines
 
-* Aim for small files, fewer than 80 lines each.
+- **Avoid inline styles**: Use Tailwind classes instead
+  - Don't: `style={{ color: MILK_COLORS.base }}`
+  - Do: `className="text-milk-base"`
 
-* When you edit or add code, write a line of comment above each concept.
+- **Use CSS variables**: For consistent, reusable styling
+  - Define in CSS: `--color-milk-base: #FFF4E0`
+  - Use in Tailwind: `text-milk-base`
 
-* Do not implement for accessibility features e.g. alt tags.
-  * We don't implement anything for accessibility. For example, don't warn against things like: "Line 14 is missing the alt attribute for accessibility".
+- **Abstract repeated classes**: Store in constants
+  ```javascript
+  const CONTAINER_CLASSES = 'flex flex-col items-center justify-center h-full gap-4';
+  ```
 
-* When you write functions, follow these:
+# Technology Stack Transition
 
-```
-# From Problem Analysis to Data Definitions
+* We will use Javascript and we are transitioning from Typescript to Javascript.
 
-Identify the information that must be represented and how it is represented in the chosen programming language. Formulate data definitions and illustrate them with examples.
- 
-# Signature, Purpose Statement, Header
+# Understandability
 
-State what kind of data the desired function consumes and produces. Formulate a concise answer to the question what the function computes. Define a stub that lives up to the signature.
+* Understandability - the ability for the code readers to understand what the system does, why it does what it does, how it does it, to create good explanation for the system in the single most important character of great code.
+* The goal is to write code that is self-explanatory and intuitive
+* Focus on creating clear, concise comments that explain the "why" behind complex logic
+* Use meaningful variable and function names that describe their purpose
+* Break down complex functions into smaller, more manageable pieces
+* Aim to make the code read like a story, with each line and function clearly conveying its intent
+* The understandability comes from indepedent and focused parts - parts that do 1 thing well - working well together.
 
-# Functional Examples
+# Naming Conventions
 
-Work through and write down examples that illustrate the function's purpose.
+* Naming should clearly reflect connotation and denotation of the concept at hand. Use germanic words - plain and concrete. A good name helps readers to re-create the concept in their minds efficiently.
 
-# Function Template
+# UI/UX Design Principles
 
-Translate the data definitions into an outline of the function.
+* Remember that everything outside of the graph and list content area e.g. filter bar, header, footer, should be shared between graph and list view.
 
-# Function Definition
+# Communication Approach
 
-Fill in the gaps in the function template. Exploit the purpose statement and the examples.
+* When discussing the plans, be accurate and comprehensive, but also concise.
 
-# Testing
+# UNIX Philosophy Principles for Claude
 
-Only test if you are asked to write tests. Otherwise, don't write tests.
+1. Do One Thing Well
 
-Articulate the examples as tests and ensure that the function passes all. Doing so discovers mistakes. Tests also supplement examples in that they help others read and understand the definition when the need arises—and it will arise for any serious program.
-```
+When creating functions or tools, make each one focused on a single, clear purpose
+Break complex problems into smaller, manageable components
+Avoid feature creep - resist adding unrelated functionality
 
-* Keep each component / function about doing 1 thing very well and have the parts work well together; in your plans, let the user know what you did for modularity of the code
+2. Compose Simple Parts
 
-# Import lines
+Build solutions by combining small, reliable components
+Design interfaces that allow easy connection between parts
+Think in terms of pipelines: output of one component feeds into another
 
-Always put them at the top of source file.
+3. Plain Text Interface
 
-# Resopnse format
+Prefer human-readable formats (JSON, YAML, markdown) over binary
+Make data portable and easily debuggable
+Use structured text that both humans and machines can process
 
-When you reply, at the end of your reponse, add "---" so I know this is the end of your message more easily.
+4. Early Prototyping
 
-# Root causing and debugging
+Start with a minimal working version
+Get feedback quickly rather than perfecting in isolation
+Iterate based on actual usage patterns
 
-When you are asked to debug an issue, you must spend all your resources and read all the necessary files to remove ambiguity. Your goal is find the root cause of the issue.
+5. Silence is Golden
 
-# Timestamps
+Only output what's necessary
+Avoid verbose success messages
+Make errors clear and actionable
 
-When communicating with users the timestamp of the last change of something:
+6. Design for Composability
 
-* use "last x seconds ago" if the last change is less than 1 minute ago
-* use "last x minutes ago" if more than 1 minute ago
-* use "last x hours ago" if more than 1 hour ago
-* use "yyyy-mm-dd, hh:mm:ss" if more than 1 day ago
+Create outputs that can be inputs for other processes
+Use standard, well-known formats
+Avoid special cases that break compatibility
 
-# Export Guidelines
+7. Make It Scriptable
 
-* Always use named exports because:
+Design solutions that can be automated
+Provide clear, consistent interfaces
+Enable batch processing and non-interactive use
 
-1. Find/Replace Works Reliably
-  - With named export, you can find all usages by searching the exact component name
-  - Renaming is straightforward
-  - Default exports allow importing under any name, which can lead to confusion:
-    - `import TokenPrompt from './TokenSelectionPrompt'`
-    - `import EmptyState from './TokenSelectionPrompt'`
-    - `import Foo from './TokenSelectionPrompt'`
-
-2. IDE Refactoring Support
-  - IDEs can track and rename all references automatically with named exports
-  - "Rename Symbol" (F2 in VS Code) works across the entire codebase
-  - With default exports, IDE can't reliably track different import names
-
-3. Explicit Dependencies
-  - Named exports make imports clear and explicit
-  - `import { TokenSelectionPrompt, TokenIcon, TokenUtils } from './tokens'`
-  - Compared to `import Tokens from './tokens'` which is ambiguous about contents
-
-4. Re-exports are Cleaner
-  - Named exports make re-exporting more readable
-  - `export { TokenSelectionPrompt } from './TokenSelectionPrompt'`
-  - Versus default export re-exports: `export { default as TokenSelectionPrompt } from './TokenSelectionPrompt'`
-
-5. Minor Syntax Tradeoff
-  - Default exports only have a slight syntactic advantage for single-export modules
-  - The maintenance and refactoring benefits of named exports far outweigh this minor convenience
-
-# Styling
-
-* Avoid Inline Styles
-  * Move inline styles to Tailwind classes or CSS modules:
-  * Instead of:
-    * `style={{ color: MILK_COLORS.base }}`
-    * `style={{ backgroundColor: 'rgba(0, 255, 187, 0.2)' }}`
-  * Use Tailwind's arbitrary values:
-    * `className={`text-[${MILK_COLORS.base}]`}`
-    * `className="bg-[rgba(0,255,187,0.2)]"`
-
-* Use CSS variables
-  * Use CSS variables for consistent and reusable styling
-  * Example: `className="... text-milk-base"`
-
-# Component Composition
-
-* Break into smaller, semantic components:
-  * `const Icon = ({ src, alt, className }) => (
-      <img src={src} alt={alt} className={className} loading="lazy" />
-    );`
-
-  * `const HighlightedText = ({ children }) => (
-      <span className="px-2 py-1 rounded bg-[rgba(0,255,187,0.2)]">
-        {children}
-      </span>
-    );`
-
-  * `const TokenSelectionPrompt = () => (
-      <div className={`flex flex-col items-center justify-center h-full gap-4
-    ${CONTAINER_PADDING}`}>
-        <Icon src={selectTokensIcon} alt="Select tokens" className={ICON_SIZE} />
-
-        <div className="flex flex-wrap items-center justify-center gap-1 text-sm
-    text-milk-base">
-          <span>You need to</span>
-          <HighlightedText>select at least two tokens</HighlightedText>
-          <span>to display the graph.</span>
-        </div>
-      </div>
-    );`
-
-# Component File Organization
-
-* In a typical component file, the order of code should be as follow:
-  * Constants first
-    * Define reusable constants like icon sizes, padding classes
-  * Sub-components next
-    * Create small, focused components for repeated UI elements
-  * Main component last
-    * Compose the main component using constants and sub-components
-  * Example:
-    ```
-    // Constants
-    const ICON_SIZE = 'w-40 h-40';
-    const CONTAINER_PADDING = 'px-8 md:px-16';
-
-    // Sub-components
-    const Icon = ({ src, className }) => (
-      <img src={src} className={className} loading="lazy" />
-    );
-
-    const HighlightedText = ({ children }) => (
-      <span className="px-2 py-1 rounded bg-highlight">
-        {children}
-      </span>
-    );
-
-    // Main component
-    export const TokenSelectionPrompt = () => (
-      <div className={`flex flex-col items-center justify-center h-full gap-4 ${CONTAINER_PADDING}`}>
-        <Icon src={selectTokensIcon} className={ICON_SIZE} />
-        
-        <div className="flex flex-wrap items-center justify-center gap-1 text-sm text-milk-base">
-          <span>You need to</span>
-          <HighlightedText>select at least two tokens</HighlightedText>
-          <span>to display the graph.</span>
-        </div>
-      </div>
-    );
-    ```
-
-# Component Best Practices
-
-1. Named Exports
-  - Use export const ComponentName for better refactoring support
-  - Enables reliable find/replace and IDE refactoring
-
-2. Component Composition
-  - Break into smaller sub-components (Icon, HighlightedText)
-  - Each component does one thing well
-
-3. Constants at Module Level
-  - Define constants outside component to avoid recreation on each render
-  - Group related constants together
-
-4. CSS Variables Instead of Inline Styles
-  - Use Tailwind classes with CSS variables
-  - Replace style={{ color: MILK_COLORS.base }} with className="text-milk-base"
-
-5. Proper Code Order
-  - Imports → Constants → Sub-components → Main component → Display name
-
-6. Props for Flexibility
-  - Add props even if not currently used
-  - Makes component reusable
-
-7. Display Name for Debugging
-  - Add ComponentName.displayName = 'ComponentName'
-  - Improves React DevTools experience
-
-Key Principles
-
-- No hardcoded values - Use named constants
-- No anonymous exports - Always use named components
-- No inline styles when the styles are repeated - Use Tailwind classes
-- Small, focused components - Break down complex UI
-- Meaningful names - Constants and components should be self-documenting
+8. Optimize Later
+
+First make it work correctly
+Then make it clear and maintainable
+Finally, optimize for performance if needed
+
+9. Everything is a File
+
+Treat different data sources uniformly
+Use consistent read/write patterns
+Abstract complexity behind simple interfaces
+
+10. Worse is Better
+
+Simple and correct is better than complex and perfect
+A working 80% solution beats a theoretical 100% solution
+Ship early, improve iteratively
+
+These principles help create more maintainable, composable, and reliable solutions while avoiding over-engineering and unnecessary complexity.
