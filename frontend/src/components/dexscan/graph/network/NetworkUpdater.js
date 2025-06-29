@@ -6,8 +6,8 @@ import { diffNodes, diffEdges } from '@/components/dexscan/graph/network/network
 export const updateNetworkData = (network, nodesDataset, edgesDataset, nodes, edges) => {
   // Experimentally confirmed vis-network doesn't reset viewport (pan, zoom) on add/remove/update
   // So no need to manually restore viewport
-  // const viewPosition = network.getViewPosition();
-  // const scale = network.getScale();
+  const viewPosition = network.getViewPosition();
+  const scale = network.getScale();
   
   // Update nodes
   const currentNodes = nodesDataset.get();
@@ -34,5 +34,5 @@ export const updateNetworkData = (network, nodesDataset, edgesDataset, nodes, ed
   if (edgeIdsToRemove.length) edgesDataset.remove(edgeIdsToRemove);
   
   // Restore viewport
-  // network.moveTo({ position: viewPosition, scale, animation: false });
+  network.moveTo({ position: viewPosition, scale, animation: false });
 };
