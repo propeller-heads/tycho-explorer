@@ -49,8 +49,8 @@ const App = () => (
         style={{ position: "absolute", top: "0", left: "15%", opacity: 0.3, zIndex: 2, pointerEvents: "none", height: "100vh", transform: "scaleX(-1)" }}
       />
 
-      {/* Main Content - ensure it's above background elements */}
-      <div style={{ position: "relative", zIndex: 3, flex: 1, overflow: "hidden" }}>
+      {/* Main Content - ensure it's above background elements and footer */}
+      <div style={{ position: "relative", zIndex: 5, flex: 1, overflow: "hidden" }}>
         <Routes>
           <Route path="/" element={<Index />} />
           {/* <Route path="/graph-test" element={<GraphTestContainer />} /> */}
