@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
 import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
@@ -19,17 +18,19 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL('./src', import.meta.url)),
-      "@te": fileURLToPath(new URL('./src/components/dexscan', import.meta.url)),
     },
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+  },
+  esbuild: {
+    loader: 'tsx',
+    include: /\.(jsx?|tsx?)$/,
+    exclude: [],
   },
   build: {
     // Production optimizations
     minify: 'terser',
     terserOptions: {
-      compress: {
-        drop_console: false,  // Keep console logs for debugging
-        drop_debugger: true,
-      },
+      compress: { drop_console: false }
     },
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 1000,
@@ -41,6 +42,5 @@ export default defineConfig(({ mode }) => ({
   // Optimize dependencies
   optimizeDeps: {
     include: ['react', 'react-dom', 'vis-network', 'vis-data'],
-    // Remove esbuildOptions as it's deprecated in Vite 6
   },
 }));

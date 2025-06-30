@@ -61,8 +61,8 @@ async fn main() -> anyhow::Result<()> {
     // Simple restart loop - these tasks should run forever
     let mut restart_count = 0u32;
     loop {
-        if (restart_count > 10) {
-            panic!("RESTART COUNT > 10")
+        if restart_count > 3 {
+            panic!("RESTART COUNT > 3")
         }
         restart_count += 1;
         
@@ -98,6 +98,10 @@ async fn main() -> anyhow::Result<()> {
         }
         
         error!("Restarting all services in 5 seconds (restart #{})...", restart_count);
+        
+        // Channels are already moved into the tasks and will be dropped when tasks complete
+        // Additional cleanup happens naturally when tasks are dropped
+        
         tokio::time::sleep(Duration::from_secs(5)).await;
     }
 }

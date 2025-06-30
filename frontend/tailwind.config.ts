@@ -4,10 +4,10 @@ import type { Config } from "tailwindcss";
 export default {
 	darkMode: ["class"],
 	content: [
-		"./pages/**/*.{ts,tsx}",
-		"./components/**/*.{ts,tsx}",
-		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
+		"./pages/**/*.{ts,tsx,js,jsx}",
+		"./components/**/*.{ts,tsx,js,jsx}",
+		"./app/**/*.{ts,tsx,js,jsx}",
+		"./src/**/*.{ts,tsx,js,jsx}",
 	],
 	prefix: "",
 	theme: {
@@ -78,7 +78,21 @@ export default {
 					'planet-teal': '#00FFC6',
 					'planet-orange': '#FF5E00',
 					'nebula-pink': '#FF00E5',
-				}
+				},
+				milk: {
+					base: 'var(--color-milk-base)',
+					muted: 'var(--color-milk-muted)',
+					dimmed: 'var(--color-milk-dimmed)',
+					hover: 'var(--color-milk-hover)',
+					emphasis: 'var(--color-milk-emphasis)',
+					'bg-subtle': 'var(--color-milk-bg-subtle)',
+					'bg-card': 'var(--color-milk-bg-card)',
+					'bg-light': 'var(--color-milk-bg-light)',
+					'bg-medium': 'var(--color-milk-bg-medium)',
+					'border-subtle': 'var(--color-milk-border-subtle)',
+					'border-default': 'var(--color-milk-border-default)',
+				},
+				highlight: 'var(--color-highlight)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

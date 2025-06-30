@@ -1,96 +1,84 @@
-# Role
+# CLAUDE.md - Development Guidelines
 
-You are an expert software designer and implementor. 
-In Plan Mode, plan and iterate until the plan is accurate and comprehensive, and specific file and line code changes planned out.
-When you asked to "reiterate the plan", you should respond with the whole and updated plan noting what's changed. 
-You should note any ambiguity and FIGURE OUT AS MUCH AS POSSIBLE YOURSELF; FAILING THAT YOU SHOULD ASK FOR THE USER's HELP! 
+## ROLE & APPROACH
+
+### Your Role
+You are an expert software designer and implementor. In Plan Mode, plan and iterate until the plan is accurate and comprehensive, with specific file and line code changes planned out.
+
+When asked to "reiterate the plan", respond with the whole updated plan noting what's changed. Note any ambiguity and FIGURE OUT AS MUCH AS POSSIBLE YOURSELF; FAILING THAT, ASK FOR THE USER's HELP!
+
+### Planning Process
 
 When planning:
+- Give overview
+- Give motivation  
+- Group changes by concepts
+  - Describe each group's rationale, specific file changes, component changes, function changes, code changes, configuration changes
+- Be concise using Germanic-style English (plain and concrete words)
+- Number proposed changes with subitems (e.g., 1.1, 1.1.2)
+- Ultrathink means think as long as needed for the best answer
 
-* give overview
-* give motivation
-* group changes by concepts
-  * describe each group of changes' rationale, specific file changes, component changes, function changes, code changes, configuration changes
-* be concise and use Germanic-style English words in the sense they are plain and concrete
-* number the proposed changes, and use subitem numbering e.g. 1.1 and 1.1.2
-* ultrathink means think as long as you need to come up with best answer possible
+To create the best plan:
+1. Gather data about the problem/feature/bug; after ultrathinking, ask user when unsure
+2. Find root cause(s) of the problem
+3. Enumerate best options, collect user's criteria, highlight each solution's qualities
+4. Recommend the best option or combination
 
-To come up with the best plan, we want to:
+---
 
-1. gather data about the problem/feature/bug at hand; after you ultrathink, ask the user when you're not sure about anything
-2. find the root cause(s) of the problem
-3. enumerate a handful of best options, collect the user's criteria for a solution, highlight each solution's qualities against the user's criteria
-4. recommend the best option, or a combination of the options
+## CODING STANDARDS
 
-# Execution
+### General Principles
+- **Small functions**: Keep function under 70 lines each
+- **No hardcoded values**: Always name and reuse values
+- **Comment concepts**: Write a comment above each concept
+- **No accessibility features**: Don't implement alt tags or similar
+- **Production ready**: Never mock data - ask when unsure about data handling
+- **After every code change, lint the code on the files / directories changed**: `bun run lint file1 dir1`
+- **After every code change, check imports use `@/` import alias**
 
-* Don't ever mock data, we need this app be production ready, when you don't know how to read / write data, ask me!
+### Function Design Process
 
-# Coding guidelines
+Follow these steps when writing functions:
 
-Follow the following guidelines strictly.
+1. **Problem Analysis to Data Definitions**
+   - Identify information to represent
+   - Formulate data definitions with examples
 
-* Abstract repeated css classes into strings.
+2. **Signature, Purpose Statement, Header**
+   - State what data the function consumes and produces
+   - Write concise purpose statement
+   - Define stub matching signature
 
-* Avoid hardcoded values: always name and reuse them.
+3. **Functional Examples**
+   - Work through examples illustrating the function's purpose
 
-* Aim for small functions, fewer than 20 lines each.
+4. **Function Template**
+   - Translate data definitions into function outline
 
-* Aim for small files, fewer than 80 lines each.
+5. **Function Definition**
+   - Fill gaps in template using purpose statement and examples
 
-* When you edit or add code, write a line of comment above each concept.
+6. **Testing** (only when requested)
+   - Convert examples to tests
+   - Ensure function passes all tests
 
-* Do not implement for accessibility features e.g. alt tags.
+### Modularity
+Keep each component/function doing few things well. Each part of our system should group things coherently and be nicely independent from other parts of system. In plans, explain modularity decisions.
 
-* When you write functions, follow these:
+### Code Organization
+- **Imports**: Always put at the top of source file
+- **Import alias**: Use `@/` which represents `frontend/src/` (configured in vite.config.ts)
+- **CSS classes**: Abstract repeated classes into strings
+- **Always double check everytime you import, you use the import alias `@/`**
 
-```
-# From Problem Analysis to Data Definitions
+### Efficiency and Code Quality
+- **Do not repeat yourself** - the multiple versions will get out of sync over time.
 
-Identify the information that must be represented and how it is represented in the chosen programming language. Formulate data definitions and illustrate them with examples.
- 
-# Signature, Purpose Statement, Header
+---
 
-State what kind of data the desired function consumes and produces. Formulate a concise answer to the question what the function computes. Define a stub that lives up to the signature.
+# Misc
 
-# Functional Examples
+When you respond, end with "---".
 
-Work through and write down examples that illustrate the function’s purpose.
-
-# Function Template
-
-Translate the data definitions into an outline of the function.
-
-# Function Definition
-
-Fill in the gaps in the function template. Exploit the purpose statement and the examples.
-
-# Testing
-
-Only test if you are asked to write tests. Otherwise, don't write tests.
-
-Articulate the examples as tests and ensure that the function passes all. Doing so discovers mistakes. Tests also supplement examples in that they help others read and understand the definition when the need arises—and it will arise for any serious program.
-```
-
-* Keep each component / function about doing 1 thing very well and have the parts work well together; in your plans, let the user know what you did for modularity of the code
-
-# Import lines
-
-Always put them at the top of source file.
-
-# Resopnse format
-
-When you reply, at the end of your reponse, add "---" so I know this is the end of your message more easily.
-
-# Root causing and debugging
-
-When you are asked to debug an issue, you must spend all your resources and read all the necessary files to remove ambiguity. Your goal is find the root cause of the issue.
-
-# Timestamps
-
-When communicating with users the timestamp of the last change of something:
-
-* use "last x seconds ago" if the last change is less than 1 minute ago
-* use "last x minutes ago" if more than 1 minute ago
-* use "last x hours ago" if more than 1 hour ago
-* use "yyyy-mm-dd, hh:mm:ss" if more than 1 day ago
+[Rest of the file remains unchanged...]

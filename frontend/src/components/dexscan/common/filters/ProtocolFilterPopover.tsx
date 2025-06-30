@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { protocolColors } from '../../graph/protocolColors';
+import { protocolColors } from '@/components/dexscan/graph/config/protocolColors';
 import { FILTER_STYLES } from './filterStyles';
 import { FilterPopover } from './FilterPopover';
 import { FilterList } from './FilterList';

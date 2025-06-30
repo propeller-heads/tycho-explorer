@@ -57,6 +57,22 @@
     --sidebar-accent-foreground: 210 40% 90%;
     --sidebar-border: 230 26% 15%;
     --sidebar-ring: 262 83% 58%;
+
+    /* Milk color system */
+    --color-milk-base: #FFF4E0;
+    --color-milk-muted: rgba(255, 244, 224, 0.64);
+    --color-milk-dimmed: rgba(255, 244, 224, 0.4);
+    --color-milk-hover: rgba(255, 244, 224, 0.8);
+    --color-milk-emphasis: rgba(255, 244, 224, 0.9);
+    --color-milk-bg-subtle: rgba(255, 244, 224, 0.02);
+    --color-milk-bg-card: rgba(255, 244, 224, 0.04);
+    --color-milk-bg-light: rgba(255, 244, 224, 0.06);
+    --color-milk-bg-medium: rgba(255, 244, 224, 0.08);
+    --color-milk-border-subtle: rgba(255, 244, 224, 0.1);
+    --color-milk-border-default: rgba(255, 244, 224, 0.2);
+
+    /* Token selection highlight color */
+    --color-highlight: rgba(0, 255, 187, 0.2);
   }
 }
 

@@ -37,8 +37,11 @@ pub fn start_api_server(
         let addr = SocketAddr::from(([0, 0, 0, 0], port));
         info!("API server listening on {}", addr);
 
-        // Create a TCP listener
-        let listener = tokio::net::TcpListener::bind(addr).await?;
+        // Create a TCP socket with SO_REUSEADDR to allow immediate port reuse
+        let socket = tokio::net::TcpSocket::new_v4()?;
+        socket.set_reuseaddr(true)?;
+        socket.bind(addr)?;
+        let listener = socket.listen(1024)?;
 
         // Start the server using the new approach
         axum::serve(listener, app).await?;

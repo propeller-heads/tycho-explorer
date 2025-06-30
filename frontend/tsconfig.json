@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -18,9 +22,19 @@
     "noFallthroughCasesInSwitch": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@te/*": ["./src/components/dexscan/*"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@te/*": [
+        "./src/components/dexscan/*"
+      ]
+    },
+    "allowJs": true, // NEW: Allow JavaScript files
+    "checkJs": false, // NEW: Don't type-check JS files
+    "maxNodeModuleJsDepth": 2, // NEW: Allow JS in node_modules
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "exclude": ["**/*.js", "**/*.jsx"]  // NEW: Exclude JS from TS compilation
 }
