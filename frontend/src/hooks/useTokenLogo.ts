@@ -10,6 +10,12 @@ export function useTokenLogo(symbol: string, providedLogoURI?: string) {
   // Track if we've already tried API to prevent loops
   const triedApi = useRef(false);
   
+  // Reset logo URL when symbol or providedLogoURI changes
+  useEffect(() => {
+    setLogoUrl(providedLogoURI || getCoinLogoUrl(getCoinId(symbol)));
+    triedApi.current = false;
+  }, [symbol, providedLogoURI]);
+  
   // Try API when no logoUrl and haven't tried yet
   useEffect(() => {
     if (!logoUrl && symbol && !triedApi.current) {
@@ -19,11 +25,6 @@ export function useTokenLogo(symbol: string, providedLogoURI?: string) {
       });
     }
   }, [logoUrl, symbol]);
-  
-  // Reset API flag when symbol changes
-  useEffect(() => {
-    triedApi.current = false;
-  }, [symbol]);
 
   // Handle image error - clear URL to trigger API fallback
   const handleError = () => {

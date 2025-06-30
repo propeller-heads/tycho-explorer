@@ -67,8 +67,8 @@ async fn main() -> anyhow::Result<()> {
     // Restart loop only for simulation processor
     let mut restart_count = 0u32;
     loop {
-        if restart_count > 3 {
-            panic!("SIMULATION PROCESSOR RESTART COUNT > 3")
+        if restart_count > 7 {
+            panic!("SIMULATION PROCESSOR RESTART COUNT > 7")
         }
         restart_count += 1;
         
