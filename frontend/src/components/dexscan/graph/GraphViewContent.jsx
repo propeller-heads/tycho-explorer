@@ -1,6 +1,5 @@
-import React, { useMemo, useEffect } from 'react';
-import GraphView from './GraphView';
-import { useGraphData } from './hooks/useGraphData';
+import React, { useMemo } from 'react';
+import { GraphPipeline } from './GraphPipeline';
 import { GraphControls } from './GraphControls';
 import { usePoolData } from '../context/PoolDataContext';
 import { TokenSelectionPrompt } from './TokenSelectionPrompt';
@@ -12,13 +11,21 @@ const PoolGraphView = ({
   toggleProtocol,
   resetFilters,
 }) => {
-  // Get raw data for controls. Block info for GraphControls will come from useGraphData's return.
-  const { pools: rawPoolsForControls, selectedChain } = usePoolData();
+  // Get raw data
+  const { 
+    pools: rawPools, 
+    selectedChain,
+    blockNumber,
+    lastBlockTimestamp,
+    estimatedBlockDuration 
+  } = usePoolData();
+
+  console.warn(`[GraphViewContent] ${blockNumber}`);
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {
     const tokenMap = new Map();
-    Object.values(rawPoolsForControls).forEach(poolUnk => {
+    Object.values(rawPools).forEach(poolUnk => {
       const pool = poolUnk;
       pool.tokens.forEach(token => {
         if (!tokenMap.has(token.address)) {
@@ -38,34 +45,17 @@ const PoolGraphView = ({
       });
     });
     return Array.from(tokenMap.values());
-  }, [rawPoolsForControls]);
+  }, [rawPools]);
 
   const uniqueProtocols = useMemo(() => {
     // console.log('DEBUG: Recalculating uniqueProtocols for Controls');
     const protocols = new Set();
-    Object.values(rawPoolsForControls).forEach(poolUnk => {
+    Object.values(rawPools).forEach(poolUnk => {
       const pool = poolUnk;
       protocols.add(pool.protocol_system);
     });
     return Array.from(protocols);
-  }, [rawPoolsForControls]);
-
-  // Get processed graph data for display using the new useGraphData hook
-  const {
-    nodes: graphDisplayNodes,
-    edges: graphDisplayEdges,
-    rawPoolsData, // Destructure the new rawPoolsData
-    currentBlockNumber, // This now comes from useGraphData
-    lastBlockTimestamp,   // This now comes from useGraphData
-    estimatedBlockDuration // This now comes from useGraphData
-  } = useGraphData(selectedTokenAddresses, selectedProtocols);
-
-  // Debug log
-  React.useEffect(() => {
-    if (currentBlockNumber > 0) {
-      console.log('🟪 GraphViewContent - currentBlockNumber:', currentBlockNumber);
-    }
-  }, [currentBlockNumber]);
+  }, [rawPools]);
 
   // No need for array handlers - GraphControls now uses individual toggles
 
@@ -79,22 +69,21 @@ const PoolGraphView = ({
         onTokenToggle={toggleToken}
         onProtocolToggle={toggleProtocol}
         onReset={resetFilters}
-        currentBlockNumber={currentBlockNumber} // Use block info from useGraphData
+        currentBlockNumber={blockNumber} // Use block info from useGraphData
         lastBlockTimestamp={lastBlockTimestamp}   // Use block info from useGraphData
         estimatedBlockDuration={estimatedBlockDuration} // Use block info from useGraphData
       />
 
-      {selectedTokenAddresses.length >= 2 && graphDisplayNodes.length > 0 ? ( // Conditional rendering based on selectedTokens and if nodes exist
-        <>
-          <div className="flex-1" style={{ minHeight: "0" }}>
-            <GraphView
-              tokenNodes={graphDisplayNodes}
-              poolEdges={graphDisplayEdges}
-              rawPoolsData={rawPoolsData} // Pass rawPoolsData as a prop
-              selectedChain={selectedChain} // Pass selectedChain as a prop
-            />
-          </div>
-        </>
+      {selectedTokenAddresses.length >= 2 ? (
+        <div className="flex-1" style={{ minHeight: "0" }}>
+          <GraphPipeline
+            pools={rawPools}
+            selectedTokens={selectedTokenAddresses}
+            selectedProtocols={selectedProtocols}
+            selectedChain={selectedChain}
+            currentBlockNumber={blockNumber}
+          />
+        </div>
       ) : (
         <div className="flex flex-grow items-center justify-center" style={{ minHeight: "300px" }}>
           <TokenSelectionPrompt />

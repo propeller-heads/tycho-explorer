@@ -89,7 +89,7 @@ pub fn start_simulation_processor(
     tycho_url: &str,
     tycho_api_key: &str,
     tvl_threshold: f64,
-    tvl_buffer: f64,
+    _tvl_buffer: f64,
     chain: Chain,
 ) -> JoinHandle<anyhow::Result<()>> {
     let tycho_url = tycho_url.to_string();

@@ -29,14 +29,11 @@ To create the best plan:
 ## CODING STANDARDS
 
 ### General Principles
-- **Small functions**: Keep under 20 lines each
+- **Small functions**: Keep function under 70 lines each
 - **No hardcoded values**: Always name and reuse values
 - **Comment concepts**: Write a comment above each concept
 - **No accessibility features**: Don't implement alt tags or similar
 - **Production ready**: Never mock data - ask when unsure about data handling
-- **File size limit**: Each file should be no more than 40 lines, with comments included. This is about 1 page of text.
-- **Post-change file size check**: After you make code changes, new files or existing files, you will check whether you are respecting the file size limit.
-- **No file size limit for test files**
 - **After every code change, lint the code on the files / directories changed**: `bun run lint file1 dir1`
 - **After every code change, check imports use `@/` import alias**
 
@@ -67,13 +64,16 @@ Follow these steps when writing functions:
    - Ensure function passes all tests
 
 ### Modularity
-Keep each component/function doing 1 thing well. In plans, explain modularity decisions.
+Keep each component/function doing few things well. Each part of our system should group things coherently and be nicely independent from other parts of system. In plans, explain modularity decisions.
 
 ### Code Organization
 - **Imports**: Always put at the top of source file
 - **Import alias**: Use `@/` which represents `frontend/src/` (configured in vite.config.ts)
 - **CSS classes**: Abstract repeated classes into strings
+- **Always double check everytime you import, you use the import alias `@/`**
 
+### Efficiency and Code Quality
+- **Do not repeat yourself** - the multiple versions will get out of sync over time.
 
 ---
 
