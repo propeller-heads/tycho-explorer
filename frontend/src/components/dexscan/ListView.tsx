@@ -1,16 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { cn, renderHexId, getExternalLink, formatTimeAgo } from '@/lib/utils';
+import { cn, renderHexId } from '@/lib/utils';
 import { Pool, Token } from './types'; 
 import { parsePoolFee } from '@/lib/poolUtils';
-// SwapSimulator will be part of PoolDetailSidebar
-// import SwapSimulator from './SwapSimulator'; 
+ 
 import PoolTable from './pools/PoolTable';
 import PoolListFilterBar from './pools/PoolListFilterBar';
-import PoolDetailSidebar from './PoolDetailSidebar'; // This component will be created later
+import { SidePanel } from '@/components/dexscan/side-panel/SidePanel';
 import { usePoolData } from './context/PoolDataContext';
 import { filterPools } from './utils/poolFilters';
-
-// TokenForFilter interface is removed. Using 'Token' from './types' directly.
 
 // Updated COLUMNS definition based on plan
 const COLUMNS = [
@@ -135,6 +132,7 @@ const ListView = ({
   );
 
   const processedPools = useMemo(() => {
+    // TODO: lift the one used by Graph View up to reuse here.
     const filtered = filterPools(pools, selectedTokenAddresses, selectedProtocols);
     return sortPools(filtered);
   }, [pools, selectedTokenAddresses, selectedProtocols, sortPools]);
@@ -264,7 +262,7 @@ const ListView = ({
       </div>
 
       {selectedPool && (
-        <PoolDetailSidebar
+        <SidePanel
           pool={selectedPool}
           onClose={() => {
             setSelectedPool(null);

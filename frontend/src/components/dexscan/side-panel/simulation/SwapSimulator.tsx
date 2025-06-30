@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // For token selection
 import { ArrowDown, ExternalLink } from 'lucide-react'; // For swap direction button and external link
-import { Pool, Token } from './types'; // Assuming Token type includes address, symbol, logoURI
+import { Pool, Token } from '@/components/dexscan/types'; // Assuming Token type includes address, symbol, logoURI
 import { useTokenLogo, getFallbackLetters } from '@/hooks/useTokenLogo';
 import { MILK_COLORS } from '@/lib/colors';
-import { callSimulationAPI } from './simulation/simulationApi';
+import { callSimulationAPI } from '@/components/dexscan/side-panel/simulation/simulationApi';
 import { parsePoolFee } from '@/lib/poolUtils';
 import { renderHexId, getTokenExplorerLink } from '@/lib/utils';
-import { usePoolData } from './context/PoolDataContext';
-import { tokenLogoBaseClasses } from './common/tokenIconStyles';
+import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
+import { tokenLogoBaseClasses } from '@/components/dexscan/common/tokenIconStyles';
 
 
 // Call real simulation API

@@ -1,16 +1,16 @@
 import React from 'react';
-import { Pool, Token } from './types';
-import SwapSimulator from './SwapSimulator'; // Import the refactored SwapSimulator
+import { Pool, Token } from '@/components/dexscan/types';
+import SwapSimulator from '@/components/dexscan/side-panel/simulation/SwapSimulator'; // Import the refactored SwapSimulator
 import { LucideX, ExternalLink } from 'lucide-react';
 import { cn, renderHexId, getExternalLink } from '@/lib/utils';
-import { usePoolData } from './context/PoolDataContext';
+import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
 
 interface PoolDetailSidebarProps {
   pool: Pool | null;
   onClose: () => void;
 }
 
-const PoolDetailSidebar: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) => {
+export const SidePanel: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) => {
   const { selectedChain } = usePoolData();
   
   if (!pool) {
@@ -84,5 +84,3 @@ const PoolDetailSidebar: React.FC<PoolDetailSidebarProps> = ({ pool, onClose }) 
     </div>
   );
 };
-
-export default PoolDetailSidebar;
