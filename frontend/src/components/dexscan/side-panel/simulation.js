@@ -47,10 +47,6 @@ export function createSimulation(pool, chain) {
       const sellTokenData = pool.tokens.find(t => t.address === sellToken);
       const buyTokenData = pool.tokens.find(t => t.address === buyToken);
       
-      if (!sellTokenData || !buyTokenData) {
-        throw new Error('Token not found in pool');
-      }
-      
       // Call API
       const result = await callAPI(sellToken, pool.id, parseFloat(amount), chain);
       

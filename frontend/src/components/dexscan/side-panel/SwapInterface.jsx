@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowDown, ExternalLink, LucideX } from 'lucide-react';
 import { useTokenLogo, getFallbackLetters } from '@/hooks/useTokenLogo';
-import { cn, renderHexId, getExternalLink, getTokenExplorerLink } from '@/lib/utils';
+import { cn, renderHexId, getExternalLink, getTokenExplorerLink, formatSpotPrice } from '@/lib/utils';
 import { parsePoolFee } from '@/lib/poolUtils';
 import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
 
@@ -94,12 +94,16 @@ const TokenDisplay = ({ token }) => {
   
   if (!token) return <span className="text-sm text-white/50">Select Token</span>;
   
-  const displaySymbol = token.symbol && token.symbol.startsWith('0x') && token.symbol.length >= 42 
-    ? renderHexId(token.symbol) 
-    : token.symbol;
+  // Truncate token symbols - if it's an address, show shortened version, otherwise max 10 chars
+  let displaySymbol = token.symbol;
+  if (token.symbol && token.symbol.startsWith('0x') && token.symbol.length >= 42) {
+    displaySymbol = renderHexId(token.symbol);
+  } else if (token.symbol && token.symbol.length > 10) {
+    displaySymbol = token.symbol.substring(0, 10) + '...';
+  }
   
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 min-w-0">
       {logoUrl ? (
         <img 
           src={logoUrl} 
@@ -108,11 +112,11 @@ const TokenDisplay = ({ token }) => {
           onError={handleError}
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-white">
+        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-white flex-shrink-0">
           {getFallbackLetters(token.symbol)}
         </div>
       )}
-      <span className="text-base font-semibold font-['Inter'] text-white">
+      <span className="text-base font-semibold font-['Inter'] text-white truncate" title={token.symbol}>
         {displaySymbol}
       </span>
     </div>
@@ -123,7 +127,7 @@ const AmountField = ({ amount, onChange, isEditable }) => {
   if (!isEditable) {
     return (
       <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] block text-white">
-        {amount ? (parseFloat(amount) === 0 ? "0" : parseFloat(amount).toFixed(Math.min(9, String(amount).split('.')[1]?.length || 0))) : "0"}
+        {formatSpotPrice(parseFloat(amount) || 0)}
       </span>
     );
   }
@@ -179,7 +183,7 @@ const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tok
       {direction === 'sell' ? 'Sell' : 'Buy'}
     </div>
     <div className="flex items-center justify-between gap-4">
-      <div className="flex-1">
+      <div className="flex-1 min-w-0 overflow-hidden">
         <AmountField amount={amount} onChange={onAmountChange} isEditable={isEditable} />
       </div>
       <TokenSelector token={token} onTokenChange={onTokenChange} tokens={tokens} chain={chain} />
@@ -214,6 +218,14 @@ export function SwapInterface({ pool, onClose, simulate }) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const { selectedChain } = usePoolData();
+  
+  // Reset tokens when pool changes
+  useEffect(() => {
+    setSellToken(pool.tokens[0]?.address || '');
+    setBuyToken(pool.tokens[1]?.address || '');
+    setResult(null);
+    setAmount('1');
+  }, [pool.id]);
   
   // Auto-simulate on input change
   useEffect(() => {
