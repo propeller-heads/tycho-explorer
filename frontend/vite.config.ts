@@ -21,11 +21,6 @@ export default defineConfig(({ mode }) => ({
     },
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
   },
-  esbuild: {
-    loader: 'tsx',
-    include: /\.(jsx?|tsx?)$/,
-    exclude: [],
-  },
   build: {
     // Production optimizations
     minify: 'terser',
