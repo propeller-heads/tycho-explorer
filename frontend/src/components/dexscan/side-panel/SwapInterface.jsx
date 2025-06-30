@@ -1,0 +1,296 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowDown, ExternalLink, LucideX } from 'lucide-react';
+import { useTokenLogo, getFallbackLetters } from '@/hooks/useTokenLogo';
+import { cn, renderHexId, getExternalLink, getTokenExplorerLink } from '@/lib/utils';
+import { parsePoolFee } from '@/lib/poolUtils';
+import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
+
+// CSS classes for reuse
+const panelClasses = cn(
+  "fixed top-0 right-0 h-full w-[435px] flex flex-col",
+  "bg-white/[0.01] backdrop-blur-[200px]",
+  "border-l border-white/[0.06]",
+  "shadow-[-16px_0px_36px_0px_rgba(24,10,52,1)]"
+);
+
+const closeButtonClasses = cn(
+  "rounded-md bg-[#FFF4E0]/[0.04] border border-[#FFF4E0]/20",
+  "hover:bg-[#FFF4E0]/[0.06] text-white",
+  "w-9 h-9 flex items-center justify-center",
+  "backdrop-blur-[200px] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)] shrink-0"
+);
+
+const swapCardClasses = "p-4 rounded-xl border bg-white/[0.02] border-white/[0.06]";
+
+const swapButtonClasses = cn(
+  "rounded-md w-9 h-9 border backdrop-blur-[200px]",
+  "bg-white/[0.04] border-white/20 text-white",
+  "hover:bg-white/[0.06] shadow-[0px_4px_16px_0px_rgba(37,0,63,0.2)]"
+);
+
+const amountInputClasses = cn(
+  "text-[28px] leading-[1.2] font-semibold font-['Inter']",
+  "bg-transparent border-0 p-0 m-0 h-auto outline-none",
+  "focus:outline-none w-full text-white",
+  "[appearance:textfield]",
+  "[&::-webkit-outer-spin-button]:appearance-none",
+  "[&::-webkit-inner-spin-button]:appearance-none"
+);
+
+// Micro components
+const CloseButton = ({ onClick }) => (
+  <button onClick={onClick} className={closeButtonClasses} aria-label="Close pool details">
+    <LucideX className="w-5 h-5" />
+  </button>
+);
+
+const PoolInfo = ({ pool, chain }) => {
+  const poolTokensText = pool.tokens.map(t => t.symbol).join(' / ');
+  const poolExternalLink = getExternalLink(pool, chain);
+  
+  return (
+    <div className="flex-grow min-w-0">
+      <h2 className="text-xl font-bold text-white truncate" title={poolTokensText}>
+        {poolTokensText}
+      </h2>
+      <div className="flex items-center text-[13px] font-['Inter'] text-white/[0.64] mt-1">
+        <span className="truncate">{pool.protocol_system}</span>
+        <span className="mx-1.5">•</span>
+        <span className="truncate">{renderHexId(pool.id)}</span>
+        {poolExternalLink && (
+          <a 
+            href={poolExternalLink} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="ml-1.5 text-white/[0.64] hover:text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Header = ({ pool, chain, onClose }) => (
+  <>
+    <div className="flex items-start gap-4 p-6 pb-4">
+      <CloseButton onClick={onClose} />
+      <PoolInfo pool={pool} chain={chain} />
+    </div>
+    <div className="px-6 pt-4">
+      <div className="inline-block py-3 px-1 text-base font-semibold text-white">
+        Quote simulation
+      </div>
+    </div>
+  </>
+);
+
+const TokenDisplay = ({ token }) => {
+  const { logoUrl, handleError } = useTokenLogo(token?.symbol || '', token?.logoURI);
+  
+  if (!token) return <span className="text-sm text-white/50">Select Token</span>;
+  
+  const displaySymbol = token.symbol && token.symbol.startsWith('0x') && token.symbol.length >= 42 
+    ? renderHexId(token.symbol) 
+    : token.symbol;
+  
+  return (
+    <div className="flex items-center gap-2">
+      {logoUrl ? (
+        <img 
+          src={logoUrl} 
+          alt={token.symbol} 
+          className="w-8 h-8 rounded-full flex-shrink-0"
+          onError={handleError}
+        />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-white">
+          {getFallbackLetters(token.symbol)}
+        </div>
+      )}
+      <span className="text-base font-semibold font-['Inter'] text-white">
+        {displaySymbol}
+      </span>
+    </div>
+  );
+};
+
+const AmountField = ({ amount, onChange, isEditable }) => {
+  if (!isEditable) {
+    return (
+      <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] block text-white">
+        {amount ? (parseFloat(amount) === 0 ? "0" : parseFloat(amount).toFixed(Math.min(9, String(amount).split('.')[1]?.length || 0))) : "0"}
+      </span>
+    );
+  }
+  
+  return (
+    <input
+      type="number"
+      value={amount}
+      onChange={(e) => onChange(e.target.value)}
+      className={amountInputClasses}
+      placeholder="0"
+    />
+  );
+};
+
+const TokenSelector = ({ token, onTokenChange, tokens, chain }) => {
+  const tokenData = tokens.find(t => t.address === token);
+  
+  return (
+    <div className="flex items-center gap-1">
+      <Select value={token} onValueChange={onTokenChange}>
+        <SelectTrigger className="w-auto bg-transparent border-0 p-0 h-auto hover:bg-transparent focus:ring-0 text-white">
+          <SelectValue>
+            <TokenDisplay key={token.address} token={tokenData} />
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent className="bg-[#190A35]/95 text-white border-white/10 backdrop-blur-2xl">
+          {tokens.map(t => (
+            <SelectItem key={t.address} value={t.address}>
+              <TokenDisplay key={t.address} token={t} />
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {tokenData && (
+        <a
+          href={getTokenExplorerLink(tokenData.address, chain)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white/50 hover:text-white transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      )}
+    </div>
+  );
+};
+
+const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tokens, isEditable, chain }) => (
+  <div className={swapCardClasses}>
+    <div className="text-xs font-['Inter'] mb-2 text-white/50">
+      {direction === 'sell' ? 'Sell' : 'Buy'}
+    </div>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex-1">
+        <AmountField amount={amount} onChange={onAmountChange} isEditable={isEditable} />
+      </div>
+      <TokenSelector token={token} onTokenChange={onTokenChange} tokens={tokens} chain={chain} />
+    </div>
+  </div>
+);
+
+const SimulationResults = ({ result, sellToken, buyToken, pool }) => {
+  if (!result || result.error) return null;
+  
+  const ResultRow = ({ label, value }) => (
+    <div className="flex justify-between items-center">
+      <span className="text-sm font-['Inter'] w-32 text-white/50">{label}:</span>
+      <span className="text-sm font-['Inter'] text-white">{value}</span>
+    </div>
+  );
+  
+  return (
+    <div className="space-y-2">
+      <ResultRow label="Exchange Rate" value={`1 ${sellToken?.symbol} = ${result.exchangeRate} ${buyToken?.symbol}`} />
+      <ResultRow label="Net Amount" value={`${result.netAmount} ${buyToken?.symbol}`} />
+      <ResultRow label="Pool Fee" value={`${parsePoolFee(pool)}%`} />
+    </div>
+  );
+};
+
+// Public component
+export function SwapInterface({ pool, onClose, simulate }) {
+  const [amount, setAmount] = useState('1');
+  const [sellToken, setSellToken] = useState(pool.tokens[0]?.address || '');
+  const [buyToken, setBuyToken] = useState(pool.tokens[1]?.address || '');
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { selectedChain } = usePoolData();
+  
+  // Auto-simulate on input change
+  useEffect(() => {
+    if (amount && sellToken && buyToken && parseFloat(amount) > 0) {
+      setLoading(true);
+      simulate({ amount, sellToken, buyToken })
+        .then(setResult)
+        .finally(() => setLoading(false));
+    }
+  }, [amount, sellToken, buyToken, simulate]);
+  
+  const handleSwapDirection = () => {
+    // Swap token addresses
+    setSellToken(buyToken);
+    setBuyToken(sellToken);
+    // Use buy amount as new sell amount (or reset to '1' if no result)
+    setAmount(result?.buyAmount || '1');
+    // Clear result to trigger new simulation
+    setResult(null);
+  };
+  
+  const sellTokenData = pool.tokens.find(t => t.address === sellToken);
+  const buyTokenData = pool.tokens.find(t => t.address === buyToken);
+  
+  return (
+    <div className={panelClasses}>
+      <Header pool={pool} chain={selectedChain} onClose={onClose} />
+      
+      <div className="flex-grow p-6 overflow-y-auto">
+        <div className="space-y-6">
+          <div className="relative">
+            <div className="space-y-2">
+              <SwapCard
+                direction="sell"
+                amount={amount}
+                onAmountChange={setAmount}
+                token={sellToken}
+                onTokenChange={setSellToken}
+                tokens={pool.tokens}
+                isEditable={true}
+                chain={selectedChain}
+              />
+              <SwapCard
+                direction="buy"
+                amount={result?.buyAmount || '0'}
+                onAmountChange={() => {}}
+                token={buyToken}
+                onTokenChange={setBuyToken}
+                tokens={pool.tokens}
+                isEditable={false}
+                chain={selectedChain}
+              />
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSwapDirection}
+                className={swapButtonClasses}
+              >
+                <ArrowDown className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+          
+          <SimulationResults 
+            result={result} 
+            sellToken={sellTokenData} 
+            buyToken={buyTokenData} 
+            pool={pool} 
+          />
+          
+          {result?.error && (
+            <div className="text-red-500 text-sm">{result.error}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

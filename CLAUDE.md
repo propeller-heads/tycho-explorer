@@ -71,6 +71,9 @@ Keep each component/function doing few things well. Each part of our system shou
 - **Import alias**: Use `@/` which represents `frontend/src/` (configured in vite.config.ts)
 - **CSS classes**: Abstract repeated classes into strings
 - **Always double check everytime you import, you use the import alias `@/`**
+- **Use import `@/` alias**
+  * Use tailwind css classes or create them
+  * Consider making and using subcomponents, it's hard to big markup for SwapInterface.jsx
 
 ### Efficiency and Code Quality
 - **Do not repeat yourself** - the multiple versions will get out of sync over time.
