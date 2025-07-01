@@ -1,4 +1,4 @@
-import { getTokenExplorerLink } from '@/lib/utils';
+import { getTokenExplorerLink } from '@/components/dexscan/shared/utils/links';
 
 // Sub-components for NodeTooltip
 export const NodeInfo = ({ label, value }) => (

@@ -4,7 +4,9 @@ import {
   TableHead, TableCell 
 } from '@/components/ui/table';
 import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { cn, renderHexId, getExternalLink, formatTimeAgo, formatSpotPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { renderHexId, formatTimeAgo, formatSpotPrice } from '@/components/dexscan/shared/utils/format';
+import { getExternalLink } from '@/components/dexscan/shared/utils/links';
 import { Pool, Token } from '@/components/dexscan/app/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TokenIcon from '@/components/dexscan/shared/TokenIcon';

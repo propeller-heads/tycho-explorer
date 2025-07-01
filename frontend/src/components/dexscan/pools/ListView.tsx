@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { cn, renderHexId } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { renderHexId } from '@/components/dexscan/shared/utils/format';
 import { Pool, Token } from '@/components/dexscan/app/types'; 
 import { parsePoolFee } from '@/components/dexscan/shared/utils/poolUtils';
  

@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowDown, ExternalLink, LucideX } from 'lucide-react';
 import { useTokenLogo, getFallbackLetters } from '@/components/dexscan/shared/hooks/useTokenLogo';
-import { cn, renderHexId, getExternalLink, getTokenExplorerLink, formatSpotPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { renderHexId, formatSpotPrice } from '@/components/dexscan/shared/utils/format';
+import { getExternalLink, getTokenExplorerLink } from '@/components/dexscan/shared/utils/links';
 import { parsePoolFee } from '@/components/dexscan/shared/utils/poolUtils';
 import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 

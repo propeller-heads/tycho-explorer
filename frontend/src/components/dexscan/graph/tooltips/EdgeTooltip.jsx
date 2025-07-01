@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { getExternalLink, renderHexId, formatTimeAgo } from '@/lib/utils';
+import { renderHexId, formatTimeAgo } from '@/components/dexscan/shared/utils/format';
+import { getExternalLink } from '@/components/dexscan/shared/utils/links';
 import { parsePoolFee } from '@/components/dexscan/shared/utils/poolUtils';
 import { getReadableProtocolName } from '@/components/dexscan/shared/readableProtocols';
 import { PoolIdSection, InfoRow } from '@/components/dexscan/graph/tooltips/EdgeTooltipParts';
