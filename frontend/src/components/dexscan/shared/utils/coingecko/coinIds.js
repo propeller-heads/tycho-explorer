@@ -16215,7 +16215,7 @@ export const coinMeta = [
 ];
 
 // Build hash maps for O(1) lookups
-const symbolMap = new Map<string, string>();
+const symbolMap = new Map();
 
 // Populate maps on module load
 for (const coin of coinMeta) {
@@ -16223,7 +16223,7 @@ for (const coin of coinMeta) {
 }
 
 // Export simple lookup functions
-export function getCoinIdBySymbol(symbol: string): string | null {
+export function getCoinIdBySymbol(symbol) {
   if (!symbol) return null;
   return symbolMap.get(symbol.toLowerCase()) || null;
 }
