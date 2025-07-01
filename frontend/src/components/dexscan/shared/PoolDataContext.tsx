@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react';
 import { Pool, WebSocketPool } from '@/components/dexscan/app/types';
 import { CHAIN_CONFIG } from '@/components/dexscan/shared/chains';
@@ -169,7 +170,7 @@ const DEFAULT_CHAIN = 'Ethereum';
 
 // No reconnection logic
 
-export function PoolDataProvider({ children }: { children: React.ReactNode }) {
+export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Check URL for initial chain
   const getInitialChain = () => {
     const params = new URLSearchParams(window.location.search);
@@ -540,7 +541,7 @@ export function PoolDataProvider({ children }: { children: React.ReactNode }) {
       {children}
     </PoolDataContext.Provider>
   );
-}
+};
 
 export function usePoolData() {
   const context = useContext(PoolDataContext);

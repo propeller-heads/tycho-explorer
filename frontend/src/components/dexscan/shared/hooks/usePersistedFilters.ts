@@ -15,9 +15,9 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Construct storage keys based on chain
-  const getStorageKey = (dataType: 'protocols' | 'tokens') => {
+  const getStorageKey = useCallback((dataType: 'protocols' | 'tokens') => {
     return `tycho_selected${dataType.charAt(0).toUpperCase() + dataType.slice(1)}_${chain}`;
-  };
+  }, [chain]);
 
   // Load filters from localStorage
   const loadFilters = useCallback((): FilterData => {
@@ -52,7 +52,7 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
     } finally {
       setIsLoading(false);
     }
-  }, [chain]);
+  }, [chain, getStorageKey]);
 
   // Save filters to localStorage with debouncing
   const saveFilters = useCallback((filters: FilterData) => {
@@ -80,7 +80,7 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
         console.error('[Persistence] Error saving filters:', error);
       }
     }, 500); // 500ms debounce
-  }, [chain]);
+  }, [chain, getStorageKey]);
 
   // Clear filters from localStorage
   const clearFilters = useCallback(() => {
@@ -95,7 +95,7 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
     } catch (error) {
       console.error('[Persistence] Error clearing filters:', error);
     }
-  }, [chain]);
+  }, [chain, getStorageKey]);
 
   // Cleanup on unmount
   useEffect(() => {

@@ -37,7 +37,8 @@ export function useTokenLogos(filteredPools) {
     if (filteredPools.length > 0) {
       fetchMissingLogos();
     }
-  }, [filteredPools]); // Don't include apiLogos to avoid infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredPools]); // apiLogos intentionally omitted to prevent infinite loop
   
   return apiLogos;
 }

@@ -67,7 +67,7 @@ export function FilterList<T>({
     
     const handleScrollEvent = (e: Event) => {
       // console.log('[scroll][FilterList] Native scroll event caught!');
-      handleScroll(e as any);
+      handleScroll(e as React.UIEvent<HTMLDivElement>);
     };
     
     if (scrollElement) {

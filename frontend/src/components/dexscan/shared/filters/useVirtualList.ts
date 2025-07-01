@@ -44,7 +44,7 @@ export const useVirtualList = <T>(
       // console.log('[scroll][VirtualList] Loading more items, from', displayCount, 'to', Math.min(displayCount + incrementSize, items.length));
       setDisplayCount(prev => Math.min(prev + incrementSize, items.length));
     }
-  }, [incrementSize, items.length, scrollThreshold, displayCount]);
+  }, [incrementSize, items.length, scrollThreshold]);
   
   // Get the currently visible items
   const visibleItems = items.slice(0, displayCount);

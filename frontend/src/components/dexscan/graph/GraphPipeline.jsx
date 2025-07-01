@@ -26,8 +26,6 @@ export function GraphPipeline({
     [pools, selectedTokens, selectedProtocols]
   );
 
-  console.warn(`filtered: ${JSON.stringify(filtered.length)}`);
-  
   const graph = useMemo(
     () => transformToGraph(filtered, currentBlockNumber, selectedProtocols),
     [filtered, currentBlockNumber, selectedProtocols]
