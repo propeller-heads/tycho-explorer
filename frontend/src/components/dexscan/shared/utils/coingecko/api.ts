@@ -1,5 +1,5 @@
 // src/lib/coingecko.ts
-import { getCoinIdBySymbol } from './coingeckoCoinId';
+import { getCoinIdBySymbol } from './coinIds';
 
 /**
  * ARCHITECTURE OVERVIEW:

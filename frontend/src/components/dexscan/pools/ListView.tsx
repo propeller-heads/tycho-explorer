@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { cn, renderHexId } from '@/lib/utils';
-import { Pool, Token } from './types'; 
-import { parsePoolFee } from '@/lib/poolUtils';
+import { Pool, Token } from '@/components/dexscan/app/types'; 
+import { parsePoolFee } from '@/components/dexscan/shared/utils/poolUtils';
  
-import PoolTable from './pools/PoolTable';
-import PoolListFilterBar from './pools/PoolListFilterBar';
+import PoolTable from './PoolTable';
+import PoolListFilterBar from './PoolListFilterBar';
 import { SidePanel } from '@/components/dexscan/side-panel/SidePanel';
-import { usePoolData } from './context/PoolDataContext';
-import { filterPools } from './utils/poolFilters';
+import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
+import { filterPools } from './poolFilters';
 
 // Updated COLUMNS definition based on plan
 const COLUMNS = [

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTokenLogo, getFallbackLetters } from '@/hooks/useTokenLogo';
+import { useTokenLogo, getFallbackLetters } from '@/components/dexscan/shared/hooks/useTokenLogo';
 import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
 // Protocol to symbol mapping

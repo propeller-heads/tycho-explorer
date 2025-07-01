@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useReducer, useRef } from 'react';
-import { Pool, WebSocketPool } from '../types';
-import { CHAIN_CONFIG } from '@/components/dexscan/common/chains';
+import { Pool, WebSocketPool } from '@/components/dexscan/app/types';
+import { CHAIN_CONFIG } from '@/components/dexscan/shared/chains';
 
 interface WebSocketMessage {
   new_pairs?: Record<string, WebSocketPool>;

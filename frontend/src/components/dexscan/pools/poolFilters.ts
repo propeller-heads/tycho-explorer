@@ -1,4 +1,4 @@
-import { Pool } from '../types';
+import { Pool } from '@/components/dexscan/app/types';
 
 /**
  * Filters pools based on selected tokens and protocols.

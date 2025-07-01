@@ -5,13 +5,13 @@ import {
 } from '@/components/ui/table';
 import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { cn, renderHexId, getExternalLink, formatTimeAgo, formatSpotPrice } from '@/lib/utils';
-import { Pool, Token } from '@/components/dexscan/types';
+import { Pool, Token } from '@/components/dexscan/app/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import TokenIcon from '@/components/dexscan/common/TokenIcon';
-import ProtocolLogo from '@/components/dexscan/common/ProtocolLogo';
+import TokenIcon from '@/components/dexscan/shared/TokenIcon';
+import ProtocolLogo from '@/components/dexscan/shared/ProtocolLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
+import { getReadableProtocolName } from '@/components/dexscan/shared/readableProtocols';
 
 // Helper function for column widths
 const getColumnWidthClass = (columnId: string): string => {

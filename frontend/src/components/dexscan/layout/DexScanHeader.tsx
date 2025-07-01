@@ -2,13 +2,13 @@
 // Import the React library to build React components
 import React from 'react';
 // Import the HeaderBranding component for the left section of the header
-import HeaderBranding from '@/components/dexscan/header/HeaderBranding';
+import HeaderBranding from '@/components/dexscan/layout/HeaderBranding';
 // Import the HeaderActions component for the right section of the header
-import HeaderActions from '@/components/dexscan/header/HeaderActions';
+import HeaderActions from '@/components/dexscan/layout/HeaderActions';
 // Import the ViewSelector component for the center section of the header
-import { ViewSelector } from '@/components/dexscan/ViewSelector';
+import { ViewSelector } from '@/components/dexscan/app/ViewSelector';
 // Import the MobileMenuButton component for mobile navigation
-import MobileMenuButton from '@/components/dexscan/header/MobileMenuButton';
+import MobileMenuButton from '@/components/dexscan/layout/MobileMenuButton';
 // Import Link for navigation
 // import { Link } from 'react-router-dom';
 

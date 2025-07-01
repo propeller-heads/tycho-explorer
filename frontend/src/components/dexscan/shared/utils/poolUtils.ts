@@ -1,5 +1,5 @@
 // src/lib/poolUtils.ts
-import { Pool } from '@/components/dexscan/types';
+import { Pool } from '@/components/dexscan/app/types';
 
 // Helper to parse hex fee value to percentage
 export const parseFeeHexValue = (pool: Pool, feeHex: string | undefined): number | null => {

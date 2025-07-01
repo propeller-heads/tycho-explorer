@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getCoinId, getCoinLogoUrl, getCoinImageFromAPI } from '@/lib/coingecko';
+import { getCoinId, getCoinLogoUrl, getCoinImageFromAPI } from '@/components/dexscan/shared/utils/coingecko/api';
 
 export function useTokenLogo(symbol: string, providedLogoURI?: string) {
   // Start with provided URI or CDN URL

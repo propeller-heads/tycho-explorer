@@ -5,7 +5,7 @@
 
 import { useMemo } from 'react';
 import { useTokenLogos } from '@/components/dexscan/graph/hooks/useTokenLogos';
-import { getTokenLogoUrlSync } from '@/hooks/useTokenLogo';
+import { getTokenLogoUrlSync } from '@/components/dexscan/shared/hooks/useTokenLogo';
 import { protocolColors } from '@/components/dexscan/graph/config/protocolColors';
 import { useParallelEdgeSmoothness } from '@/components/dexscan/graph/hooks/useParallelEdgeSmoothness';
 

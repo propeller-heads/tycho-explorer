@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { FilterSearchInput } from './FilterSearchInput';
 import TokenIcon from '../TokenIcon';
-import { Token } from '../../types';
+import { Token } from '@/components/dexscan/app/types';
 import { FILTER_STYLES } from './filterStyles';
 import { renderSelectedSectionHeader } from './filterItemRenderer';
-import { useFilterSearch } from './hooks';
+import { useFilterSearch } from './useFilterSearch';
 import { FilterPopover } from './FilterPopover';
 import { FilterList } from './FilterList';
 

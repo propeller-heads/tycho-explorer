@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DexScanHeader from './header/DexScanHeader';
-import ListView from './ListView';
-import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
-import GraphViewContent from './graph/GraphViewContent';
-import { useFilterManager } from '@/hooks/useFilterManager';
+import DexScanHeader from '@/components/dexscan/layout/DexScanHeader';
+import ListView from '@/components/dexscan/pools/ListView';
+import { PoolDataProvider, usePoolData } from '@/components/dexscan/shared/PoolDataContext';
+import GraphViewContent from '@/components/dexscan/graph/GraphViewContent';
+import { useFilterManager } from '@/components/dexscan/shared/hooks/useFilterManager';
 
 // Import comet background assets
 import bgSmallComet from '@/assets/figma_generated/bg_small_comet.svg';

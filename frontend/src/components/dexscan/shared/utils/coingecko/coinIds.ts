@@ -2,7 +2,7 @@ export const ID_IDX   = 0;
 export const SYM_IDX  = 1;
 export const NAME_IDX = 2;
 
-// id,symbol,name
+// coingecko id,symbol,name
 export const coinMeta = [
   ["01coin","zoc","01coin"],
   ["0chain","zcn","Zus"],

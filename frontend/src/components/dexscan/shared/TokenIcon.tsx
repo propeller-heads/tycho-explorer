@@ -1,6 +1,6 @@
 import React from 'react';
-import { Token } from '../types';
-import { useTokenLogo, getFallbackLetters } from '@/hooks/useTokenLogo';
+import { Token } from '@/components/dexscan/app/types';
+import { useTokenLogo, getFallbackLetters } from '@/components/dexscan/shared/hooks/useTokenLogo';
 import { tokenLogoBaseClasses, getTextSizeClass, sizeToRem } from './tokenIconStyles';
 
 interface TokenIconProps {

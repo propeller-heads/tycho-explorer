@@ -2,8 +2,8 @@ import React from 'react';
 import { LucideChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { FILTER_STYLES } from './filterStyles';
-import { useFilterPopover } from './hooks';
+import { FILTER_STYLES } from '@/components/dexscan/shared/filters/filterStyles';
+import { useFilterPopover } from '@/components/dexscan/shared/filters/useFilterPopover';
 
 interface FilterPopoverProps {
   buttonText: string;

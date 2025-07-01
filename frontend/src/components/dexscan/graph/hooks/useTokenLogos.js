@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getTokenLogoUrlSync } from '@/hooks/useTokenLogo';
-import { getCoinImageFromAPI } from '@/lib/coingecko';
+import { getTokenLogoUrlSync } from '@/components/dexscan/shared/hooks/useTokenLogo';
+import { getCoinImageFromAPI } from '@/components/dexscan/shared/utils/coingecko/api';
 
 // Fetch missing token logos from API
 export function useTokenLogos(filteredPools) {

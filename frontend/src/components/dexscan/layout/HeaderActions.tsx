@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 // Import icons from lucide-react
 import { ChevronDown, Check, ExternalLink } from 'lucide-react';
 // Import custom hooks and context consumers
-import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
+import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 
 // --- Constants for Strings and URLs ---
 const DOCS_URL = "https://docs.propellerheads.xyz/";

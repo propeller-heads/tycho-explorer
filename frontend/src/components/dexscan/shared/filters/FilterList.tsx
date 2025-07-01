@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FILTER_STYLES } from './filterStyles';
-import { renderFilterItem, renderEmptyState } from './filterItemRenderer';
-import { useVirtualList } from './hooks';
+import { FILTER_STYLES } from '@/components/dexscan/shared/filters/filterStyles';
+import { renderFilterItem, renderEmptyState } from '@/components/dexscan/shared/filters/filterItemRenderer';
+import { useVirtualList } from '@/components/dexscan/shared/filters/useVirtualList';
 
 interface FilterListProps<T> {
   items: T[];
