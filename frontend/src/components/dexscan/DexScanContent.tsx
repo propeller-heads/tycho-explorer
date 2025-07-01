@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import DexScanHeader from './DexScanHeader';
+import DexScanHeader from './header/DexScanHeader';
 import ListView from './ListView';
 import { PoolDataProvider, usePoolData } from './context/PoolDataContext';
 import GraphViewContent from './graph/GraphViewContent';
