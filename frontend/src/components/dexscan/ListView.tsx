@@ -248,7 +248,10 @@ const ListView = ({
           onPoolClick={handleRowClick}
           allVisibleColumns={COLUMNS}
           renderTokensText={renderTokensText} // Passing simplified text renderer
-          renderFee={(pool: Pool) => `${parsePoolFee(pool)}%`} // Keep renderFee simple
+          renderFee={(pool: Pool) => {
+            const fee = parsePoolFee(pool);
+            return fee !== null ? `${fee}%` : '-';
+          }} // Show '-' for missing fee data
           sortConfig={sortConfig}
           onSort={handleSort}
           summaryData={summaryData}

@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import { Footer } from "./components/dexscan/Footer";
+import { Footer } from "@/components/dexscan/footer/Footer";
 // import { GraphTestContainer } from "@/components/dexscan/graph/test/GraphTestContainer";
 
 // Import background assets

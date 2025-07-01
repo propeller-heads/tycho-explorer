@@ -47,10 +47,6 @@ export function createSimulation(pool, chain) {
       const sellTokenData = pool.tokens.find(t => t.address === sellToken);
       const buyTokenData = pool.tokens.find(t => t.address === buyToken);
       
-      if (!sellTokenData || !buyTokenData) {
-        throw new Error('Token not found in pool');
-      }
-      
       // Call API
       const result = await callAPI(sellToken, pool.id, parseFloat(amount), chain);
       
@@ -70,11 +66,11 @@ export function createSimulation(pool, chain) {
       
     } catch (error) {
       return {
-        buyAmount: '0',
-        exchangeRate: '0',
-        fee: '0',
-        netAmount: '0',
-        gasEstimate: '0',
+        buyAmount: null,
+        exchangeRate: null,
+        fee: pool.static_attributes?.fee || null,
+        netAmount: null,
+        gasEstimate: null,
         error: error.message
       };
     }
