@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
 import { Footer } from "@/components/dexscan/footer/Footer";
+import { DexScanContent } from '@/components/dexscan/DexScanContent';
 // import { GraphTestContainer } from "@/components/dexscan/graph/test/GraphTestContainer";
 
 // Import background assets
@@ -52,7 +52,7 @@ const App = () => (
       {/* Main Content - ensure it's above background elements and footer */}
       <div style={{ position: "relative", zIndex: 5, flex: 1, overflow: "hidden" }}>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<DexScanContent />} />
           {/* <Route path="/graph-test" element={<GraphTestContainer />} /> */}
         </Routes>
       </div>
