@@ -90,7 +90,7 @@ const ListView = ({
 
   const sortPools = useCallback((poolsToSort: Pool[]) => {
     return [...poolsToSort].sort((a, b) => {
-      let valueA: any, valueB: any;
+      let valueA: string | number, valueB: string | number;
       
       switch (sortConfig.column) {
         case 'protocol_system':

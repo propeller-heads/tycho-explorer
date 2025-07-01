@@ -5,19 +5,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { FILTER_STYLES } from '@/components/dexscan/shared/filters/filterStyles';
 import { useFilterPopover } from '@/components/dexscan/shared/filters/useFilterPopover';
 
-interface FilterPopoverProps {
+interface FilterPopoverProps<T = unknown> {
   buttonText: string;
   selectedCount: number;
   width?: string;
   children: React.ReactNode;
-  selectedItems?: any[];
-  getItemLabel?: (item: any) => string;
+  selectedItems?: T[];
+  getItemLabel?: (item: T) => string;
   maxDisplayItems?: number;
   onClearAll?: () => void;
 }
 
 // Generic filter popover wrapper
-export const FilterPopover: React.FC<FilterPopoverProps> = ({
+export function FilterPopover<T = unknown>({
   buttonText,
   selectedCount,
   width = 'w-64',
@@ -26,7 +26,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
   getItemLabel,
   maxDisplayItems = 4,
   onClearAll
-}) => {
+}: FilterPopoverProps<T>) {
   const { open, setOpen } = useFilterPopover();
   
   // Format button label based on selection count

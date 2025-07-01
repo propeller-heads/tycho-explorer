@@ -1,5 +1,4 @@
-// src/lib/coingecko.ts
-import { getCoinIdBySymbol } from './coinIds';
+import { getCoinIdBySymbol } from '@/components/dexscan/shared/utils/coinIds';
 
 /**
  * ARCHITECTURE OVERVIEW:
@@ -58,7 +57,7 @@ function addCorsProxy(url: string): string {
  * @param cacheKey - Optional localStorage key for caching
  * @returns Parsed JSON data or null if all attempts fail
  */
-async function fetchWithRetry(url: string, cacheKey?: string): Promise<any> {
+async function fetchWithRetry(url: string, cacheKey?: string): Promise<unknown> {
   // Try up to 10 times
   for (let i = 0; i < 10; i++) {
     // Check cache first if key provided - prevents unnecessary API calls
@@ -141,7 +140,7 @@ export async function getCoinImageFromAPI(symbol: string): Promise<string | null
     );
     
     // Find the coin in the list by symbol (case-insensitive)
-    const coin = list?.find((c: any) => 
+    const coin = list?.find((c: { symbol: string; id: string }) => 
       c.symbol.toLowerCase() === symbol.toLowerCase()
     );
     
@@ -152,7 +151,7 @@ export async function getCoinImageFromAPI(symbol: string): Promise<string | null
     // This contains the image URLs
     const data = await fetchWithRetry(
       `https://api.coingecko.com/api/v3/coins/${coin.id}`
-    );
+    ) as { image?: { large?: string } } | null;
     
     // Extract the large image URL
     const url = data?.image?.large;

@@ -268,13 +268,18 @@ export function SwapInterface({ pool, onClose, simulate }) {
   const [loading, setLoading] = useState(false);
   const { selectedChain } = usePoolData();
   
+  // Extract addresses to avoid complex expressions in dependencies
+  const token0Address = pool.tokens[0]?.address;
+  const token1Address = pool.tokens[1]?.address;
+  
   // Reset tokens when pool changes
   useEffect(() => {
     setSellToken(pool.tokens[0]?.address || '');
     setBuyToken(pool.tokens[1]?.address || '');
     setResult(null);
     setAmount('1');
-  }, [pool.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool.id, token0Address, token1Address]);
   
   // Auto-simulate on input change
   useEffect(() => {
