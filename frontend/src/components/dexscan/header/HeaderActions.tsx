@@ -16,8 +16,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ChevronDown, Check, ExternalLink } from 'lucide-react';
 // Import custom hooks and context consumers
 import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
-// Import MILK colors
-import { MILK_COLORS } from '@/lib/colors';
 
 // --- Constants for Strings and URLs ---
 const DOCS_URL = "https://docs.propellerheads.xyz/";
@@ -79,8 +77,7 @@ const HeaderActions: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2 h-[36px] w-auto pl-[12px] pr-[10px] rounded-[12px] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors"
-            style={{ backgroundColor: MILK_COLORS.bgLight }}
+            className="flex items-center gap-2 h-[36px] w-auto pl-[12px] pr-[10px] rounded-[12px] hover:bg-[rgba(255,255,255,0.1)] text-[#FFFFFF] text-sm font-medium transition-colors bg-milk-bg-light"
           >
             {chainLogo && (
               <img src={chainLogo} alt={selectedChain} className="h-5 w-5" />

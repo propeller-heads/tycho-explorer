@@ -1,7 +1,6 @@
 // Mobile menu button component with overlay modal for navigation options
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, ExternalLink } from 'lucide-react';
-import { MILK_COLORS } from '@/lib/colors';
 
 // Constants
 const DOCS_URL = "https://docs.propellerheads.xyz/";
@@ -50,16 +49,15 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ currentView, onView
       {/* Hamburger button */}
       <button
         ref={buttonRef}
-        className="w-[36px] h-[36px] rounded-[12px] flex flex-col justify-center items-center gap-[4px] transition-colors hover:opacity-80"
-        style={{ backgroundColor: MILK_COLORS.bgLight }}
+        className="w-[36px] h-[36px] rounded-[12px] flex flex-col justify-center items-center gap-[4px] transition-colors hover:opacity-80 bg-milk-bg-light"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Menu"
         aria-expanded={isOpen}
       >
         {isOpen ? (
-          <X className="w-4 h-4" style={{ color: MILK_COLORS.base }} />
+          <X className="w-4 h-4 text-milk-base" />
         ) : (
-          <Menu className="w-4 h-4" style={{ color: MILK_COLORS.base }} />
+          <Menu className="w-4 h-4 text-milk-base" />
         )}
       </button>
 
@@ -82,10 +80,8 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ currentView, onView
               {/* Pool List */}
               <button
                 onClick={() => handleViewSelect('pools')}
-                className="px-[14px] py-[10px] text-base font-medium text-center transition-opacity hover:opacity-80"
+                className="px-[14px] py-[10px] text-base font-medium text-center transition-opacity hover:opacity-80 text-milk-base font-sans"
                 style={{ 
-                  color: MILK_COLORS.base,
-                  fontFamily: 'Inter, sans-serif',
                   fontSize: '16px',
                   lineHeight: '24px'
                 }}
@@ -96,10 +92,8 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ currentView, onView
               {/* Market Graph */}
               <button
                 onClick={() => handleViewSelect('graph')}
-                className="px-[14px] py-[10px] text-base font-medium text-center transition-opacity hover:opacity-80"
+                className="px-[14px] py-[10px] text-base font-medium text-center transition-opacity hover:opacity-80 text-milk-base font-sans"
                 style={{ 
-                  color: MILK_COLORS.base,
-                  fontFamily: 'Inter, sans-serif',
                   fontSize: '16px',
                   lineHeight: '24px'
                 }}
@@ -112,10 +106,8 @@ const MobileMenuButton: React.FC<MobileMenuButtonProps> = ({ currentView, onView
                 href={DOCS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block px-[14px] py-[10px] text-base font-medium text-center transition-opacity hover:opacity-80"
+                className="block px-[14px] py-[10px] text-base font-medium text-center transition-opacity hover:opacity-80 text-milk-base font-sans"
                 style={{ 
-                  color: MILK_COLORS.base,
-                  fontFamily: 'Inter, sans-serif',
                   fontSize: '16px',
                   lineHeight: '24px'
                 }}

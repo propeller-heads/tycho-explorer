@@ -1,6 +1,6 @@
 import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { MILK_COLORS } from '@/lib/colors';
+import { cn } from '@/lib/utils';
 
 interface FilterSearchInputProps {
   value: string;
@@ -13,19 +13,18 @@ export const FilterSearchInput = ({ value, onChange, placeholder = "Search..." }
   
   return (
     <div 
-      className="relative flex items-center px-3 py-2 rounded-lg transition-all duration-200"
-      style={{
-        backgroundColor: MILK_COLORS.bgSubtle,
-        border: isFocused ? '2px solid #FF3366' : `1px solid ${MILK_COLORS.borderDefault}`,
-        padding: isFocused ? '7px 11px' : '8px 12px' // Adjust padding to compensate for border width
-      }}
+      className={cn(
+        "relative flex items-center rounded-lg transition-all duration-200 bg-milk-bg-subtle",
+        isFocused 
+          ? "border-2 border-[#FF3366] px-[11px] py-[7px]" 
+          : "border border-milk-border-default px-3 py-2"
+      )}
     >
-      <Search className="h-4 w-4 mr-2 flex-shrink-0" style={{ color: MILK_COLORS.dimmed }} />
+      <Search className="h-4 w-4 mr-2 flex-shrink-0 text-milk-dimmed" />
       <input
         type="text"
         placeholder={placeholder}
-        className="flex-1 bg-transparent outline-none text-sm placeholder:opacity-60"
-        style={{ color: MILK_COLORS.base }}
+        className="flex-1 bg-transparent outline-none text-sm placeholder:opacity-60 text-milk-base"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsFocused(true)}

@@ -3,7 +3,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import GridDotsIcon from '@/assets/figma_header_icons/more-menu-grid-dots.svg';
-import { MILK_COLORS } from '@/lib/colors';
 
 // Constants
 const ORDERBOOK_URL = 'https://orderbook.wtf';
@@ -49,8 +48,7 @@ const AppMenuSelector: React.FC = () => {
     <div className="relative">
       <button
         ref={buttonRef}
-        className={MENU_BUTTON_CLASSES}
-        style={{ backgroundColor: MILK_COLORS.bgLight }}
+        className={`${MENU_BUTTON_CLASSES} bg-milk-bg-light`}
         onClick={() => setIsOpen(!isOpen)}
         aria-label="App menu"
         aria-expanded={isOpen}

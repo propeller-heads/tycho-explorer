@@ -1,7 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { MILK_COLORS } from '@/lib/colors';
-import BlockProgressIcon from '../graph/BlockProgressIcon';
+import BlockProgressIcon from '@/components/dexscan/graph/BlockProgressIcon';
 
 interface ConnectionStatusProps {
   connectionState: 'disconnected' | 'connecting' | 'connected';
@@ -25,9 +24,9 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       className={cn(
         "flex items-center gap-2",
         "text-sm",
+        "text-milk-base",
         className
       )}
-      style={{ color: MILK_COLORS.base }}
     >
       <BlockProgressIcon
         startTime={lastBlockTimestamp}
