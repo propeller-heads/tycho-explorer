@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { GraphPipeline } from './GraphPipeline';
 import { GraphControls } from './GraphControls';
-import { usePoolData } from '../context/PoolDataContext';
+import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 import { TokenSelectionPrompt } from './TokenSelectionPrompt';
 
 const PoolGraphView = ({

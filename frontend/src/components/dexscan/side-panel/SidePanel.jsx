@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { usePoolData } from '@/components/dexscan/context/PoolDataContext';
+import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 import { createSimulation } from '@/components/dexscan/side-panel/simulation';
 import { SwapInterface } from '@/components/dexscan/side-panel/SwapInterface';
 

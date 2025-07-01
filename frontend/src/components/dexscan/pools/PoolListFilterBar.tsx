@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Token } from '../types'; // Import Token type
-import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
-import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
-import { FILTER_STYLES } from '../common/filters/filterStyles';
-import ConnectionStatus from '../common/ConnectionStatus';
+import { Token } from '@/components/dexscan/app/types'; // Import Token type
+import { TokenFilterPopover } from '@/components/dexscan/shared/filters/TokenFilterPopover';
+import { ProtocolFilterPopover } from '@/components/dexscan/shared/filters/ProtocolFilterPopover';
+import { FILTER_STYLES } from '@/components/dexscan/shared/filters/filterStyles';
+import ConnectionStatus from '@/components/dexscan/shared/ConnectionStatus';
 
 interface PoolListFilterBarProps {
   // Filter state

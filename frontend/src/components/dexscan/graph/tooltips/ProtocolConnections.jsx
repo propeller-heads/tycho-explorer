@@ -1,4 +1,4 @@
-import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
+import { getReadableProtocolName } from '@/components/dexscan/shared/readableProtocols';
 
 export const ProtocolConnections = ({ protocols, total }) => (
   <>

@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import ConnectionStatus from '../common/ConnectionStatus';
-import { TokenFilterPopover } from '../common/filters/TokenFilterPopover';
-import { ProtocolFilterPopover } from '../common/filters/ProtocolFilterPopover';
-import { Token } from '../types';
-import { FILTER_STYLES } from '../common/filters/filterStyles';
-import { usePoolData } from '../context/PoolDataContext';
+import ConnectionStatus from '@/components/dexscan/shared/ConnectionStatus';
+import { TokenFilterPopover } from '@/components/dexscan/shared/filters/TokenFilterPopover';
+import { ProtocolFilterPopover } from '@/components/dexscan/shared/filters/ProtocolFilterPopover';
+import { Token } from '@/components/dexscan/app/types';
+import { FILTER_STYLES } from '@/components/dexscan/shared/filters/filterStyles';
+import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 
 // Removed local storage keys - now handled by useFilterManager
 

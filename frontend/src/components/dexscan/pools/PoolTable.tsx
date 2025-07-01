@@ -4,15 +4,16 @@ import {
   TableHead, TableCell 
 } from '@/components/ui/table';
 import { ExternalLink, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { cn, renderHexId, getExternalLink, formatTimeAgo, formatSpotPrice } from '@/lib/utils';
-import { Pool, Token } from '../types';
+import { cn } from '@/lib/utils';
+import { renderHexId, formatTimeAgo, formatSpotPrice } from '@/components/dexscan/shared/utils/format';
+import { getExternalLink } from '@/components/dexscan/shared/utils/links';
+import { Pool, Token } from '@/components/dexscan/app/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import TokenIcon from '@/components/dexscan/common/TokenIcon';
-import ProtocolLogo from '@/components/dexscan/common/ProtocolLogo';
+import TokenIcon from '@/components/dexscan/shared/TokenIcon';
+import ProtocolLogo from '@/components/dexscan/shared/ProtocolLogo';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getReadableProtocolName } from '@/components/dexscan/common/readableProtocols';
-import { MILK_COLORS } from '@/lib/colors';
+import { getReadableProtocolName } from '@/components/dexscan/shared/readableProtocols';
 
 // Helper function for column widths
 const getColumnWidthClass = (columnId: string): string => {
@@ -119,11 +120,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
     <Table className="table-auto w-full">
       <TableHeader>
         <TableRow 
-          className="sticky top-0 z-10"
-          style={{
-            borderBottom: `1px solid ${MILK_COLORS.borderSubtle}`,
-            background: 'transparent'
-          }}
+          className="sticky top-0 z-10 border-b border-milk-border-subtle bg-transparent"
         > 
               {allVisibleColumns.map((column) => {
                 const isSortable = sortableColumns.includes(column.id);
@@ -131,11 +128,10 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableHead 
                     key={column.id}
                     className={cn(
-                      "px-4 py-3.5 text-[13px] font-medium text-left",
+                      "px-4 py-3.5 text-[13px] font-medium text-left text-milk-muted",
                       isSortable && "cursor-pointer hover:opacity-80",
                       getColumnWidthClass(column.id)
                     )}
-                    style={{ color: MILK_COLORS.muted }}
                     onClick={() => isSortable && onSort(column.id)}
                   >
                     <div className="flex items-center gap-1">
@@ -146,7 +142,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                             <ChevronUp className="h-3 w-3 text-white" /> : 
                             <ChevronDown className="h-3 w-3 text-white" />
                         ) : (
-                          <ChevronsUpDown className="h-3 w-3" style={{ color: MILK_COLORS.muted }} />
+                          <ChevronsUpDown className="h-3 w-3 text-milk-muted" />
                         )
                       )}
                     </div>
@@ -156,26 +152,22 @@ const PoolTable: React.FC<PoolTableProps> = ({
             </TableRow>
             {/* Summary Row */}
             <TableRow 
-              className=""
-              style={{
-                borderBottom: `1px solid ${MILK_COLORS.borderSubtle}`,
-                background: MILK_COLORS.bgSubtle
-              }}
+              className="border-b border-milk-border-subtle bg-milk-bg-subtle"
             >
               {allVisibleColumns.map(column => (
-                <TableCell key={`summary-${column.id}`} className="py-2 px-4 text-base font-semibold" style={{ color: MILK_COLORS.base }}>
+                <TableCell key={`summary-${column.id}`} className="py-2 px-4 text-base font-semibold text-milk-base">
                   {column.id === 'tokens' && (
                     <div className="flex flex-col">
                       {connectionState === 'disconnected' && (
                         <>
                           <span>Disconnected</span>
-                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>No connection</span>
+                          <span className="text-xs font-normal text-milk-base">No connection</span>
                         </>
                       )}
                       {connectionState === 'connecting' && (
                         <>
                           <span>Connecting...</span>
-                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>
+                          <span className="text-xs font-normal text-milk-base">
                             {elapsedTime > 0 ? `${elapsedTime}s elapsed` : 'Starting...'}
                           </span>
                         </>
@@ -183,13 +175,13 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       {connectionState === 'connected' && displayedPools.length === 0 && (
                         <>
                           <span>Connected</span>
-                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>Loading pools...</span>
+                          <span className="text-xs font-normal text-milk-base">Loading pools...</span>
                         </>
                       )}
                       {connectionState === 'connected' && displayedPools.length > 0 && (
                         <>
                           <span>Summary</span>
-                          <span className="text-xs font-normal" style={{ color: MILK_COLORS.base }}>{summaryData.totalUniqueTokens} tokens</span>
+                          <span className="text-xs font-normal text-milk-base">{summaryData.totalUniqueTokens} tokens</span>
                         </>
                       )}
                     </div>
@@ -219,17 +211,12 @@ const PoolTable: React.FC<PoolTableProps> = ({
                   <TableRow 
                     key={pool.id}
                     id={`pool-row-${pool.id}`}
-                    className="cursor-pointer"
-                    style={{
-                      borderBottom: `1px solid ${MILK_COLORS.borderSubtle}`,
-                      backgroundColor: isRowSelected ? MILK_COLORS.bgMedium : undefined
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = isRowSelected ? MILK_COLORS.bgMedium : MILK_COLORS.bgLight;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = isRowSelected ? MILK_COLORS.bgMedium : 'transparent';
-                    }}
+                    className={cn(
+                      "cursor-pointer border-b border-milk-border-subtle transition-colors",
+                      isRowSelected 
+                        ? "bg-milk-bg-medium hover:bg-milk-bg-medium" 
+                        : "hover:bg-milk-bg-light"
+                    )}
                     onClick={() => onPoolClick(pool)}
                   >
                     {allVisibleColumns.map((column) => {
@@ -239,7 +226,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         displayValue = (
                           <div className="flex items-center gap-2">
                             <StackedTokenIcons tokens={pool.tokens} />
-                            <span className="text-sm" style={{ color: MILK_COLORS.base }}>{renderTokensText(pool)}</span>
+                            <span className="text-sm text-milk-base">{renderTokensText(pool)}</span>
                           </div>
                         );
                       } else if (column.id === 'id') {
@@ -249,13 +236,13 @@ const PoolTable: React.FC<PoolTableProps> = ({
                             <Tooltip delayDuration={0}>
                               <TooltipTrigger asChild>
                                 <span 
-                                  className="text-sm cursor-pointer" style={{ color: MILK_COLORS.base }}
+                                  className="text-sm cursor-pointer text-milk-base"
                                 >
                                   {renderHexId(pool.id)}
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent 
-                                className="bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] z-[100]" style={{ color: MILK_COLORS.base }}
+                                className="bg-[rgba(25,10,53,0.95)] backdrop-blur-2xl border-[rgba(255,255,255,0.1)] z-[100] text-milk-base"
                                 side="top"
                                 onPointerDownOutside={(e) => e.preventDefault()}
                               >
@@ -272,7 +259,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                                 href={linkUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="transition-colors" style={{ color: MILK_COLORS.base }}
+                                className="transition-colors text-milk-base"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <ExternalLink className="h-3 w-3" />
@@ -284,24 +271,24 @@ const PoolTable: React.FC<PoolTableProps> = ({
                         displayValue = (
                           <div className="flex items-center gap-2">
                             <ProtocolLogo protocolName={pool.protocol_system} />
-                            <span className="text-sm" style={{ color: MILK_COLORS.base }}>{getReadableProtocolName(pool.protocol_system)}</span>
+                            <span className="text-sm text-milk-base">{getReadableProtocolName(pool.protocol_system)}</span>
                           </div>
                         );
                       } else if (column.id === 'static_attributes.fee') {
-                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{renderFee(pool)}</span>;
+                        displayValue = <span className="text-sm text-milk-base">{renderFee(pool)}</span>;
                       } else if (column.id === 'spotPrice') {
                         // Show spot price with token1 logo (quote token)
                         const quoteToken = pool.tokens[1] || pool.tokens[0]; // Fallback to token0 if only one token
                         displayValue = (
                           <div className="flex items-center gap-2">
-                            <span className="text-sm" style={{ color: MILK_COLORS.base }}>
+                            <span className="text-sm text-milk-base">
                               {formatSpotPrice(pool.spotPrice)}
                             </span>
                             {quoteToken && <TokenIcon token={quoteToken} size={6} />}
                           </div>
                         );
                       } else if (column.id === 'updatedAt') {
-                        displayValue = <span className="text-sm" style={{ color: MILK_COLORS.base }}>{formatTimeAgo(pool.updatedAt)}</span>;
+                        displayValue = <span className="text-sm text-milk-base">{formatTimeAgo(pool.updatedAt)}</span>;
                       } else {
                         displayValue = '-';
                       }
@@ -309,8 +296,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
                       return (
                         <TableCell 
                           key={column.id} 
-                          className="px-4 py-3.5 text-sm"
-                          style={{ color: MILK_COLORS.base }}
+                          className="px-4 py-3.5 text-sm text-milk-base"
                         >
                           {displayValue}
                         </TableCell>
@@ -321,7 +307,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={allVisibleColumns.length} className="h-24 text-center" style={{ color: MILK_COLORS.base }}>
+                <TableCell colSpan={allVisibleColumns.length} className="h-24 text-center text-milk-base">
                   No pools match your filter criteria.
                 </TableCell>
               </TableRow>
@@ -329,7 +315,7 @@ const PoolTable: React.FC<PoolTableProps> = ({
             {isLoadingMore && hasMorePools && (
               <TableRow>
                 <TableCell colSpan={allVisibleColumns.length} className="text-center py-4">
-                  <p style={{ color: MILK_COLORS.base }}>Loading more pools...</p>
+                  <p className="text-milk-base">Loading more pools...</p>
                 </TableCell>
               </TableRow>
             )}
