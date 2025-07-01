@@ -30,35 +30,23 @@ export function useFilterManager({ chain, availableProtocols }: UseFilterManager
     }
     
     setIsInitialized(true);
-  }, [chain, loadFilters]); // Only depend on chain and loadFilters
-  
-  // Auto-select all protocols when they become available for the first time
-  useEffect(() => {
-    // Only auto-select if:
-    // 1. No localStorage entry exists (hasProtocolsEntry from loadFilters was false)
-    // 2. No protocols are currently selected
-    // 3. Available protocols now exist
-    if (!isInitialized) return; // Wait for initial load
-    
-    const filters = loadFilters();
-    if (!filters.hasProtocolsEntry && 
-        selectedProtocols.length === 0 && 
-        availableProtocols && 
-        availableProtocols.length > 0) {
-      console.log(`[FilterManager] Protocols now available, selecting all ${availableProtocols.length}`);
-      setSelectedProtocols(availableProtocols);
-    }
-  }, [availableProtocols, isInitialized, selectedProtocols.length, loadFilters]);
+  }, [chain, availableProtocols, loadFilters]);
   
   // Save filters when they change (after initialization)
   useEffect(() => {
     if (!isInitialized) return;
     
+    // Don't save empty protocols if none are available yet
+    // This prevents caching the "pending" state as user choice
+    if (selectedProtocols.length === 0 && (!availableProtocols || availableProtocols.length === 0)) {
+      return;
+    }
+    
     saveFilters({
       selectedTokens: selectedTokenAddresses,
       selectedProtocols: selectedProtocols
     });
-  }, [selectedTokenAddresses, selectedProtocols, saveFilters, isInitialized]);
+  }, [selectedTokenAddresses, selectedProtocols, saveFilters, isInitialized, availableProtocols]);
   
   // Token toggle with built-in duplicate prevention
   const toggleToken = useCallback((address: string, isSelected: boolean) => {
