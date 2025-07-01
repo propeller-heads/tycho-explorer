@@ -66,11 +66,11 @@ export function createSimulation(pool, chain) {
       
     } catch (error) {
       return {
-        buyAmount: '0',
-        exchangeRate: '0',
-        fee: '0',
-        netAmount: '0',
-        gasEstimate: '0',
+        buyAmount: null,
+        exchangeRate: null,
+        fee: pool.static_attributes?.fee || null,
+        netAmount: null,
+        gasEstimate: null,
         error: error.message
       };
     }

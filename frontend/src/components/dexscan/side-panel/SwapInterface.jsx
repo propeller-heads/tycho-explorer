@@ -123,11 +123,20 @@ const TokenDisplay = ({ token }) => {
   );
 };
 
-const AmountField = ({ amount, onChange, isEditable }) => {
+const AmountField = ({ amount, onChange, isEditable, isLoading, hasError }) => {
   if (!isEditable) {
+    let displayValue = '-';
+    if (isLoading) {
+      displayValue = 'Calculating...';
+    } else if (hasError) {
+      displayValue = 'Error';
+    } else if (amount && parseFloat(amount) > 0) {
+      displayValue = formatSpotPrice(parseFloat(amount));
+    }
+    
     return (
       <span className="text-[28px] leading-[1.2] font-semibold font-['Inter'] block text-white">
-        {formatSpotPrice(parseFloat(amount) || 0)}
+        {displayValue}
       </span>
     );
   }
@@ -177,22 +186,28 @@ const TokenSelector = ({ token, onTokenChange, tokens, chain }) => {
   );
 };
 
-const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tokens, isEditable, chain }) => (
+const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tokens, isEditable, chain, isLoading, hasError }) => (
   <div className={swapCardClasses}>
     <div className="text-xs font-['Inter'] mb-2 text-white/50">
       {direction === 'sell' ? 'Sell' : 'Buy'}
     </div>
     <div className="flex items-center justify-between gap-4">
       <div className="flex-1 min-w-0 overflow-hidden">
-        <AmountField amount={amount} onChange={onAmountChange} isEditable={isEditable} />
+        <AmountField 
+          amount={amount} 
+          onChange={onAmountChange} 
+          isEditable={isEditable}
+          isLoading={isLoading}
+          hasError={hasError}
+        />
       </div>
       <TokenSelector token={token} onTokenChange={onTokenChange} tokens={tokens} chain={chain} />
     </div>
   </div>
 );
 
-const SimulationResults = ({ result, sellToken, buyToken, pool }) => {
-  if (!result || result.error) return null;
+const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => {
+  if (!result && !isLoading) return null;
   
   const ResultRow = ({ label, value }) => (
     <div className="flex justify-between items-center">
@@ -201,11 +216,43 @@ const SimulationResults = ({ result, sellToken, buyToken, pool }) => {
     </div>
   );
   
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <ResultRow label="Exchange Rate" value="Calculating..." />
+        <ResultRow label="Net Amount" value="Calculating..." />
+        <ResultRow label="Pool Fee" value={(() => {
+        const fee = parsePoolFee(pool);
+        return fee !== null ? `${fee}%` : 'N/A';
+      })()} />
+      </div>
+    );
+  }
+  
+  if (result.error) {
+    return null; // Error shown separately
+  }
+  
+  // Format exchange rate - show N/A if invalid
+  let exchangeRateText = 'N/A';
+  if (result.exchangeRate && parseFloat(result.exchangeRate) > 0) {
+    exchangeRateText = `1 ${sellToken?.symbol} = ${formatSpotPrice(parseFloat(result.exchangeRate))} ${buyToken?.symbol}`;
+  }
+  
+  // Format net amount - show N/A if invalid
+  let netAmountText = 'N/A';
+  if (result.netAmount && parseFloat(result.netAmount) > 0) {
+    netAmountText = `${formatSpotPrice(parseFloat(result.netAmount))} ${buyToken?.symbol}`;
+  }
+  
   return (
     <div className="space-y-2">
-      <ResultRow label="Exchange Rate" value={`1 ${sellToken?.symbol} = ${result.exchangeRate} ${buyToken?.symbol}`} />
-      <ResultRow label="Net Amount" value={`${result.netAmount} ${buyToken?.symbol}`} />
-      <ResultRow label="Pool Fee" value={`${parsePoolFee(pool)}%`} />
+      <ResultRow label="Exchange Rate" value={exchangeRateText} />
+      <ResultRow label="Net Amount" value={netAmountText} />
+      <ResultRow label="Pool Fee" value={(() => {
+        const fee = parsePoolFee(pool);
+        return fee !== null ? `${fee}%` : 'N/A';
+      })()} />
     </div>
   );
 };
@@ -270,13 +317,15 @@ export function SwapInterface({ pool, onClose, simulate }) {
               />
               <SwapCard
                 direction="buy"
-                amount={result?.buyAmount || '0'}
+                amount={result?.buyAmount}
                 onAmountChange={() => {}}
                 token={buyToken}
                 onTokenChange={setBuyToken}
                 tokens={pool.tokens}
                 isEditable={false}
                 chain={selectedChain}
+                isLoading={loading}
+                hasError={!!result?.error}
               />
             </div>
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
@@ -295,7 +344,8 @@ export function SwapInterface({ pool, onClose, simulate }) {
             result={result} 
             sellToken={sellTokenData} 
             buyToken={buyTokenData} 
-            pool={pool} 
+            pool={pool}
+            isLoading={loading}
           />
           
           {result?.error && (
