@@ -69,14 +69,17 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
         )}
       </div>
 
-      {/* Connection Status Display - moved to the right */}
-      <ConnectionStatus
-        connectionState={connectionState}
-        connectionStartTime={connectionStartTime}
-        blockNumber={blockNumber || 0}
-        lastBlockTimestamp={startTime || null}
-        estimatedBlockDuration={duration || 12000}
-      />
+      {/* Connection Status Display - IMPORTANT: Keep centered on mobile, right-aligned on desktop */}
+      {/* DO NOT MOVE: This component must remain centered on mobile for proper UI alignment */}
+      <div className="flex justify-center sm:justify-end w-full sm:w-auto">
+        <ConnectionStatus
+          connectionState={connectionState}
+          connectionStartTime={connectionStartTime}
+          blockNumber={blockNumber || 0}
+          lastBlockTimestamp={startTime || null}
+          estimatedBlockDuration={duration || 12000}
+        />
+      </div>
     </div>
   );
 };
