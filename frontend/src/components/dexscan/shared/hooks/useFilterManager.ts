@@ -25,10 +25,18 @@ export function useFilterManager({ chain, availableProtocols }: UseFilterManager
     if (!filters.hasProtocolsEntry && availableProtocols && availableProtocols.length > 0) {
       console.log(`[FilterManager] No localStorage entry found, selecting all ${availableProtocols.length} available protocols`);
       setSelectedProtocols(availableProtocols);
-    } else {
-      setSelectedProtocols(filters.selectedProtocols);
-    }
-    
+    } else if (availableProtocols && availableProtocols.length > 0) {
+      // Filter out any saved protocols that don't exist on the current chain
+      const validProtocols = filters.selectedProtocols.filter(protocol => 
+        availableProtocols.includes(protocol)
+      );
+      
+      if (validProtocols.length !== filters.selectedProtocols.length) {
+        console.warn(`[FilterManager] Filtered out ${filters.selectedProtocols.length - validProtocols.length} invalid protocols from saved selection`);
+      }
+      
+      setSelectedProtocols(validProtocols);
+    }   
     setIsInitialized(true);
   }, [chain, availableProtocols, loadFilters]);
   
