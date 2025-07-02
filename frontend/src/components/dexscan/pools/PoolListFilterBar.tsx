@@ -45,8 +45,6 @@ const PoolListFilterBar: React.FC<PoolListFilterBarProps> = ({
   connectionStartTime,
 }) => {
 
-  console.warn(`[PoolListFilterBar] selectedProtocols ${selectedProtocols}`);
-
   return (
     <div className={FILTER_STYLES.filterBar}>
       <div className={FILTER_STYLES.filterBarButtons}>

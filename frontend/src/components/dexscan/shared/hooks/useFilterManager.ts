@@ -17,23 +17,17 @@ export function useFilterManager({ chain, availableProtocols }: UseFilterManager
   
   // Load filters on mount or chain change
   useEffect(() => {
-    console.log(`[FilterManager] Loading filters for ${chain}`);
     const filters = loadFilters();
     setSelectedTokenAddresses(filters.selectedTokens);
     
     // Initialize protocols with all available only if no localStorage entry exists
     if (!filters.hasProtocolsEntry && availableProtocols && availableProtocols.length > 0) {
-      console.log(`[FilterManager] No localStorage entry found, selecting all ${availableProtocols.length} available protocols`);
       setSelectedProtocols(availableProtocols);
     } else if (availableProtocols && availableProtocols.length > 0) {
       // Filter out any saved protocols that don't exist on the current chain
       const validProtocols = filters.selectedProtocols.filter(protocol => 
         availableProtocols.includes(protocol)
       );
-      
-      if (validProtocols.length !== filters.selectedProtocols.length) {
-        console.warn(`[FilterManager] Filtered out ${filters.selectedProtocols.length - validProtocols.length} invalid protocols from saved selection`);
-      }
       
       setSelectedProtocols(validProtocols);
     }   
@@ -61,7 +55,6 @@ export function useFilterManager({ chain, availableProtocols }: UseFilterManager
     setSelectedTokenAddresses(prev => {
       if (isSelected) {
         if (prev.includes(address)) {
-          console.log(`[FilterManager] Token ${address} already selected, skipping`);
           return prev; // Prevent duplicates
         }
         return [...prev, address];
@@ -76,7 +69,6 @@ export function useFilterManager({ chain, availableProtocols }: UseFilterManager
     setSelectedProtocols(prev => {
       if (isSelected) {
         if (prev.includes(protocol)) {
-          console.log(`[FilterManager] Protocol ${protocol} already selected, skipping`);
           return prev; // Prevent duplicates
         }
         return [...prev, protocol];

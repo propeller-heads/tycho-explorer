@@ -35,13 +35,6 @@ export function FilterList<T>({
   
   const itemsToRender = virtualScroll ? visibleItems : items;
   
-  // console.log('[scroll][FilterList] Virtual scroll state:', {
-  //   virtualScroll,
-  //   totalItems: items.length,
-  //   visibleItems: visibleItems.length,
-  //   itemsToRender: itemsToRender.length
-  // });
-  
   // Check if item is selected
   const isItemSelected = (item: T) => {
     const key = getItemKey(item);
@@ -59,14 +52,7 @@ export function FilterList<T>({
                          scrollContainerRef.current.querySelector('[data-radix-scroll-area-viewport]') ||
                          scrollContainerRef.current;
     
-    // console.log('[scroll][FilterList] Found scroll element:', {
-    //   element: scrollElement,
-    //   className: scrollElement?.className,
-    //   tagName: scrollElement?.tagName
-    // });
-    
     const handleScrollEvent = (e: Event) => {
-      // console.log('[scroll][FilterList] Native scroll event caught!');
       handleScroll(e as React.UIEvent<HTMLDivElement>);
     };
     

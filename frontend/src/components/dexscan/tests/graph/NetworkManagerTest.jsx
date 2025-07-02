@@ -43,7 +43,6 @@ export const NetworkManagerTest = () => {
 
       setStatus('Initialized successfully');
       setError(null);
-      console.log('NetworkManager initialized', networkManagerRef.current);
       
       // Setup click handlers for tooltips
       const network = networkManagerRef.current.getNetwork();

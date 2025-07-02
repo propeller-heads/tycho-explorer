@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Menu, X, ExternalLink } from 'lucide-react';
 
 // Constants
-const DOCS_URL = "https://docs.propellerheads.xyz/";
+const DOCS_URL = "https://github.com/propeller-heads/tycho-explorer";
 const POOL_LIST_TEXT = 'Pool List';
 const MARKET_GRAPH_TEXT = 'Market Graph';
 const DOCS_TEXT = 'Docs (Run locally)';

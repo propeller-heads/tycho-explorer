@@ -212,7 +212,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const disconnectWebSocket = useCallback(() => {
     // Use ref instead of state to ensure we always close the current socket
     if (socketRef.current) {
-      console.log('🔴 Closing WebSocket connection');
       
       // Remove all event handlers before closing to prevent any lingering messages
       socketRef.current.onopen = null;
@@ -251,14 +250,12 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Get URL from chain config
     const chainConfig = CHAIN_CONFIG[chain as keyof typeof CHAIN_CONFIG];
     if (!chainConfig || !chainConfig.wsUrl) {
-      console.error('No WebSocket URL configured for chain:', chain);
       return;
     }
     
     const url = chainConfig.wsUrl;
     
     // Clear pool data when switching chains
-    console.log('🟣 [CHAIN] Clearing pool data for chain switch to:', chain);
     dispatch({ type: 'RESET_STATE' });
     
     // Close existing connection if any
@@ -287,45 +284,26 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           payload: { connectionState: 'connected' }
         });
         
-        console.log('✅ WebSocket connected. Waiting for block updates with price changes...');
       };
 
       ws.onmessage = (event) => {
         try {
           const data: WebSocketMessage = JSON.parse(event.data);
 
-          console.log('Websocket: data:', data);
           
-          // Debug log to see message structure
-          console.log('🔳 WebSocket message:', {
-            hasBlockNumber: !!data.block_number,
-            hasNewPairs: !!data.new_pairs,
-            hasSpotPrices: !!data.spot_prices,
-            spotPriceCount: data.spot_prices ? Object.keys(data.spot_prices).length : 0,
-            newPairCount: data.new_pairs ? Object.keys(data.new_pairs).length : 0
-          });
 
           // Collect spot prices first
           const spotPrices = data.spot_prices || {};
           
           // Update block number if provided
           if (data.block_number) {
-            console.log('🔷 WebSocket: New block number received:', data.block_number);
             dispatch({ 
               type: 'SET_BLOCK_NUMBER', 
               payload: { blockNumber: data.block_number, timestamp: Date.now() } 
             });
             
-            // Log when no price updates come with block update
-            if (Object.keys(spotPrices).length === 0 && Object.keys(stateRef.current.pools).length > 0) {
-              console.log('⚠️ No price updates from server with block update');
-            }
           }
 
-          // Debug log spot prices
-          if (Object.keys(spotPrices).length > 0) {
-            console.log(`🔵 WebSocket: Spot prices received for ${Object.keys(spotPrices).length} pools`);
-          }
           
           // Process new pools and incorporate spot prices
           const poolUpdates: Record<string, Pool> = {};
@@ -340,10 +318,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 lastUpdatedAtBlock: blockForNewPairs // Set the block number when the pool is first seen
               };
               
-              // Log new pairs
-              if (blockForNewPairs > 0) {
-                console.log(`🆕 New pool ${id} at block ${blockForNewPairs}`);
-              }
             });
           }
           
@@ -364,17 +338,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                   // Only update lastUpdatedAtBlock if we have a valid block number
                   lastUpdatedAtBlock: shouldUpdateBlock ? updateBlock : existingPool.lastUpdatedAtBlock
                 };
-                
-                // Debug log for edge widening
-                if (shouldUpdateBlock) {
-                  console.log(`🔶 Pool ${id} price updated at block ${updateBlock}:`, {
-                    poolId: id,
-                    oldBlock: existingPool.lastUpdatedAtBlock,
-                    newBlock: updateBlock,
-                    currentStateBlock: stateRef.current.blockNumber,
-                    spotPrice: price
-                  });
-                }
               }
             });
           }
@@ -450,17 +413,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const hasPoolUpdates = Object.keys(stateRef.current.pendingUpdates.pools).length > 0;
 
-    if (hasPoolUpdates) {
-      console.log("🔸 Pending pool updates:", {
-        count: Object.keys(stateRef.current.pendingUpdates.pools).length,
-        currentBlock: stateRef.current.blockNumber,
-        updates: Object.entries(stateRef.current.pendingUpdates.pools).map(([id, pool]) => ({
-          id,
-          lastUpdatedAtBlock: pool.lastUpdatedAtBlock
-        }))
-      });
-    }
-    
     if (hasPoolUpdates && !updateScheduled) {
       setUpdateScheduled(true);
 
@@ -475,7 +427,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             type: 'SET_POOLS',
             payload: updatedPools
           });
-          console.log('🔹 Pool updates applied to state');
         }
         
         setUpdateScheduled(false);
@@ -487,7 +438,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     // Only connect once to avoid infinite connection attempts
     if (!autoConnected && !state.isConnected) {
-      console.log('Auto-connecting to WebSocket for chain:', state.selectedChain);
       connectToWebSocket(state.selectedChain);
       setAutoConnected(true);
     }
@@ -502,7 +452,6 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => {
-    console.log("Creating new PoolDataContext value", new Date().toISOString());
     return {
       pools: state.pools,
       poolsArray,

@@ -20,7 +20,6 @@ const PoolGraphView = ({
     estimatedBlockDuration 
   } = usePoolData();
 
-  console.warn(`[GraphViewContent] ${blockNumber}`);
 
   // Derive data needed for GraphControls' dropdowns from raw data
   const allAvailableTokenNodes = useMemo(() => {
@@ -48,7 +47,6 @@ const PoolGraphView = ({
   }, [rawPools]);
 
   const uniqueProtocols = useMemo(() => {
-    // console.log('DEBUG: Recalculating uniqueProtocols for Controls');
     const protocols = new Set();
     Object.values(rawPools).forEach(poolUnk => {
       const pool = poolUnk;

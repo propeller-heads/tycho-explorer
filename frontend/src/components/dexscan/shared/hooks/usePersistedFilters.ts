@@ -31,12 +31,6 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
       const protocols = protocolsJson ? JSON.parse(protocolsJson) : [];
       const tokens = tokensJson ? JSON.parse(tokensJson) : [];
 
-      console.log(`[Persistence] Loaded filters for ${chain}:`, {
-        protocols,
-        tokens,
-        hasProtocolsEntry: protocolsJson !== null
-      });
-
       return {
         selectedProtocols: protocols,
         selectedTokens: tokens,
@@ -70,12 +64,6 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
         localStorage.setItem(protocolsKey, JSON.stringify(filters.selectedProtocols));
         localStorage.setItem(tokensKey, JSON.stringify(filters.selectedTokens));
 
-        console.log(`[Persistence] Saved filters for ${chain}:`, {
-          protocols: filters.selectedProtocols,
-          tokens: filters.selectedTokens,
-          protocolsKey,
-          tokensKey
-        });
       } catch (error) {
         console.error('[Persistence] Error saving filters:', error);
       }
@@ -91,7 +79,6 @@ export function usePersistedFilters({ chain }: UsePersistedFiltersOptions) {
       localStorage.removeItem(protocolsKey);
       localStorage.removeItem(tokensKey);
 
-      console.log(`[Persistence] Cleared filters for ${chain}`);
     } catch (error) {
       console.error('[Persistence] Error clearing filters:', error);
     }
