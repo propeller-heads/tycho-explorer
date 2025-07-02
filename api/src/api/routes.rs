@@ -6,6 +6,7 @@ use axum::{
 use num_bigint::BigUint;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tracing::info;
 
 use crate::errors::ApiError;
 use crate::simulation::state::SimulationState;
@@ -47,6 +48,12 @@ async fn simulate_transaction(
     State(state): State<SimulationState>,
     Json(request): Json<SimulationRequest>,
 ) -> Result<Json<SimulationResponse>, ApiError> {
+    // Log incoming request
+    info!("=== SIMULATE REQUEST ===");
+    info!("Sell Token: {}", request.sell_token);
+    info!("Pools: {:?}", request.pools);
+    info!("Amount: {}", request.amount);
+    
     // Parse amount
     let input_amount = request.amount;
 
@@ -83,10 +90,21 @@ async fn simulate_transaction(
                     current_amount = Some(BigUint::from(
                         (input_amount * 10f64.powi(sell_token.decimals as i32)) as u64,
                     ));
+                    info!("Initial amount (with decimals): {}", current_amount.as_ref().unwrap());
                 }
+                
+                info!("=== POOL SIMULATION ===");
+                info!("Pool: {}", pool_address);
+                info!("Sell Token: {} (decimals: {})", sell_token.address, sell_token.decimals);
+                info!("Buy Token: {} (decimals: {})", buy_token.address, buy_token.decimals);
+                info!("Input Amount: {}", current_amount.as_ref().unwrap());
+                
                 let result = pool
                     .get_amount_out(current_amount.unwrap(), &sell_token, &buy_token)
                     .map_err(|e| ApiError::SimulationError(format!("Simulation error: {}", e)))?;
+                
+                info!("Output Amount: {}", result.amount);
+                info!("Gas Used: {}", result.gas);
 
                 // Assuming result is a tuple of (amount_out, gas)
                 current_amount = Some(result.amount);
@@ -103,12 +121,21 @@ async fn simulate_transaction(
         }
     }
 
-    let amount_out: f64 = current_amount
-        .ok_or_else(|| ApiError::SimulationError("No output amount calculated".to_string()))?
+    let amount_out_raw = current_amount
+        .ok_or_else(|| ApiError::SimulationError("No output amount calculated".to_string()))?;
+    
+    info!("=== FINAL CALCULATION ===");
+    info!("Raw output amount: {}", amount_out_raw);
+    info!("Output decimals: {}", decimals);
+    
+    let amount_out: f64 = amount_out_raw
         .to_string()
         .parse::<f64>()
         .unwrap_or(0.0)
         / 10f64.powi(decimals as i32);
+    
+    info!("Final output amount: {}", amount_out);
+    info!("Exchange rate: {} -> {}", request.amount, amount_out);
 
     Ok(Json(SimulationResponse {
         success: true,
