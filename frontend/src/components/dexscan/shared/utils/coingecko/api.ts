@@ -1,4 +1,4 @@
-import { getCoinIdBySymbol } from '@/components/dexscan/shared/utils/coinIds';
+import { getCoinIdBySymbol } from '@/components/dexscan/shared/utils/coingecko/coinIds';
 
 /**
  * ARCHITECTURE OVERVIEW:
