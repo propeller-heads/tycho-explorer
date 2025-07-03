@@ -69,7 +69,6 @@ export function FilterPopover<T = unknown>({
           <X 
             className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 cursor-pointer hover:opacity-60 text-[#FFF4E0] transition-opacity z-10"
             onClick={() => {
-              console.log("debug: clicked received");
               onClearAll?.();
             }}
           />

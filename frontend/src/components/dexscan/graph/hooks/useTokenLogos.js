@@ -16,7 +16,6 @@ export function useTokenLogos(filteredPools) {
           // Comment this out to see if token logo API fetching works
           const cdnUrl = getTokenLogoUrlSync(token.symbol);
           if (!cdnUrl && !apiLogos[token.address]) {
-            console.warn(`pushing symbols for fetching`);
             symbolsToFetch.push({ 
               symbol: token.symbol, 
               address: token.address 

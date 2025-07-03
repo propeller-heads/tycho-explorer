@@ -8,7 +8,7 @@ import PoolTable from './PoolTable';
 import PoolListFilterBar from './PoolListFilterBar';
 import { SidePanel } from '@/components/dexscan/side-panel/SidePanel';
 import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
-import { filterPools } from './poolFilters';
+import { filterPools } from '@/components/dexscan/shared/utils/poolFilters';
 
 // Updated COLUMNS definition based on plan
 const COLUMNS = [
@@ -57,7 +57,6 @@ const ListView = ({
   toggleToken,
   toggleProtocol,
   resetFilters: resetFilterState,
-  isInitialized
 }: PoolListViewProps) => {
   const { blockNumber, lastBlockTimestamp, estimatedBlockDuration, selectedChain, connectionState, connectionStartTime } = usePoolData();
   
@@ -133,7 +132,6 @@ const ListView = ({
   );
 
   const processedPools = useMemo(() => {
-    // TODO: lift the one used by Graph View up to reuse here.
     const filtered = filterPools(pools, selectedTokenAddresses, selectedProtocols);
     return sortPools(filtered);
   }, [pools, selectedTokenAddresses, selectedProtocols, sortPools]);

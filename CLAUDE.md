@@ -36,6 +36,7 @@ To create the best plan:
 - **Production ready**: Never mock data - ask when unsure about data handling
 - **After every code change, lint the code on the files / directories changed**: `bun run lint file1 dir1`
 - **After every code change, check imports use `@/` import alias**
+- **For frontend-wide linting, run `bun run lint` in the frontend/ directory**
 
 ### Function Design Process
 

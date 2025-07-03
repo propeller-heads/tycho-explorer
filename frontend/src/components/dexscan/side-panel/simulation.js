@@ -16,21 +16,30 @@ const getApiUrl = (chain) => {
 // Private: Call API
 const callAPI = async (tokenIn, poolId, amount, chain) => {
   const apiUrl = getApiUrl(chain);
+  const requestBody = {
+    sell_token: tokenIn,
+    pools: [poolId],
+    amount: amount
+  };
+  
+  console.log('=== API REQUEST ===');
+  console.log('URL:', `${apiUrl}/api/simulate`);
+  console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+  
   const response = await fetch(`${apiUrl}/api/simulate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      sell_token: tokenIn,
-      pools: [poolId],
-      amount: amount
-    })
+    body: JSON.stringify(requestBody)
   });
   
   if (!response.ok) {
     throw new Error(`API call failed: ${response.status}`);
   }
   
-  return response.json();
+  const result = await response.json();
+  console.log('API Response:', JSON.stringify(result, null, 2));
+  
+  return result;
 };
 
 // Public: Main factory function
@@ -54,6 +63,13 @@ export function createSimulation(pool, chain) {
       const outputAmount = parseFloat(result.output_amount);
       const inputAmount = parseFloat(amount);
       const exchangeRate = outputAmount / inputAmount;
+      
+      console.log('=== CALCULATION DETAILS ===');
+      console.log('Input Amount:', inputAmount);
+      console.log('Output Amount:', outputAmount);
+      console.log('Exchange Rate (output/input):', exchangeRate);
+      console.log('Sell Token:', sellTokenData?.symbol, sellToken);
+      console.log('Buy Token:', buyTokenData?.symbol, buyToken);
       
       return {
         buyAmount: outputAmount.toFixed(6),

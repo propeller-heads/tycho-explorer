@@ -35,7 +35,6 @@ export function transformToGraph(filteredPools, currentBlockNumber, selectedProt
     const isProtocolSelected = selectedProtocols.some(
       sp => sp.toLowerCase() === protocol.toLowerCase()
     );
-    console.warn(`[transform] curent block number ${currentBlockNumber}`);
     return {
       id: pool.id,
       from: pool.tokens[0].address,

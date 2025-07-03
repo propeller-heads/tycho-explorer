@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useMemo } from 'react';
-import { filterPools } from '@/components/dexscan/graph/pipelines/FilterPipeline';
+import { filterPools } from '@/components/dexscan/shared/utils/poolFilters';
 import { transformToGraph } from '@/components/dexscan/graph/pipelines/TransformPipeline';
 import { useEnrichedGraph } from '@/components/dexscan/graph/pipelines/EnrichPipeline';
 import { useNetwork } from '@/components/dexscan/graph/pipelines/RenderPipeline';
@@ -22,7 +22,7 @@ export function GraphPipeline({
   
   // Memoize pure transformations to prevent unnecessary recalculations
   const filtered = useMemo(
-    () => filterPools(pools, selectedTokens, selectedProtocols),
+    () => filterPools(pools, selectedTokens, selectedProtocols, true),
     [pools, selectedTokens, selectedProtocols]
   );
 
