@@ -29,20 +29,10 @@ const DexScanContentMain = () => {
     poolsArray,
     highlightedPoolId,
     highlightPool,
-    selectedChain
   } = usePoolData();
   
-  // Calculate available protocols from all pools
-  const availableProtocols = useMemo(() => 
-    Array.from(new Set(poolsArray.map(pool => pool.protocol_system))).filter(Boolean).sort(),
-    [poolsArray]
-  );
-  
   // Shared filter state for both views
-  const filters = useFilterManager({ 
-    chain: selectedChain,
-    availableProtocols 
-  });
+  const filters = useFilterManager();
 
   // Update the URL when the tab changes
   const handleTabChange = (tab: 'graph' | 'pools') => {

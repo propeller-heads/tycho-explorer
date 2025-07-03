@@ -3,6 +3,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { Pool, WebSocketPool } from '@/components/dexscan/app/types';
 import { CHAIN_CONFIG } from '@/components/dexscan/shared/chains';
 
+// Export DATA_STATES enum
+export const DATA_STATES = {
+  DISCONNECTED: 'disconnected' as const,
+  CONNECTING: 'connecting' as const,
+  WAITING: 'waiting' as const,
+  READY: 'ready' as const
+};
+
 interface WebSocketMessage {
   new_pairs?: Record<string, WebSocketPool>;
   spot_prices?: Record<string, number>;
@@ -25,6 +33,12 @@ interface PoolDataContextValue {
   estimatedBlockDuration: number; // Added
   connectionState: 'disconnected' | 'connecting' | 'connected';
   connectionStartTime: number | null;
+  dataState: 'disconnected' | 'connecting' | 'waiting' | 'ready';
+  availableProtocols: string[];
+  availableTokens: Array<{
+    address: string;
+    symbol: string;
+  }>;
 }
 
 // Define actions for our reducer
@@ -449,6 +463,47 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Object.values is expensive for large objects - memoize pools array 
   const poolsArray = useMemo(() => Object.values(state.pools), [state.pools]);
+  
+  // Derive available protocols from pools
+  const availableProtocols = useMemo(() => {
+    const protocols = new Set<string>();
+    poolsArray.forEach(pool => {
+      if (pool.protocol_system) {
+        protocols.add(pool.protocol_system);
+      }
+    });
+    return Array.from(protocols).sort();
+  }, [poolsArray]);
+  
+  // Derive available tokens from pools
+  const availableTokens = useMemo(() => {
+    const tokenMap = new Map();
+    poolsArray.forEach(pool => {
+      pool.tokens.forEach(token => {
+        if (!tokenMap.has(token.address)) {
+          tokenMap.set(token.address, {
+            address: token.address,
+            symbol: token.symbol
+          });
+        }
+      });
+    });
+    return Array.from(tokenMap.values());
+  }, [poolsArray]);
+  
+  // Derive data state from connection state and data availability
+  const dataState = useMemo((): 'disconnected' | 'connecting' | 'waiting' | 'ready' => {
+    if (!state.isConnected) {
+      return DATA_STATES.DISCONNECTED;
+    }
+    if (state.connectionState === 'connecting') {
+      return DATA_STATES.CONNECTING;
+    }
+    if (poolsArray.length === 0) {
+      return DATA_STATES.WAITING;
+    }
+    return DATA_STATES.READY;
+  }, [state.isConnected, state.connectionState, poolsArray.length]);
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => {
@@ -464,6 +519,9 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       estimatedBlockDuration: state.estimatedBlockDuration, // Added
       connectionState: state.connectionState,
       connectionStartTime: state.connectionStartTime,
+      dataState,
+      availableProtocols,
+      availableTokens,
       connectToWebSocket,
       disconnectWebSocket,
       highlightPool,
@@ -480,6 +538,9 @@ export const PoolDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     state.estimatedBlockDuration, // Added
     state.connectionState,
     state.connectionStartTime,
+    dataState,
+    availableProtocols,
+    availableTokens,
     connectToWebSocket,
     disconnectWebSocket,
     highlightPool,

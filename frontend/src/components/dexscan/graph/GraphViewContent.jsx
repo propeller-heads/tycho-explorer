@@ -11,49 +11,33 @@ const PoolGraphView = ({
   toggleProtocol,
   resetFilters,
 }) => {
-  // Get raw data
+  // Get data from context
   const { 
     pools: rawPools, 
     selectedChain,
     blockNumber,
     lastBlockTimestamp,
-    estimatedBlockDuration 
+    estimatedBlockDuration,
+    availableProtocols,
+    availableTokens 
   } = usePoolData();
 
-
-  // Derive data needed for GraphControls' dropdowns from raw data
+  // Transform available tokens to the format expected by GraphControls
   const allAvailableTokenNodes = useMemo(() => {
-    const tokenMap = new Map();
-    Object.values(rawPools).forEach(poolUnk => {
-      const pool = poolUnk;
-      pool.tokens.forEach(token => {
-        if (!tokenMap.has(token.address)) {
-          const address = token.address || '';
-          const tokenName = token.symbol;
-          const firstByte = address ? address.slice(2, 4) : '';
-          const lastByte = address ? address.slice(-2) : '';
-          const formattedLabel = `${tokenName}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
-          tokenMap.set(token.address, {
-            id: token.address,
-            label: token.symbol,
-            symbol: token.symbol,
-            formattedLabel: formattedLabel,
-            address: token.address
-          });
-        }
-      });
+    return availableTokens.map(token => {
+      const address = token.address || '';
+      const firstByte = address ? address.slice(2, 4) : '';
+      const lastByte = address ? address.slice(-2) : '';
+      const formattedLabel = `${token.symbol}${firstByte && lastByte ? ` (0x${firstByte}..${lastByte})` : ''}`;
+      return {
+        id: token.address,
+        label: token.symbol,
+        symbol: token.symbol,
+        formattedLabel: formattedLabel,
+        address: token.address
+      };
     });
-    return Array.from(tokenMap.values());
-  }, [rawPools]);
-
-  const uniqueProtocols = useMemo(() => {
-    const protocols = new Set();
-    Object.values(rawPools).forEach(poolUnk => {
-      const pool = poolUnk;
-      protocols.add(pool.protocol_system);
-    });
-    return Array.from(protocols);
-  }, [rawPools]);
+  }, [availableTokens]);
 
   // No need for array handlers - GraphControls now uses individual toggles
 
@@ -61,7 +45,7 @@ const PoolGraphView = ({
     <div className="h-full flex flex-col bg-[#FFF4E005] backdrop-blur-[24px] rounded-xl overflow-hidden shadow-2xl">
       <GraphControls
         tokenList={allAvailableTokenNodes}
-        protocols={uniqueProtocols}
+        protocols={availableProtocols}
         selectedTokens={selectedTokenAddresses}
         selectedProtocols={selectedProtocols}
         onTokenToggle={toggleToken}
