@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowDown, ExternalLink, LucideX } from 'lucide-react';
@@ -8,6 +8,7 @@ import { renderHexId, formatSpotPrice } from '@/components/dexscan/shared/utils/
 import { getExternalLink, getTokenExplorerLink } from '@/components/dexscan/shared/utils/links';
 import { parsePoolFee } from '@/components/dexscan/shared/utils/poolUtils';
 import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // CSS classes for reuse
 const panelClasses = cn(
@@ -195,13 +196,17 @@ const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tok
     </div>
     <div className="flex items-center justify-between gap-4">
       <div className="flex-1 min-w-0 overflow-hidden">
-        <AmountField 
-          amount={amount} 
-          onChange={onAmountChange} 
-          isEditable={isEditable}
-          isLoading={isLoading}
-          hasError={hasError}
-        />
+        {!isEditable && isLoading ? (
+          <Skeleton className="h-[34px] w-[140px] bg-white/10" />
+        ) : (
+          <AmountField 
+            amount={amount} 
+            onChange={onAmountChange} 
+            isEditable={isEditable}
+            isLoading={isLoading}
+            hasError={hasError}
+          />
+        )}
       </div>
       <TokenSelector token={token} onTokenChange={onTokenChange} tokens={tokens} chain={chain} />
     </div>
@@ -221,12 +226,22 @@ const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => 
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <ResultRow label="Exchange Rate" value="Calculating..." />
-        <ResultRow label="Net Amount" value="Calculating..." />
         <ResultRow label="Pool Fee" value={(() => {
-        const fee = parsePoolFee(pool);
-        return fee !== null ? `${fee}%` : 'N/A';
-      })()} />
+          const fee = parsePoolFee(pool);
+          return fee !== null ? `${fee}%` : 'N/A';
+        })()} />
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-['Inter'] w-32 text-white/50">Exchange Rate:</span>
+          <Skeleton className="h-5 w-40 bg-white/10" />
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-['Inter'] w-32 text-white/50">Net Amount:</span>
+          <Skeleton className="h-5 w-32 bg-white/10" />
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-['Inter'] w-32 text-white/50">Gas Units:</span>
+          <Skeleton className="h-5 w-20 bg-white/10" />
+        </div>
       </div>
     );
   }
@@ -249,12 +264,15 @@ const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => 
   
   return (
     <div className="space-y-2">
-      <ResultRow label="Exchange Rate" value={exchangeRateText} />
-      <ResultRow label="Net Amount" value={netAmountText} />
       <ResultRow label="Pool Fee" value={(() => {
         const fee = parsePoolFee(pool);
         return fee !== null ? `${fee}%` : 'N/A';
       })()} />
+      <ResultRow label="Exchange Rate" value={exchangeRateText} />
+      <ResultRow label="Net Amount" value={netAmountText} />
+      {result.gasEstimate && result.gasEstimate[0] && (
+        <ResultRow label="Gas Units" value={result.gasEstimate[0].toString()} />
+      )}
     </div>
   );
 };
@@ -267,6 +285,8 @@ export function SwapInterface({ pool, onClose, simulate }) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const { selectedChain } = usePoolData();
+  const debounceTimerRef = useRef(null);
+  const loadingStartTimeRef = useRef(null);
   
   // Extract addresses to avoid complex expressions in dependencies
   const token0Address = pool.tokens[0]?.address;
@@ -281,15 +301,64 @@ export function SwapInterface({ pool, onClose, simulate }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool.id, token0Address, token1Address]);
   
-  // Auto-simulate on input change
-  useEffect(() => {
-    if (amount && sellToken && buyToken && parseFloat(amount) > 0) {
+  // Debounced simulation function
+  const runSimulation = useCallback((simulationAmount, simulationSellToken, simulationBuyToken) => {
+    if (simulationAmount && simulationSellToken && simulationBuyToken && parseFloat(simulationAmount) > 0) {
       setLoading(true);
-      simulate({ amount, sellToken, buyToken })
-        .then(setResult)
-        .finally(() => setLoading(false));
+      loadingStartTimeRef.current = Date.now();
+      
+      simulate({ amount: simulationAmount, sellToken: simulationSellToken, buyToken: simulationBuyToken })
+        .then((result) => {
+          // Calculate how long the skeleton has been shown
+          const loadingDuration = Date.now() - loadingStartTimeRef.current;
+          const remainingTime = Math.max(0, 500 - loadingDuration);
+          
+          // Delay hiding the skeleton if it hasn't been shown for at least 500ms
+          setTimeout(() => {
+            setResult(result);
+            setLoading(false);
+          }, remainingTime);
+        })
+        .catch((error) => {
+          // Still respect minimum loading time on error
+          const loadingDuration = Date.now() - loadingStartTimeRef.current;
+          const remainingTime = Math.max(0, 500 - loadingDuration);
+          
+          setTimeout(() => {
+            setResult({ error: error.message });
+            setLoading(false);
+          }, remainingTime);
+        });
     }
-  }, [amount, sellToken, buyToken, simulate]);
+  }, [simulate]);
+  
+  // Auto-simulate on input change with debounce
+  useEffect(() => {
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    // Set new timer for API call
+    debounceTimerRef.current = setTimeout(() => {
+      runSimulation(amount, sellToken, buyToken);
+    }, 500);
+    
+    // Cleanup on unmount or dependencies change
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [amount, sellToken, buyToken, runSimulation]);
+  
+  // Re-simulate immediately when pool updates from WebSocket
+  useEffect(() => {
+    if (amount && sellToken && buyToken && parseFloat(amount) > 0 && pool.spotPrice) {
+      runSimulation(amount, sellToken, buyToken);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pool.spotPrice, pool.lastUpdatedAtBlock]); // Only trigger on pool updates, not other deps
   
   const handleSwapDirection = () => {
     // Swap token addresses

@@ -7553,6 +7553,7 @@ dependencies = [
  "futures 0.3.31",
  "futures-util",
  "num-bigint",
+ "num-traits",
  "serde",
  "serde_json",
  "thiserror 1.0.69",

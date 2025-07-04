@@ -7,6 +7,7 @@ edition = "2021"
 # Simulation dependencies
 tycho-simulation = { git = "https://github.com/propeller-heads/tycho-simulation", tag = "0.103.0" } 
 num-bigint = "0.4"
+num-traits = "0.2"
 
 # API and WebSocket server
 axum = { version = "0.7", features = ["ws"] }

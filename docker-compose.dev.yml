@@ -22,7 +22,7 @@ services:
       # Mount source code for development
       - ./api/src:/app/src:ro
       - ./api/Cargo.toml:/app/Cargo.toml:ro
-      - ./api/Cargo.lock:/app/Cargo.lock:ro
+      - ./api/Cargo.lock:/app/Cargo.lock
       # Share cargo cache and build artifacts
       - cargo-cache:/usr/local/cargo/registry
       - cargo-registry:/usr/local/cargo/git
@@ -61,7 +61,7 @@ services:
       # Mount source code for development
       - ./api/src:/app/src:ro
       - ./api/Cargo.toml:/app/Cargo.toml:ro
-      - ./api/Cargo.lock:/app/Cargo.lock:ro
+      - ./api/Cargo.lock:/app/Cargo.lock
       # Share cargo cache and build artifacts
       - cargo-cache:/usr/local/cargo/registry
       - cargo-registry:/usr/local/cargo/git
@@ -100,7 +100,7 @@ services:
       # Mount source code for development
       - ./api/src:/app/src:ro
       - ./api/Cargo.toml:/app/Cargo.toml:ro
-      - ./api/Cargo.lock:/app/Cargo.lock:ro
+      - ./api/Cargo.lock:/app/Cargo.lock
       # Share cargo cache and build artifacts
       - cargo-cache:/usr/local/cargo/registry
       - cargo-registry:/usr/local/cargo/git
