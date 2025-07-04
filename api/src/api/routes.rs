@@ -4,6 +4,7 @@ use axum::{
     Json, Router,
 };
 use num_bigint::BigUint;
+use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::info;
@@ -32,15 +33,15 @@ async fn health_check() -> Json<serde_json::Value> {
 struct SimulationRequest {
     sell_token: String,
     pools: Vec<String>,
-    amount: f64,
+    amount: String,  // Accept as string to preserve precision
 }
 
 #[derive(Debug, Serialize)]
 struct SimulationResponse {
     success: bool,
-    input_amount: f64,
-    output_amount: f64,
-    gas_estimate: BigUint,
+    input_amount: String,  // Keep as string for exact representation
+    output_amount: String, // Return as string to preserve precision
+    gas_estimate: String,  // Serialize BigUint as string
 }
 
 // Use Result with your existing ApiError
@@ -54,8 +55,17 @@ async fn simulate_transaction(
     info!("Pools: {:?}", request.pools);
     info!("Amount: {}", request.amount);
     
-    // Parse amount
-    let input_amount = request.amount;
+    // Parse amount from string, handling decimal notation
+    let (integer_part, decimal_part) = if let Some(dot_pos) = request.amount.find('.') {
+        let (int_str, dec_str) = request.amount.split_at(dot_pos);
+        (int_str, &dec_str[1..]) // Skip the dot
+    } else {
+        (request.amount.as_str(), "")
+    };
+    
+    // Parse integer part as BigUint
+    let mut amount_biguint = BigUint::parse_bytes(integer_part.as_bytes(), 10)
+        .ok_or_else(|| ApiError::InvalidInput("Invalid amount format".to_string()))?;
 
     let mut current_amount = None;
     let mut total_gas = BigUint::from(0u64);
@@ -87,10 +97,34 @@ async fn simulate_transaction(
                     }
                 }
                 if current_amount.is_none() {
-                    current_amount = Some(BigUint::from(
-                        (input_amount * 10f64.powi(sell_token.decimals as i32)) as u64,
-                    ));
-                    info!("Initial amount (with decimals): {}", current_amount.as_ref().unwrap());
+                    // Calculate 10^decimals using BigUint arithmetic
+                    let base = BigUint::from(10u32);
+                    let token_multiplier = base.pow(sell_token.decimals as u32);
+                    
+                    // Convert integer part to smallest unit
+                    let mut final_amount = amount_biguint.clone() * &token_multiplier;
+                    
+                    // Handle decimal part if present
+                    if !decimal_part.is_empty() {
+                        let decimal_places = decimal_part.len();
+                        if decimal_places > sell_token.decimals as usize {
+                            return Err(ApiError::InvalidInput(
+                                format!("Too many decimal places. Token supports {} decimals", sell_token.decimals)
+                            ));
+                        }
+                        
+                        // Parse decimal part and adjust for token decimals
+                        if let Some(decimal_value) = BigUint::parse_bytes(decimal_part.as_bytes(), 10) {
+                            let decimal_multiplier = base.pow((sell_token.decimals as usize - decimal_places) as u32);
+                            final_amount += decimal_value * decimal_multiplier;
+                        }
+                    }
+                    
+                    current_amount = Some(final_amount);
+                    
+                    info!("input amount: {}", request.amount);
+                    info!("sell_token decimals: {}", sell_token.decimals);
+                    info!("initial amount (with decimals): {}", current_amount.as_ref().unwrap());
                 }
                 
                 info!("=== POOL SIMULATION ===");
@@ -128,19 +162,33 @@ async fn simulate_transaction(
     info!("Raw output amount: {}", amount_out_raw);
     info!("Output decimals: {}", decimals);
     
-    let amount_out: f64 = amount_out_raw
-        .to_string()
-        .parse::<f64>()
-        .unwrap_or(0.0)
-        / 10f64.powi(decimals as i32);
+    // Convert output amount back to human-readable format with proper decimals
+    let divisor = BigUint::from(10u32).pow(decimals as u32);
+    let integer_part = &amount_out_raw / &divisor;
+    let remainder = &amount_out_raw % &divisor;
     
-    info!("Final output amount: {}", amount_out);
-    info!("Exchange rate: {} -> {}", request.amount, amount_out);
+    // Format output with decimal places
+    let output_amount_str = if remainder == BigUint::from(0u32) {
+        integer_part.to_string()
+    } else {
+        // Pad remainder with leading zeros if needed
+        let remainder_str = format!("{:0>width$}", remainder.to_string(), width = decimals as usize);
+        // Trim trailing zeros
+        let trimmed = remainder_str.trim_end_matches('0');
+        if trimmed.is_empty() {
+            integer_part.to_string()
+        } else {
+            format!("{}.{}", integer_part, trimmed)
+        }
+    };
+    
+    info!("Final output amount: {}", output_amount_str);
+    info!("Exchange rate: {} -> {}", request.amount, output_amount_str);
 
     Ok(Json(SimulationResponse {
         success: true,
         input_amount: request.amount,
-        output_amount: amount_out,
-        gas_estimate: total_gas,
+        output_amount: output_amount_str,
+        gas_estimate: total_gas.to_string(),
     }))
 }
