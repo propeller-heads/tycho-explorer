@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 import { createSimulation } from '@/components/dexscan/side-panel/simulation';
 import { SwapInterface } from '@/components/dexscan/side-panel/SwapInterface';
@@ -6,9 +6,11 @@ import { SwapInterface } from '@/components/dexscan/side-panel/SwapInterface';
 export function SidePanel({ pool, onClose }) {
   const { selectedChain } = usePoolData();
   
-  // Create simulation function once
-  const simulate = useMemo(
-    () => createSimulation(pool, selectedChain),
+  // Use useCallback and pass current pool/chain when calling
+  const simulate = useCallback(
+    ({ amount, sellToken, buyToken }) => {
+      return createSimulation(pool, selectedChain)({ amount, sellToken, buyToken });
+    },
     [pool, selectedChain]
   );
   
