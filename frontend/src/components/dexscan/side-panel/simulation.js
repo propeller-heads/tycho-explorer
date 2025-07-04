@@ -19,7 +19,7 @@ const callAPI = async (tokenIn, poolId, amount, chain) => {
   const requestBody = {
     sell_token: tokenIn,
     pools: [poolId],
-    amount: amount
+    amount: amount.toString()  // Ensure amount is sent as string
   };
   
   console.log('=== API REQUEST ===');
@@ -33,7 +33,9 @@ const callAPI = async (tokenIn, poolId, amount, chain) => {
   });
   
   if (!response.ok) {
-    throw new Error(`API call failed: ${response.status}`);
+    const errorBody = await response.text();
+    console.error('API Error Response:', errorBody);
+    throw new Error(`API call failed: ${response.status} - ${errorBody}`);
   }
   
   const result = await response.json();
@@ -56,12 +58,12 @@ export function createSimulation(pool, chain) {
       const sellTokenData = pool.tokens.find(t => t.address === sellToken);
       const buyTokenData = pool.tokens.find(t => t.address === buyToken);
       
-      // Call API
-      const result = await callAPI(sellToken, pool.id, parseFloat(amount), chain);
+      // Call API - pass amount as-is, callAPI will convert to string
+      const result = await callAPI(sellToken, pool.id, amount, chain);
       
-      // Calculate results
+      // Calculate results - API now returns strings
       const outputAmount = parseFloat(result.output_amount);
-      const inputAmount = parseFloat(amount);
+      const inputAmount = parseFloat(result.input_amount);
       const exchangeRate = outputAmount / inputAmount;
       
       console.log('=== CALCULATION DETAILS ===');
