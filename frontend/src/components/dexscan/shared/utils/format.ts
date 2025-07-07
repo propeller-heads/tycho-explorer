@@ -24,9 +24,15 @@ export const formatSpotPrice = (price: number | null | undefined): string => {
   return formatted.replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/g, '');
 };
 
-// Formats a number with full precision (no scientific notation)
+// Formats a number with full precision (uses scientific notation for very small numbers)
 export const formatFullPrecision = (value: number | null | undefined): string => {
+  console.log("[format]");
   if (value == null) return '-';
+  
+  // If the number is very small (would round to 0 with 8 decimals) or very large, use scientific notation
+  if (value !== 0 && (Math.abs(value) < 0.00000001 || Math.abs(value) > 1000000000000)) {
+    return value.toExponential(4); // e.g., 1.2345e-10 or 1.2345e+13
+  }
   
   // Convert to string to preserve full precision
   // Use a high precision (up to 8 decimals) but remove trailing zeros
