@@ -338,8 +338,10 @@ export function useFilterManager() {
   });
   
   // Initialize on mount or chain change
+  // Note: state.filterState is intentionally excluded from dependencies to prevent
+  // re-initialization when filter state changes for other reasons (e.g., CHAIN_READY updates)
   useEffect(() => {
-    if (state.chain !== selectedChain) {
+    if (state.chain !== selectedChain && selectedChain) {
       switch (state.filterState) {
         case FILTER_STATES.READY__MATCHED:
         case FILTER_STATES.READY__MISMATCHED:
@@ -356,7 +358,8 @@ export function useFilterManager() {
           break;
       }
     }
-  }, [selectedChain, state.chain, state.filterState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChain, state.chain]);
   
   // Handle data availability
   useEffect(() => {
