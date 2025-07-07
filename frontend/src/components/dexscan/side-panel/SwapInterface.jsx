@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowDown, ExternalLink, LucideX } from 'lucide-react';
 import { useTokenLogo, getFallbackLetters } from '@/components/dexscan/shared/hooks/useTokenLogo';
 import { cn } from '@/lib/utils';
-import { renderHexId, formatSpotPrice } from '@/components/dexscan/shared/utils/format';
+import { renderHexId, formatSpotPrice, formatFullPrecision } from '@/components/dexscan/shared/utils/format';
 import { getExternalLink, getTokenExplorerLink } from '@/components/dexscan/shared/utils/links';
 import { parsePoolFee } from '@/components/dexscan/shared/utils/poolUtils';
 import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
@@ -134,7 +134,7 @@ const AmountField = ({ amount, onChange, isEditable, isLoading, hasError }) => {
     } else if (hasError) {
       displayValue = 'Error';
     } else if (amount && parseFloat(amount) > 0) {
-      displayValue = formatSpotPrice(parseFloat(amount));
+      displayValue = formatFullPrecision(parseFloat(amount));
     }
     
     return (
@@ -259,7 +259,7 @@ const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => 
   // Format net amount - show N/A if invalid
   let netAmountText = 'N/A';
   if (result.netAmount && parseFloat(result.netAmount) > 0) {
-    netAmountText = `${formatSpotPrice(parseFloat(result.netAmount))} ${buyToken?.symbol}`;
+    netAmountText = `${formatFullPrecision(parseFloat(result.netAmount))} ${buyToken?.symbol}`;
   }
   
   return (
