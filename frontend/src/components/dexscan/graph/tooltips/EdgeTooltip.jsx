@@ -23,7 +23,6 @@ export const EdgeTooltip = ({ pool, selectedChain, style = {} }) => {
   const displayPoolId = renderHexId(pool.id);
   const timeAgo = formatTimeAgo(pool.updatedAt);
   const feePercent = parsePoolFee(pool);
-  const formattedFee = `${feePercent.toFixed(4)}%`;
 
   return (
     <div className={tooltipClasses} style={style}>
@@ -34,7 +33,7 @@ export const EdgeTooltip = ({ pool, selectedChain, style = {} }) => {
         copyText={copyText}
       />
       <InfoRow label="Protocol" value={getReadableProtocolName(pool.protocol_system)} />
-      <InfoRow label="Fee" value={formattedFee} />
+      {feePercent && <InfoRow label="Fee" value={`${feePercent?.toFixed(4)}%`}/>}
       <InfoRow label="Last Update" value={timeAgo} />
     </div>
   );

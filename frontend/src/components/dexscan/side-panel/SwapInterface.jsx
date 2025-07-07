@@ -92,7 +92,7 @@ const Header = ({ pool, chain, onClose }) => (
   </>
 );
 
-const TokenDisplay = ({ token }) => {
+const TokenDisplay = ({ token, poolId }) => {
   const { logoUrl, handleError } = useTokenLogo(token?.symbol || '', token?.logoURI);
   
   if (!token) return <span className="text-sm text-white/50">Select Token</span>;
@@ -109,6 +109,7 @@ const TokenDisplay = ({ token }) => {
     <div className="flex items-center gap-2 min-w-0">
       {logoUrl ? (
         <img 
+          key={`${poolId}-${token.address}-logo`}
           src={logoUrl} 
           alt={token.symbol} 
           className="w-8 h-8 rounded-full flex-shrink-0"
@@ -155,7 +156,7 @@ const AmountField = ({ amount, onChange, isEditable, isLoading, hasError }) => {
   );
 };
 
-const TokenSelector = ({ token, onTokenChange, tokens, chain }) => {
+const TokenSelector = ({ token, onTokenChange, tokens, chain, poolId }) => {
   const tokenData = tokens.find(t => t.address === token);
   
   return (
@@ -163,13 +164,13 @@ const TokenSelector = ({ token, onTokenChange, tokens, chain }) => {
       <Select value={token} onValueChange={onTokenChange}>
         <SelectTrigger className="w-auto bg-transparent border-0 p-0 h-auto hover:bg-transparent focus:ring-0 text-white">
           <SelectValue>
-            <TokenDisplay key={token.address} token={tokenData} />
+            <TokenDisplay token={tokenData} poolId={poolId} />
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="bg-[#190A35]/95 text-white border-white/10 backdrop-blur-2xl">
           {tokens.map(t => (
-            <SelectItem key={t.address} value={t.address}>
-              <TokenDisplay key={t.address} token={t} />
+            <SelectItem key={`${poolId}-${t.address}`} value={t.address}>
+              <TokenDisplay token={t} poolId={poolId} />
             </SelectItem>
           ))}
         </SelectContent>
@@ -189,7 +190,7 @@ const TokenSelector = ({ token, onTokenChange, tokens, chain }) => {
   );
 };
 
-const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tokens, isEditable, chain, isLoading, hasError }) => (
+const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tokens, isEditable, chain, isLoading, hasError, poolId }) => (
   <div className={swapCardClasses}>
     <div className="text-xs font-['Inter'] mb-2 text-white/50">
       {direction === 'sell' ? 'Sell' : 'Buy'}
@@ -208,7 +209,7 @@ const SwapCard = ({ direction, amount, onAmountChange, token, onTokenChange, tok
           />
         )}
       </div>
-      <TokenSelector token={token} onTokenChange={onTokenChange} tokens={tokens} chain={chain} />
+      <TokenSelector token={token} onTokenChange={onTokenChange} tokens={tokens} chain={chain} poolId={poolId} />
     </div>
   </div>
 );
@@ -379,6 +380,7 @@ export function SwapInterface({ pool, onClose, simulate }) {
                 tokens={pool.tokens}
                 isEditable={true}
                 chain={selectedChain}
+                poolId={pool.id}
               />
               <SwapCard
                 direction="buy"
@@ -391,6 +393,7 @@ export function SwapInterface({ pool, onClose, simulate }) {
                 chain={selectedChain}
                 isLoading={loading}
                 hasError={!!result?.error}
+                poolId={pool.id}
               />
             </div>
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">

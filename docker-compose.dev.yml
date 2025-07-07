@@ -17,6 +17,7 @@ services:
       RUST_BACKTRACE: 1
       TVL_THRESHOLD: ${TVL_THRESHOLD}
       TYCHO_ETHEREUM_URL: ${TYCHO_ETHEREUM_URL}
+      RPC_URL: ${RPC_URL}
     command: ["/bin/bash", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain ethereum --port 3000 --tycho-url ${TYCHO_ETHEREUM_URL}'"]
     volumes:
       # Mount source code for development
@@ -56,6 +57,7 @@ services:
       RUST_BACKTRACE: 1
       TVL_THRESHOLD: ${TVL_THRESHOLD}
       TYCHO_BASE_URL: ${TYCHO_BASE_URL}
+      RPC_URL: ${RPC_URL}
     command: ["/bin/bash", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain base --port 3000 --tycho-url ${TYCHO_BASE_URL}'"]
     volumes:
       # Mount source code for development
@@ -95,6 +97,7 @@ services:
       RUST_BACKTRACE: 1
       TVL_THRESHOLD: ${TVL_THRESHOLD}
       TYCHO_UNICHAIN_URL: ${TYCHO_UNICHAIN_URL}
+      RPC_URL: ${RPC_URL}
     command: ["/bin/bash", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain unichain --port 3000 --tycho-url ${TYCHO_UNICHAIN_URL}'"]
     volumes:
       # Mount source code for development
