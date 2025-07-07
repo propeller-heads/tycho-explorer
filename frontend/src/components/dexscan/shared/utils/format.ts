@@ -16,20 +16,12 @@ export const formatSpotPrice = (price: number | null | undefined): string => {
   
   // Use scientific notation for very small numbers (< 0.001) or very large numbers (> 1M)
   if (price !== 0 && (Math.abs(price) < 0.001 || Math.abs(price) > 1000000)) {
-    return price.toExponential(2); // e.g., 1.23e-9
+    return price.toExponential(4);
   }
-  
-  // For "normal" range, format with appropriate decimals
-  if (price < 1) {
-    // Show up to 6 decimal places, but remove trailing zeros
-    return parseFloat(price.toFixed(6)).toString();
-  } else if (price < 1000) {
-    // Show up to 4 decimal places, but remove trailing zeros
-    return parseFloat(price.toFixed(4)).toString();
-  } else {
-    // For larger numbers, show up to 2 decimal places
-    return price.toFixed(2);
-  }
+
+  const formatted = price.toFixed(8);
+  // remove trailing zeros
+  return formatted.replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/g, '');
 };
 
 // Formats a number with full precision (no scientific notation)

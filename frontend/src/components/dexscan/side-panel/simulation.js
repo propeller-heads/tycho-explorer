@@ -74,11 +74,11 @@ export function createSimulation(pool, chain) {
       console.log('Buy Token:', buyTokenData?.symbol, buyToken);
       
       return {
-        buyAmount: outputAmount.toFixed(6),
-        exchangeRate: exchangeRate.toFixed(6),
+        buyAmount: outputAmount,
+        exchangeRate: exchangeRate,
         fee: pool.static_attributes.fee,
-        netAmount: outputAmount.toFixed(6),
-        gasEstimate: result.gas_estimate || '0',
+        netAmount: outputAmount,
+        gasEstimate: result.gas_estimate,
         error: null
       };
       
