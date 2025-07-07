@@ -24,6 +24,20 @@ export const formatSpotPrice = (price: number | null | undefined): string => {
   return formatted.replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/g, '');
 };
 
+// Formats a number with full precision (no scientific notation)
+export const formatFullPrecision = (value: number | null | undefined): string => {
+  if (value == null) return '-';
+  
+  // Convert to string to preserve full precision
+  // Use a high precision (up to 8 decimals) but remove trailing zeros
+  const formatted = value.toFixed(8);
+  
+  // Remove trailing zeros after decimal point
+  const trimmed = formatted.replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/g, '');
+  
+  return trimmed;
+};
+
 // Fallback string for invalid or missing timestamps
 const INVALID_TIMESTAMP_FALLBACK = "N/A";
 // Fallback string for date parsing errors
