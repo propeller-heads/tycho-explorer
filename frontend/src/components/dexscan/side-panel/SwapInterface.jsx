@@ -235,10 +235,6 @@ const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => 
           <Skeleton className="h-5 w-40 bg-white/10" />
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm font-['Inter'] w-32 text-white/50">Net Amount:</span>
-          <Skeleton className="h-5 w-32 bg-white/10" />
-        </div>
-        <div className="flex justify-between items-center">
           <span className="text-sm font-['Inter'] w-32 text-white/50">Gas Units:</span>
           <Skeleton className="h-5 w-20 bg-white/10" />
         </div>
@@ -256,12 +252,6 @@ const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => 
     exchangeRateText = `1 ${sellToken?.symbol} = ${formatSpotPrice(parseFloat(result.exchangeRate))} ${buyToken?.symbol}`;
   }
   
-  // Format net amount - show N/A if invalid
-  let netAmountText = 'N/A';
-  if (result.netAmount && parseFloat(result.netAmount) > 0) {
-    netAmountText = `${formatSpotPrice(parseFloat(result.netAmount))} ${buyToken?.symbol}`;
-  }
-  
   return (
     <div className="space-y-2">
       <ResultRow label="Pool Fee" value={(() => {
@@ -269,9 +259,8 @@ const SimulationResults = ({ result, sellToken, buyToken, pool, isLoading }) => 
         return fee !== null ? `${fee}%` : 'N/A';
       })()} />
       <ResultRow label="Exchange Rate" value={exchangeRateText} />
-      <ResultRow label="Net Amount" value={netAmountText} />
-      {result.gasEstimate && result.gasEstimate[0] && (
-        <ResultRow label="Gas Units" value={result.gasEstimate[0].toString()} />
+      {result.gasEstimate && result.gasEstimate && (
+        <ResultRow label="Gas Units" value={result.gasEstimate.toString()} />
       )}
     </div>
   );
