@@ -45,6 +45,18 @@ async fn main() -> anyhow::Result<()> {
     
     let chain = Chain::from_str(&cli.chain).unwrap_or_else(|_| panic!("Unknown chain {}", cli.chain));
 
+    // Check RPC_URL for Ethereum chain
+    if chain == Chain::Ethereum {
+        match env::var("RPC_URL") {
+            Ok(rpc_url) => {
+                info!("RPC_URL configured for Ethereum: {}", rpc_url);
+            }
+            Err(_) => {
+                panic!("RPC_URL environment variable is required for Ethereum chain");
+            }
+        }
+    }
+
     let tycho_url = if cli.tycho_url.is_empty() {
         panic!("TYCHO_URL cannot be empty")
     } else {
