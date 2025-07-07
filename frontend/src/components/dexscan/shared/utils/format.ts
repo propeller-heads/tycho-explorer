@@ -26,7 +26,6 @@ export const formatSpotPrice = (price: number | null | undefined): string => {
 
 // Formats a number with full precision (uses scientific notation for very small numbers)
 export const formatFullPrecision = (value: number | null | undefined): string => {
-  console.log("[format]");
   if (value == null) return '-';
   
   // If the number is very small (would round to 0 with 8 decimals) or very large, use scientific notation
