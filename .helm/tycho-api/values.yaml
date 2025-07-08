@@ -124,3 +124,6 @@ affinity:
               operator: In
               values:
                 - spot
+
+env:
+  RPC_URL: ""
