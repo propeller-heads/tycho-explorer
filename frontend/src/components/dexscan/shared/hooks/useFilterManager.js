@@ -81,6 +81,7 @@ function createResetState(state) {
   return {
     ...state,
     filterState: FILTER_STATES.INITIAL,
+    chain: null,
     selectedTokens: [],
     selectedProtocols: []
   };
@@ -283,8 +284,13 @@ function handleReset(state, action) {
     case FILTER_STATES.READY__MISMATCHED: {
       const resetState = createResetState(state);
       
-      // Don't clear localStorage - it contains other data like logo URLs
-      // Just return to INITIAL state with empty filters
+      // Clear filters from localStorage while preserving other data
+      if (state.chain) {
+        saveToLocalStorage(state.chain, {
+          selectedTokens: [],
+          selectedProtocols: []
+        });
+      }
       
       return resetState;
     }
@@ -363,7 +369,15 @@ export function useFilterManager() {
   
   // Handle data availability
   useEffect(() => {
-    if (dataState === DATA_STATES.READY && availableProtocols.length > 0) {
+    // Only dispatch CHAIN_READY when we're in a state that can handle it
+    const canHandleChainReady = [
+      FILTER_STATES.FIRST_VISIT__WAITING,
+      FILTER_STATES.FIRST_VISIT__MISMATCHED,
+      FILTER_STATES.READY__MATCHED,
+      FILTER_STATES.READY__MISMATCHED
+    ].includes(state.filterState);
+    
+    if (dataState === DATA_STATES.READY && availableProtocols.length > 0 && canHandleChainReady) {
       dispatch({
         type: FILTER_ACTIONS.CHAIN_READY,
         chain: selectedChain,
@@ -371,7 +385,7 @@ export function useFilterManager() {
         availableTokens
       });
     }
-  }, [dataState, availableProtocols, availableTokens, selectedChain]);
+  }, [dataState, availableProtocols, availableTokens, selectedChain, state.filterState]);
   
   // Public API - now passes individual items to reducer
   const toggleToken = useCallback((address, isSelected) => {
