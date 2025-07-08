@@ -41,6 +41,9 @@ spec:
           securityContext:
             {{- toYaml $.Values.securityContext | nindent 12 }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          env:
+            - name: RPC_URL
+              value: {{ .Values.env.RPC_URL | quote }}          
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
           args: ["/usr/local/bin/tycho-api", "--tvl-threshold", "30", "--chain", "{{ $name }}", "--port", "{{ $cfg.port }}", "--tycho-url", "{{ $cfg.externalUrl }}"]
           env:
