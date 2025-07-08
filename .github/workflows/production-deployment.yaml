@@ -165,6 +165,7 @@ jobs:
             --set image.tag=api${{ github.sha }} \
             --set externalSecrets.data=${{ env.APP_SECRET }} \
             --set 'ingress.hosts[0].host'=${{ env.DOMAIN_NAME_WS }}
+            --set env.RPC_URL="${{ env.RPC_URL }}"
 
       - name: Upgrade or Install helm release for Frontend
         run: |
