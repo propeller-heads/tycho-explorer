@@ -45,7 +45,7 @@ spec:
           args: ["/usr/local/bin/tycho-api", "--tvl-threshold", "30", "--chain", "{{ $name }}", "--port", "{{ $cfg.port }}", "--tycho-url", "{{ $cfg.externalUrl }}"]
           env:
             - name: RPC_URL
-            value: {{ .Values.env.RPC_URL | quote }}
+            value: {{ $.Values.env.RPC_URL | quote }}
           {{- range $.Values.commonEnv }}
             - name: {{ .name }}
               valueFrom:
