@@ -17,6 +17,7 @@ env:
   DOMAIN_NAME_WS: ${{ vars.DOMAIN_NAME_WS }}
   EKS_NAMESPACE: ${{ vars.EKS_NAMESPACE }}
   APP_SECRET: ${{ vars.APP_SECRET }}
+  RPC_URL: ${{ vars.RPC_URL }}
 
 permissions:
   id-token: write
