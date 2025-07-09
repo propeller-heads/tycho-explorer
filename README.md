@@ -1,6 +1,6 @@
 # Tycho Explorer
 
-A real-time DeFi pool explorer.
+A real-time DeFi pool explorer. 
 
 ![Graph View of the application](./app.png)
 
