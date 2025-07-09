@@ -82,8 +82,6 @@ function createResetState(state) {
     ...state,
     filterState: FILTER_STATES.INITIAL,
     chain: null,
-    selectedTokens: [],
-    selectedProtocols: []
   };
 }
 
@@ -282,17 +280,7 @@ function handleReset(state, action) {
     case FILTER_STATES.FIRST_VISIT__MISMATCHED:
     case FILTER_STATES.READY__MATCHED:
     case FILTER_STATES.READY__MISMATCHED: {
-      const resetState = createResetState(state);
-      
-      // Clear filters from localStorage while preserving other data
-      if (state.chain) {
-        saveToLocalStorage(state.chain, {
-          selectedTokens: [],
-          selectedProtocols: []
-        });
-      }
-      
-      return resetState;
+      return createResetState(state);
     }
     
     default:
@@ -405,8 +393,18 @@ export function useFilterManager() {
   }, []);
   
   const resetFilters = useCallback(() => {
-    dispatch({ type: FILTER_ACTIONS.RESET });
-  }, []);
+    // Reset tokens to empty array
+    dispatch({ 
+      type: FILTER_ACTIONS.SET_TOKENS, 
+      tokens: [] 
+    });
+    
+    // Reset protocols to all available protocols
+    dispatch({ 
+      type: FILTER_ACTIONS.SET_PROTOCOLS, 
+      protocols: state.availableProtocols 
+    });
+  }, [state.availableProtocols]);
   
   return {
     selectedTokenAddresses: state.selectedTokens,
