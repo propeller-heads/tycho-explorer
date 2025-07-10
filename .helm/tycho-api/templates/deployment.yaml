@@ -42,7 +42,7 @@ spec:
             {{- toYaml $.Values.securityContext | nindent 12 }}
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"      
           imagePullPolicy: {{ $.Values.image.pullPolicy }}
-          args: ["/usr/local/bin/tycho-api", "--tvl-threshold", "30", "--chain", "{{ $name }}", "--port", "{{ $cfg.port }}", "--tycho-url", "{{ $cfg.externalUrl }}"]
+          args: ["/usr/local/bin/tycho-api", "--tvl-threshold", "100", "--chain", "{{ $name }}", "--port", "{{ $cfg.port }}", "--tycho-url", "{{ $cfg.externalUrl }}"]
           env:
             - name: RPC_URL
               value: {{ $.Values.env.RPC_URL | quote }}
