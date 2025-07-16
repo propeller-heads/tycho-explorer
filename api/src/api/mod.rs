@@ -9,7 +9,7 @@ use tower_http::{
     trace::TraceLayer,
 };
 use tracing::info;
-use tycho_simulation::protocol::models::BlockUpdate;
+use tycho_simulation::protocol::models::Update as BlockUpdate;
 
 use crate::simulation::state::SimulationState;
 

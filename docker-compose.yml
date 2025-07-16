@@ -2,8 +2,8 @@ services:
   # Ethereum Mainnet Tycho API
   tycho-api-ethereum:
     build: 
-      context: ./api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api/Dockerfile
     image: tycho-explorer/api:latest
     container_name: tycho-api-ethereum
     deploy:

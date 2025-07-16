@@ -2,7 +2,10 @@
 # Uses cargo watch for hot reloading and builds in debug mode
 
 FROM rust:1.87
-WORKDIR /app
+
+# Create workspace directory structure
+RUN mkdir -p /workspace/api
+WORKDIR /workspace
 
 RUN echo "🔵 [DEV] Setting up development environment..."
 
@@ -17,6 +20,21 @@ RUN apt-get update && apt-get install -y \
 # Install cargo-watch for hot reloading
 RUN cargo install cargo-watch
 RUN echo "🟢 [DEV] cargo-watch installed"
+
+# Copy workspace files first for better caching
+COPY Cargo.toml Cargo.lock ./
+COPY api/Cargo.toml ./api/
+
+# Create a dummy main.rs to allow cargo to download dependencies
+RUN mkdir -p api/src && echo "fn main() {}" > api/src/main.rs
+
+# Pre-download dependencies (this layer will be cached)
+RUN cargo fetch --manifest-path ./api/Cargo.toml
+
+# Remove dummy file
+RUN rm -rf api/src
+
+WORKDIR /workspace/api
 
 EXPOSE 3000
 

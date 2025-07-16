@@ -2,11 +2,8 @@ use serde::Serialize;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{broadcast, RwLock};
 use tycho_simulation::{
-    models::Token,
-    protocol::{
-        models::{BlockUpdate, ProtocolComponent},
-        state::ProtocolSim,
-    },
+    protocol::models::{Update as BlockUpdate, ProtocolComponent},
+    tycho_core::{models::token::Token, simulation::protocol_sim::ProtocolSim},
 };
 
 /// Represents the current state of the simulation
@@ -38,7 +35,7 @@ impl From<BlockUpdate> for ClientUpdate {
         }
 
         ClientUpdate {
-            block_number: update.block_number,
+            block_number: update.block_number_or_timestamp,
             new_pairs: update.new_pairs,
             spot_prices,
             tvl_updates,

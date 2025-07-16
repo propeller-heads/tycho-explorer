@@ -4,7 +4,6 @@ use axum::{
     Json, Router,
 };
 use num_bigint::BigUint;
-use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::info;
@@ -64,7 +63,7 @@ async fn simulate_transaction(
     };
     
     // Parse integer part as BigUint
-    let mut amount_biguint = BigUint::parse_bytes(integer_part.as_bytes(), 10)
+    let amount_biguint = BigUint::parse_bytes(integer_part.as_bytes(), 10)
         .ok_or_else(|| ApiError::InvalidInput("Invalid amount format".to_string()))?;
 
     let mut current_amount = None;
