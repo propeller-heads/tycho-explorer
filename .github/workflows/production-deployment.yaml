@@ -90,7 +90,7 @@ jobs:
         if: ${{ steps.check-image.outputs.skip_remaining_steps_api != 'true' }}
         uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
         with:
-          context: ./api
+          context: ./
           push: true
           tags: ${{ secrets.REPOSITORY_URL }}/${{ env.REPO_NAME }}:api${{ github.sha }}
           file: ./api/Dockerfile
