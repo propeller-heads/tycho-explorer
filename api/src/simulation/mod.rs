@@ -7,18 +7,18 @@ use tycho_simulation::{
     evm::{
         engine_db::tycho_db::PreCachedDB,
         protocol::{
-            filters::{balancer_pool_filter, uniswap_v4_pool_with_hook_filter},
+            filters::{balancer_v2_pool_filter, uniswap_v4_pool_with_hook_filter},
             uniswap_v2::state::UniswapV2State,
             uniswap_v3::state::UniswapV3State,
             uniswap_v4::state::UniswapV4State,
             pancakeswap_v2::state::PancakeswapV2State,
             ekubo::state::EkuboState,
             vm::state::EVMPoolState,
-            filters::{curve_pool_filter}
+            filters::curve_pool_filter
         },
         stream::ProtocolStreamBuilder,
     },
-    protocol::models::BlockUpdate,
+    protocol::models::Update as BlockUpdate,
     tycho_client::feed::component_tracker::ComponentFilter,
     tycho_core::models::Chain,
     utils::load_all_tokens,
@@ -47,7 +47,7 @@ fn register_exchanges(
                 .exchange::<EVMPoolState<PreCachedDB>>(
                     "vm:balancer_v2",
                     tvl_filter.clone(),
-                    Some(balancer_pool_filter),
+                    Some(balancer_v2_pool_filter),
                 )
                 .exchange::<UniswapV4State>(
                     "uniswap_v4",

@@ -7,8 +7,8 @@ services:
   # Ethereum Mainnet Tycho API (Development)
   tycho-api-ethereum-dev:
     build: 
-      context: ./api
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: api/Dockerfile.dev
     ports:
       - "${TYCHO_API_ETHEREUM_PORT}:3000"
     environment:
@@ -21,13 +21,14 @@ services:
     command: ["/bin/bash", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain ethereum --port 3000 --tycho-url ${TYCHO_ETHEREUM_URL}'"]
     volumes:
       # Mount source code for development
-      - ./api/src:/app/src:ro
-      - ./api/Cargo.toml:/app/Cargo.toml:ro
-      - ./api/Cargo.lock:/app/Cargo.lock
+      - ./api/src:/workspace/api/src:ro
+      - ./api/Cargo.toml:/workspace/api/Cargo.toml:ro
+      - ./Cargo.toml:/workspace/Cargo.toml:ro
+      - ./Cargo.lock:/workspace/Cargo.lock:ro
       # Share cargo cache and build artifacts
       - cargo-cache:/usr/local/cargo/registry
       - cargo-registry:/usr/local/cargo/git
-      - cargo-target:/app/target
+      - cargo-target:/workspace/target
     networks:
       - tycho-network-dev
     healthcheck:
@@ -44,8 +45,8 @@ services:
   # Base Mainnet Tycho API (Development)
   tycho-api-base-dev:
     build: 
-      context: ./api
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: api/Dockerfile.dev
     depends_on:
       tycho-api-ethereum-dev:
         condition: service_healthy
@@ -61,13 +62,14 @@ services:
     command: ["/bin/bash", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain base --port 3000 --tycho-url ${TYCHO_BASE_URL}'"]
     volumes:
       # Mount source code for development
-      - ./api/src:/app/src:ro
-      - ./api/Cargo.toml:/app/Cargo.toml:ro
-      - ./api/Cargo.lock:/app/Cargo.lock
+      - ./api/src:/workspace/api/src:ro
+      - ./api/Cargo.toml:/workspace/api/Cargo.toml:ro
+      - ./Cargo.toml:/workspace/Cargo.toml:ro
+      - ./Cargo.lock:/workspace/Cargo.lock:ro
       # Share cargo cache and build artifacts
       - cargo-cache:/usr/local/cargo/registry
       - cargo-registry:/usr/local/cargo/git
-      - cargo-target:/app/target
+      - cargo-target:/workspace/target
     networks:
       - tycho-network-dev
     healthcheck:
@@ -84,8 +86,8 @@ services:
   # Unichain Mainnet Tycho API (Development)
   tycho-api-unichain-dev:
     build: 
-      context: ./api
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: api/Dockerfile.dev
     depends_on:
       tycho-api-ethereum-dev:
         condition: service_healthy
@@ -101,13 +103,14 @@ services:
     command: ["/bin/bash", "-c", "cargo watch -x 'run -- --tvl-threshold ${TVL_THRESHOLD} --chain unichain --port 3000 --tycho-url ${TYCHO_UNICHAIN_URL}'"]
     volumes:
       # Mount source code for development
-      - ./api/src:/app/src:ro
-      - ./api/Cargo.toml:/app/Cargo.toml:ro
-      - ./api/Cargo.lock:/app/Cargo.lock
+      - ./api/src:/workspace/api/src:ro
+      - ./api/Cargo.toml:/workspace/api/Cargo.toml:ro
+      - ./Cargo.toml:/workspace/Cargo.toml:ro
+      - ./Cargo.lock:/workspace/Cargo.lock:ro
       # Share cargo cache and build artifacts
       - cargo-cache:/usr/local/cargo/registry
       - cargo-registry:/usr/local/cargo/git
-      - cargo-target:/app/target
+      - cargo-target:/workspace/target
     networks:
       - tycho-network-dev
     healthcheck:
