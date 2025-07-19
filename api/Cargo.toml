@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # Simulation dependencies
-tycho-simulation = { git = "https://github.com/propeller-heads/tycho-simulation", tag = "0.127.1" } 
+tycho-simulation = { git = "https://github.com/propeller-heads/tycho-simulation", tag = "0.130.0" } 
 num-bigint = "0.4"
 num-traits = "0.2"
 
