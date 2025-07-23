@@ -1,11 +1,13 @@
-The app is hosted on [poolexplorer.art](poolexplorer.art). **But you can also host yourself.**
+# How to deploy locally?
+
+The app is hosted on [poolexplorer.art](https://github.com/propeller-heads/tycho-explorer/blob/main/gitbook/poolexplorer.art). **But you can also host yourself.**
 
 The benefits hosting yourself:
 
 * lower latency between each chain and visualization update
 * you can customize this app to add or edit visualization
 
-# Deploy locally
+## Deploy locally
 
 Before you start, make sure you have **Docker** installed.
 
