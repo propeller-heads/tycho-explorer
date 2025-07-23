@@ -18,7 +18,7 @@ import { ChevronDown, Check, ExternalLink } from 'lucide-react';
 import { usePoolData } from '@/components/dexscan/shared/PoolDataContext';
 
 // --- Constants for Strings and URLs ---
-const DOCS_URL = "https://github.com/propeller-heads/tycho-explorer";
+const DOCS_URL = "https://tycho-explorer.gitbook.io/docs/";
 const ALT_TEXT_EXTERNAL_LINK = "External link";
 const TEXT_DOCS = "Docs (Run locally)";
 
