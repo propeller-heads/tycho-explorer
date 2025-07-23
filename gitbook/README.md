@@ -16,4 +16,4 @@ Suppose you want to know the cheapest way to sell a large amount of coin A for c
 
 # Tycho API
 
-**You can easily build on top of the real-time pool data Tycho provides.** See ![Tycho API](./tycho-api.md).
+**You can easily build on top of the real-time pool data Tycho provides.** See ![Tycho API](tycho-api.md).
