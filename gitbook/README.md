@@ -2,15 +2,15 @@ Tycho Explorer is a data dashboard for all decentralized exchanges. Like ethersc
 
 For example, you can list all the decentralized exchanges that operate on Ethereum from some of the most popular protocols - Uniswap, Curve, Balancer.
 
-![List view](list-view.png)
+![List view](./list-view.png)
 
 You can interact with these exchanges / pools. For example, you can get a qoute - how much coin B will you get for this much coin A?
 
-![Quote simulation](quote-simulation.png)
+![Quote simulation](./quote-simulation.png)
 
 Suppose you want to understand what the cheapest way is to sell a large amount of coin A for coin B, you can begin your inquiry by graphing out the best list of trades to make starting with coin A to get coin B. This is analogous to finding the least congested road going from work to home.
 
-![Graph view](graph.png)
+![Graph view](./graph.png)
 
 ## Quick Start
 
