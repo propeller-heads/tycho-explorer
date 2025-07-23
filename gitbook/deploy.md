@@ -4,7 +4,7 @@ The app is hosted on [poolexplorer.art](https://poolexplorer.art). **But you can
 
 The benefits hosting yourself:
 
-* lower latency between each chain and visualization update
+* lower latency between block update and data visualization update
 * you can customize this app to add or edit visualization
 
 ## Deploy locally
@@ -28,4 +28,4 @@ make up DEV=1
 
 ```
 
-When in doubt, do `make` to see the list of commands to start or stop the sub-services of Tycho Explorer, or view their logs.
+When in doubt, do `make` to see the list of commands to start or stop the services of Tycho Explorer, or view their logs.

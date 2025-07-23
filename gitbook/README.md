@@ -1,6 +1,6 @@
 # Overview
 
-Tycho Explorer is the first low-latency, trustless and open source dashboard for covering all decentralized exchanges. If you rely on DEX data (decentralized exchange) to make critical decisions, this is for you.
+Tycho Explorer is the first low-latency, trustless and open source dashboard for covering all decentralized exchanges. If you rely on DEX data (decentralized exchange) to make decisions, this is for you.
 
 ## What can it go now?
 
@@ -8,7 +8,7 @@ You can list all the decentralized exchanges that operate on Ethereum - pools fr
 
 ![List view](list-view.png)
 
-You can also interact with these exchanges. For example, you can get a qoute and answer the question of "how much coin B will I get for this much coin A?".
+You can also interact with these exchanges. For example, you can get a quote and answer the question of "how much coin B will I get for this much coin A?".
 
 ![Quote simulation](quote-simulation.png)
 
